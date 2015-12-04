@@ -1,0 +1,49 @@
+<h1>
+  Hello HackTester
+</h1>
+
+<form action="" method="get">
+  <select id="" name="problem" onclick="this.form.submit()">
+    <option value="{{selected_problem.id}}">{{selected_problem.name}}</option>
+    {% for problem in problems %}
+    <option value="{{problem.id}}">{{problem.name}}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<pre>
+{{selected_problem.description}}
+</pre>
+
+<form action="/grade" method="post">
+  
+  <div>
+    <textarea name="code"></textarea>
+  </div>
+  
+  <p>Select language:</p>
+
+  <select id="" name="test">
+    {% for test in tests %}
+    <option value="{{test.id}}">{{test.language}}</option>
+    {% endfor %}
+  </select>
+
+  <input type="Submit" value="Submit for grading" />
+  {% csrf_token %}
+</form>
+
+<!-- Create a simple CodeMirror instance -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/python/python.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/theme/seti.css">
+<script>
+  var ta = document.getElementsByName("code")[0];
+  var editor = CodeMirror.fromTextArea(ta, {
+    lineNumbers: true,
+    theme: 'seti',
+    mode: 'python'
+  });
+  editor.setSize(500, 200);
+</script>

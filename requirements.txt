@@ -1,0 +1,11 @@
+amqp==1.4.7
+anyjson==0.3.3
+Babel==2.1.1
+backports-abc==0.4
+billiard==3.3.0.21
+celery==3.1.19
+Django==1.8.7
+django-celery==3.1.17
+django-model-utils==2.3.1
+kombu==3.0.29
+pytz==2015.7

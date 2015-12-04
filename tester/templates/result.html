@@ -1,0 +1,20 @@
+{%if error %}
+
+<p>{{error}}</p>
+
+{% endif %}
+
+<p>Run with id {{run.id}} and status: <strong>{{run.status}}</strong></p>
+<p>Submited code:</p>
+<pre>
+{{run.code}}
+</pre>
+
+<p><strong>Run output:</strong></p>
+<pre>
+  {%if run.status == 'done' %}
+    {{result.output}}
+  {% else %}
+    Still running ..
+  {% endif %}
+</pre>
