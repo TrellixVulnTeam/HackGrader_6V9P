@@ -1,0 +1,5 @@
+{
+  "language": "python",
+  "solution": "solution.py",
+  "tests": "tests.py"
+}

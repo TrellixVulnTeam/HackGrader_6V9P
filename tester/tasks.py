@@ -3,7 +3,7 @@ from celery import shared_task
 
 from tester.models import TestRun, RunResult
 
-from grader.common import GraderFactory
+# from grader.grader_factory import GraderFactory
 
 
 RESULT_STATUSES = {0: "ok", 1: "not_ok", 2: "something_bad"}
@@ -20,14 +20,15 @@ def grade_pending_run(run_id):
         return "No tasks to run right now."
 
     language = pending_task.problem_test.language.name
-    Grader = GraderFactory.get_grader(language)
+    # Grader = GraderFactory.get_grader(language)
 
     pending_task.status = 'running'
     pending_task.save()
 
-    grader = Grader(code_under_test=pending_task.code,
-                    tests=pending_task.problem_test.code)
-    returncode, output = grader.run_code()
+    # grader = Grader(code_under_test=pending_task.code,
+                  # tests=pending_task.problem_test.code)
+    # returncode, output = grader.run_code()
+    returncode, output = (1, "Not working right now")
 
     pending_task.status = 'done'
     pending_task.save()

@@ -1,4 +1,4 @@
-from .language_graders.python import PythonGrader
+from language_graders.python import PythonGrader
 
 
 class LanguageNotSupported(Exception):
