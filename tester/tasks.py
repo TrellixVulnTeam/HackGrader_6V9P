@@ -2,11 +2,26 @@ from __future__ import absolute_import
 from celery import shared_task
 
 from tester.models import TestRun, RunResult
+from HackTester.settings import BASE_DIR
 
-# from grader.grader_factory import GraderFactory
+import os
+import json
 
 
 RESULT_STATUSES = {0: "ok", 1: "not_ok", 2: "something_bad"}
+
+FILE_EXTENSIONS = {
+    "python": ".py"
+}
+
+SANDBOX = 'sandbox/'
+
+
+def save_input(where, contents):
+    path = os.path.join(BASE_DIR, SANDBOX, where)
+
+    with open(path, 'w') as f:
+        f.write(contents)
 
 
 @shared_task
@@ -19,15 +34,25 @@ def grade_pending_run(run_id):
     if pending_task is None:
         return "No tasks to run right now."
 
-    language = pending_task.problem_test.language.name
-    # Grader = GraderFactory.get_grader(language)
+    language = pending_task.problem_test.language.name.lower()
 
     pending_task.status = 'running'
     pending_task.save()
 
-    # grader = Grader(code_under_test=pending_task.code,
-                  # tests=pending_task.problem_test.code)
-    # returncode, output = grader.run_code()
+    extension = FILE_EXTENSIONS[language]
+    solution = 'solution{}'.format(extension)
+    tests = 'tests{}'.format(extension)
+
+    save_input(solution, pending_task.code)
+    save_input(tests, pending_task.problem_test.code)
+
+    data = {
+        'language': language,
+        'solution': solution,
+        'tests': tests
+    }
+    save_input('data.json', json.dumps(data))
+
     returncode, output = (1, "Not working right now")
 
     pending_task.status = 'done'
