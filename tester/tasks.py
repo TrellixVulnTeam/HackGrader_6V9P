@@ -7,6 +7,8 @@ from HackTester.settings import BASE_DIR
 import os
 import json
 
+from subprocess import CalledProcessError, check_output, STDOUT, TimeoutExpired
+
 
 RESULT_STATUSES = {0: "ok", 1: "not_ok", 2: "something_bad"}
 
@@ -15,6 +17,11 @@ FILE_EXTENSIONS = {
 }
 
 SANDBOX = 'sandbox/'
+
+DOCKER_TIMELIMIT = 10
+DOCKER_COMMAND = "docker run -v {grader}:/grader -v {sandbox}:/grader/input grader python3 grader/start.py"
+DOCKER_COMMAND = DOCKER_COMMAND.format(**{"grader": os.path.join(BASE_DIR, "grader"),
+                                          "sandbox": os.path.join(BASE_DIR, SANDBOX)})
 
 
 def save_input(where, contents):
@@ -53,7 +60,14 @@ def grade_pending_run(run_id):
     }
     save_input('data.json', json.dumps(data))
 
-    returncode, output = (1, "Not working right now")
+    json_output = check_output(['/bin/bash', '-c', DOCKER_COMMAND],
+                               stderr=STDOUT,
+                               shell=False,
+                               timeout=DOCKER_TIMELIMIT)
+
+    decoded_output = json.loads(json_output.decode('utf-8'))
+    returncode = decoded_output["returncode"]
+    output = decoded_output["output"]
 
     pending_task.status = 'done'
     pending_task.save()

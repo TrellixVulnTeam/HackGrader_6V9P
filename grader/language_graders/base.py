@@ -22,10 +22,10 @@ class BaseGrader:
             output = check_output([command, args],
                                   stderr=STDOUT,
                                   shell=False,
-                                  timeout=TIMELIMIT)
+                                  timeout=TIMELIMIT).decode('utf-8')
             returncode = 0
         except CalledProcessError as e:
-            output = e.output
+            output = e.output.decode('utf-8')
             returncode = e.returncode
         except TimeoutExpired as e:
             output = TIMELIMIT_EXCEEDED_ERROR
@@ -33,7 +33,7 @@ class BaseGrader:
         finally:
             self.clean_up()
 
-        return (returncode, output.decode('utf-8'))
+        return (returncode, output)
 
     def clean_up(self):
         pass
