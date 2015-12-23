@@ -1,13 +1,17 @@
 from __future__ import absolute_import
 from celery import shared_task
+from celery.utils.log import get_task_logger
 
 from tester.models import TestRun, RunResult
 from HackTester.settings import BASE_DIR
 
 import os
 import json
+import time
 
 from subprocess import CalledProcessError, check_output, STDOUT, TimeoutExpired
+
+logger = get_task_logger(__name__)
 
 FILE_EXTENSIONS = {
     "python": ".py",
@@ -17,10 +21,16 @@ FILE_EXTENSIONS = {
 SANDBOX = 'sandbox/'
 
 DOCKER_TIMELIMIT = 10
-DOCKER_COMMAND = "docker run -v {grader}:/grader -v {sandbox}:/grader/input grader python3 grader/start.py"
+DOCKER_COMMAND = "docker run -d -v {grader}:/grader -v {sandbox}:/grader/input grader python3 grader/start.py"
 DOCKER_COMMAND = DOCKER_COMMAND \
         .format(**{"grader": os.path.join(BASE_DIR, "grader"),
                    "sandbox": os.path.join(BASE_DIR, SANDBOX)})
+
+
+# Tripple {{{ because of Python's format
+DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
+DOCKER_LOG_COMMAND = "docker logs {container_id}"
+DOCKER_CLEAR_COMMAND = "docker rm {container_id}"
 
 
 def save_input(where, contents):
@@ -30,17 +40,49 @@ def save_input(where, contents):
         f.write(contents)
 
 
-def run_code_in_docker():
-    json_output = check_output(['/bin/bash', '-c', DOCKER_COMMAND],
-                               stderr=STDOUT,
-                               shell=False,
-                               timeout=DOCKER_TIMELIMIT)
-
-    decoded_output = json.loads(json_output.decode('utf-8'))
+def get_output(logs):
+    decoded_output = json.loads(logs)
     returncode = decoded_output["returncode"]
     output = decoded_output["output"]
 
     return (returncode, output)
+
+
+def wait_while_docker_finishes(container_id):
+    keys = {"container_id": container_id,
+            "state": "{{.State.Running}}"}
+    command = DOCKER_INSPECT_COMMAND.format(**keys)
+
+    while True:
+        result = check_output(['/bin/bash', '-c', command],
+                              stderr=STDOUT,
+                              shell=False).decode('utf-8').strip()
+
+        logger.info("Checking if {} has finished: {}".format(container_id, result))
+        if result == 'false':
+            break
+
+        time.sleep(1)
+
+
+def run_code_in_docker():
+    return check_output(['/bin/bash', '-c', DOCKER_COMMAND],
+                        stderr=STDOUT,
+                        shell=False,
+                        timeout=DOCKER_TIMELIMIT).decode('utf-8')
+
+
+def get_docker_logs(container_id):
+    command = DOCKER_LOG_COMMAND.format(**{"container_id": container_id})
+    logger.info(command)
+
+    return check_output(['/bin/bash', '-c', command],
+                        stderr=STDOUT,
+                        shell=False).decode('utf-8')
+
+
+def docker_cleanup():
+    pass
 
 
 def get_result_status(returncode):
@@ -82,7 +124,12 @@ def grade_pending_run(run_id):
     save_input('data.json', json.dumps(data))
 
     try:
-        returncode, output = run_code_in_docker()
+        container_id = run_code_in_docker()
+        wait_while_docker_finishes(container_id)
+
+        logs = get_docker_logs(container_id)
+        returncode, output = get_output(logs)
+
         status = 'done'
     except CalledProcessError as e:
         returncode = e.returncode
