@@ -30,7 +30,7 @@ class ProblemTest(models.Model):
 
 
 class TestRun(models.Model):
-    STATUS = Choices('pending', 'running', 'done')
+    STATUS = Choices('pending', 'running', 'done', 'failed')
 
     code = models.TextField()
     problem_test = models.ForeignKey(ProblemTest)
