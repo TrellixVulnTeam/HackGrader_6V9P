@@ -5,6 +5,14 @@ import os
 # becomes `proj.celery.schedules` in Python 2.x since it allows
 # for relative imports by default.
 
+# Grader & Docker settings
+
+DOCKER_IMAGE = 'grader'
+DOCKER_USER = 'grader'
+DOCKER_MEMORY_LIMIT = '300M'
+NPROC_SOFT_LIMIT = 49
+NPROC_HARD_LIMIT = 49
+
 # Celery settings
 
 BROKER_URL = 'amqp://guest:guest@localhost//'

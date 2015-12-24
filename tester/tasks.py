@@ -4,6 +4,10 @@ from celery.utils.log import get_task_logger
 
 from tester.models import TestRun, RunResult
 from HackTester.settings import BASE_DIR
+from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
+        DOCKER_MEMORY_LIMIT, DOCKER_USER, DOCKER_IMAGE, \
+        DOCKER_USER
+
 
 import os
 import json
@@ -21,13 +25,24 @@ FILE_EXTENSIONS = {
 SANDBOX = 'sandbox/'
 
 DOCKER_TIMELIMIT = 10
-DOCKER_COMMAND = "docker run -u grader --ulimit nproc=50:51 -m 300M --memory-swap -1 -d -v {grader}:/grader -v {sandbox}:/grader/input grader python3 grader/start.py"
+DOCKER_COMMAND = """docker run -d \
+        -u {docker_user} \
+        --ulimit nproc={nproc_soft_limit}:{nproc_hard_limit} \
+        -m {docker_memory_limit} --memory-swap -1 \
+        --net=none \
+        -v {grader}:/grader -v {sandbox}:/grader/input \
+        {docker_image} \
+        python3 grader/start.py"""
 DOCKER_COMMAND = DOCKER_COMMAND \
         .format(**{"grader": os.path.join(BASE_DIR, "grader"),
-                   "sandbox": os.path.join(BASE_DIR, SANDBOX)})
+                   "sandbox": os.path.join(BASE_DIR, SANDBOX),
+                   "docker_user": DOCKER_USER,
+                   "nproc_soft_limit": NPROC_SOFT_LIMIT,
+                   "nproc_hard_limit": NPROC_HARD_LIMIT,
+                   "docker_memory_limit": DOCKER_MEMORY_LIMIT,
+                   "docker_image": DOCKER_IMAGE})
 
 
-# Tripple {{{ because of Python's format
 DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
 DOCKER_LOG_COMMAND = "docker logs {container_id}"
 DOCKER_CLEAR_COMMAND = "docker rm {container_id}"
