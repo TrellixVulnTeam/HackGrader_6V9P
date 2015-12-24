@@ -21,7 +21,7 @@ FILE_EXTENSIONS = {
 SANDBOX = 'sandbox/'
 
 DOCKER_TIMELIMIT = 10
-DOCKER_COMMAND = "docker run -d -v {grader}:/grader -v {sandbox}:/grader/input grader python3 grader/start.py"
+DOCKER_COMMAND = "docker run -u grader --ulimit nproc=50:51 -m 300M --memory-swap -1 -d -v {grader}:/grader -v {sandbox}:/grader/input grader python3 grader/start.py"
 DOCKER_COMMAND = DOCKER_COMMAND \
         .format(**{"grader": os.path.join(BASE_DIR, "grader"),
                    "sandbox": os.path.join(BASE_DIR, SANDBOX)})
