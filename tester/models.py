@@ -20,8 +20,12 @@ class Problem(models.Model):
 
 # Unique together language, id
 class ProblemTest(models.Model):
+    # TODO: Add more choices
+    STATUS = Choices('unittest')
+
     problem = models.ForeignKey(Problem)
     language = models.ForeignKey(Language)
+    test_type = StatusField(db_index=True, default='unittest')
     code = models.TextField()
     extra_description = models.TextField()
 
