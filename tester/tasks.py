@@ -68,8 +68,7 @@ def wait_while_docker_finishes(container_id):
 
     while True:
         result = check_output(['/bin/bash', '-c', command],
-                              stderr=STDOUT,
-                              shell=False).decode('utf-8').strip()
+                              stderr=STDOUT).decode('utf-8').strip()
 
         logger.info("Checking if {} has finished: {}".format(container_id, result))
         if result == 'false':
@@ -81,7 +80,6 @@ def wait_while_docker_finishes(container_id):
 def run_code_in_docker():
     return check_output(['/bin/bash', '-c', DOCKER_COMMAND],
                         stderr=STDOUT,
-                        shell=False,
                         timeout=DOCKER_TIME_LIMIT).decode('utf-8')
 
 
@@ -90,16 +88,14 @@ def get_docker_logs(container_id):
     logger.info(command)
 
     return check_output(['/bin/bash', '-c', command],
-                        stderr=STDOUT,
-                        shell=False).decode('utf-8')
+                        stderr=STDOUT).decode('utf-8')
 
 
 def docker_cleanup(container_id):
     keys = {"container_id": container_id}
     command = DOCKER_CLEAR_COMMAND.format(**keys)
     check_output(['/bin/bash', '-c', command],
-                 stderr=STDOUT,
-                 shell=False)
+                 stderr=STDOUT)
 
 
 def get_result_status(returncode):
