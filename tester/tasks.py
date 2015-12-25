@@ -6,7 +6,7 @@ from tester.models import TestRun, RunResult
 from HackTester.settings import BASE_DIR
 from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
         DOCKER_MEMORY_LIMIT, DOCKER_USER, DOCKER_IMAGE, \
-        DOCKER_USER
+        DOCKER_USER, DOCKER_TIME_LIMIT
 
 
 import os
@@ -23,8 +23,6 @@ FILE_EXTENSIONS = {
 }
 
 SANDBOX = 'sandbox/'
-
-DOCKER_TIMELIMIT = 10
 DOCKER_COMMAND = """docker run -d \
         -u {docker_user} \
         --ulimit nproc={nproc_soft_limit}:{nproc_hard_limit} \
@@ -84,7 +82,7 @@ def run_code_in_docker():
     return check_output(['/bin/bash', '-c', DOCKER_COMMAND],
                         stderr=STDOUT,
                         shell=False,
-                        timeout=DOCKER_TIMELIMIT).decode('utf-8')
+                        timeout=DOCKER_TIME_LIMIT).decode('utf-8')
 
 
 def get_docker_logs(container_id):
