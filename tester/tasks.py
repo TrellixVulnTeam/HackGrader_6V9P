@@ -96,8 +96,12 @@ def get_docker_logs(container_id):
                         shell=False).decode('utf-8')
 
 
-def docker_cleanup():
-    pass
+def docker_cleanup(container_id):
+    keys = {"container_id": container_id}
+    command = DOCKER_CLEAR_COMMAND.format(**keys)
+    check_output(['/bin/bash', '-c', command],
+                 stderr=STDOUT,
+                 shell=False)
 
 
 def get_result_status(returncode):
@@ -154,6 +158,9 @@ def grade_pending_run(run_id):
         returncode = 127
         output = repr(e)
         status = 'docker_time_limit_hit'
+
+    if container_id:
+        docker_cleanup(container_id)
 
     pending_task.status = status
     pending_task.save()
