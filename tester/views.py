@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.http import JsonResponse
 
-from .models import Problem, ProblemTest, TestRun, RunResult, Language
+from .models import TestRun, RunResult, Language
 from .tasks import grade_pending_run
 
 
@@ -17,15 +17,17 @@ def supported_languages(request):
     return JsonResponse(languages, safe=False)
 
 
+# { "language": "Python",
+#   "type":     "unittest",
+#   "problem_code": "....",
+#   "problem_test": "...." }
 def grade(request):
-    post_data = request.POST
-    test = ProblemTest.objects.get(pk=request.POST.get('test'))
-    run = TestRun(status='pending',
-                  problem_test=test,
-                  code=post_data['code'])
-    run.save()
+    # run = TestRun(status='pending',
+    #               problem_test=test,
+    #               code=post_data['code'])
+    # run.save()
 
-    grade_pending_run.delay(run.id)
+    # grade_pending_run.delay(run.id)
 
     return redirect(reverse('tester:result', args=(run.id,)))
 

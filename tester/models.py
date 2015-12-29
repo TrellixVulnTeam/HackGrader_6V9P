@@ -10,34 +10,20 @@ class Language(models.Model):
         return self.name
 
 
-class Problem(models.Model):
-    name = models.CharField(max_length=250)
-    description = models.TextField()
+class TestType(models.Model):
+    value = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.name
-
-
-# Unique together language, id
-class ProblemTest(models.Model):
-    # TODO: Add more choices
-    STATUS = Choices('unittest')
-
-    problem = models.ForeignKey(Problem)
-    language = models.ForeignKey(Language)
-    test_type = StatusField(db_index=True, default='unittest')
-    code = models.TextField()
-    extra_description = models.TextField()
-
-    def __str__(self):
-        return "{}/{}".format(self.problem, self.language)
+        return self.value
 
 
 class TestRun(models.Model):
     STATUS = Choices('pending', 'running', 'done', 'failed')
 
-    code = models.TextField()
-    problem_test = models.ForeignKey(ProblemTest)
+    problem_code = models.TextField()
+    problem_test = models.TextField()
+    language = models.ForeignKey(Language)
+    test_type = models.ForeignKey(TestType)
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
     status = StatusField(db_index=True)
 
