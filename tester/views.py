@@ -9,18 +9,6 @@ from .tasks import grade_pending_run
 
 
 def index(request):
-    problem_id = request.GET.get('problem')
-
-    if problem_id is not None:
-        selected_problem = Problem.objects.get(pk=problem_id)
-    else:
-        selected_problem = Problem.objects.first()
-
-    problems = Problem.objects.filter(problemtest__isnull=False).distinct()
-    problems = [p for p in problems if p != selected_problem]
-
-    tests = ProblemTest.objects.filter(problem=selected_problem)
-
     return render(request, 'index.html', locals())
 
 
