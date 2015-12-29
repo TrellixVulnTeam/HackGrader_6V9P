@@ -19,6 +19,11 @@ def supported_languages(request):
     return JsonResponse(languages, safe=False)
 
 
+def supported_test_types(request):
+    types = [t.value for t in TestType.objects.all()]
+    return JsonResponse(types, safe=False)
+
+
 # { "language": "Python",
 #   "type":     "unittest",
 #   "problem_code": "....",

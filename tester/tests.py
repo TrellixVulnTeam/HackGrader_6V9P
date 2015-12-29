@@ -63,5 +63,24 @@ class GradeViewTest(TestCase):
         payload = get_problem()
         d = json.dumps(payload)
         response = self.client.post(reverse('tester:grade'), content_type=JSON, data=d)
+        content = json.loads(response.content.decode('utf-8'))
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], JSON)
+        self.assertIn('run_id', content)
+
+    def test_grade_view_with_unsupported_language(self):
+        create_test_types()
+        payload = get_problem()
+        d = json.dumps(payload)
+        response = self.client.post(reverse('tester:grade'), content_type=JSON, data=d)
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_grade_view_with_unsupported_test_type(self):
+        create_languages()
+        payload = get_problem()
+        d = json.dumps(payload)
+        response = self.client.post(reverse('tester:grade'), content_type=JSON, data=d)
+
+        self.assertEqual(response.status_code, 400)
