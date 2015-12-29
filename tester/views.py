@@ -3,6 +3,7 @@ from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import TestRun, RunResult, Language, TestType
 from .tasks import grade_pending_run
@@ -28,6 +29,7 @@ def supported_test_types(request):
 #   "test_type":     "unittest",
 #   "code": "....",
 #   "test": "...." }
+@csrf_exempt
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
     language = Language.objects.filter(name=payload['language']).first()
