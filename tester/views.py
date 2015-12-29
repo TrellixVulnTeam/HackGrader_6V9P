@@ -57,7 +57,7 @@ def grade(request):
     grade_pending_run.delay(run.id)
 
     result = {"run_id": run.id}
-    return JsonResponse(result)
+    return JsonResponse(result, status=202)
 
 
 def result(request, run_id):

@@ -39,5 +39,8 @@ if __name__ == '__main__':
     return d
 
 r = requests.post(API_URL, json=get_problem())
-print(r.status_code)
+print(r.status_code) # Returns 202 accepted
 print(r.text)
+
+# Returns JSON that looks like this:
+# {"run_id": 2}
