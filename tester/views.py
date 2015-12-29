@@ -2,8 +2,9 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
+from django.http import JsonResponse
 
-from .models import Problem, ProblemTest, TestRun, RunResult
+from .models import Problem, ProblemTest, TestRun, RunResult, Language
 from .tasks import grade_pending_run
 
 
@@ -21,6 +22,11 @@ def index(request):
     tests = ProblemTest.objects.filter(problem=selected_problem)
 
     return render(request, 'index.html', locals())
+
+
+def supported_languages(request):
+    languages = [l.name for l in Language.objects.all()]
+    return JsonResponse(languages, safe=False)
 
 
 def grade(request):
