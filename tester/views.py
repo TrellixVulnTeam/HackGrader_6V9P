@@ -2,7 +2,8 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound,\
+        HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import TestRun, RunResult, Language, TestType
