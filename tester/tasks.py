@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
-from tester.models import TestRun, RunResult
+from tester.models import TestRun, RunResult, Language
 from HackTester.settings import BASE_DIR
 from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
         DOCKER_MEMORY_LIMIT, DOCKER_USER, DOCKER_IMAGE, \
@@ -17,10 +17,7 @@ from subprocess import CalledProcessError, check_output, STDOUT, TimeoutExpired
 
 logger = get_task_logger(__name__)
 
-FILE_EXTENSIONS = {
-    "python": ".py",
-    "ruby": ".rb"
-}
+FILE_EXTENSIONS = {l.name: l.extension for l in Language.objects.all()}
 
 SANDBOX = 'sandbox/'
 DOCKER_COMMAND = """docker run -d \
@@ -117,7 +114,7 @@ def grade_pending_run(run_id):
     if pending_task is None:
         return "No tasks to run right now."
 
-    language = pending_task.problem_test.language.name.lower()
+    language = pending_task.language.name.lower()
 
     pending_task.status = 'running'
     pending_task.save()
@@ -127,7 +124,7 @@ def grade_pending_run(run_id):
     tests = 'tests{}'.format(extension)
 
     save_input(solution, pending_task.code)
-    save_input(tests, pending_task.problem_test.code)
+    save_input(tests, pending_task.test)
 
     data = {
         'language': language,

@@ -31,7 +31,7 @@ class TestRun(models.Model):
     def __str__(self):
         return "[{}:{}] for {} at {}]"\
                 .format(self.id, self.status,
-                        self.problem_test, self.created_at)
+                        self.language, self.created_at)
 
 
 class RunResult(models.Model):
