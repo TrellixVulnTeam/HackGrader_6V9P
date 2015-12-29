@@ -158,6 +158,7 @@ def grade_pending_run(run_id):
 
     run_result = RunResult()
     run_result.run = pending_task
+    run_result.returncode = returncode
     run_result.status = get_result_status(returncode)
     run_result.output = output
     run_result.save()

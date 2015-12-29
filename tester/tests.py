@@ -65,7 +65,7 @@ class GradeViewTest(TestCase):
         response = self.client.post(reverse('tester:grade'), content_type=JSON, data=d)
         content = json.loads(response.content.decode('utf-8'))
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 202)
         self.assertEqual(response['content-type'], JSON)
         self.assertIn('run_id', content)
 
@@ -84,3 +84,10 @@ class GradeViewTest(TestCase):
         response = self.client.post(reverse('tester:grade'), content_type=JSON, data=d)
 
         self.assertEqual(response.status_code, 400)
+
+
+class CheckResultViewTest(TestCase):
+    def test_check_result_with_nonexistent_run_id(self):
+        response = self.client.get(reverse('tester:check_result', args=(1,)))
+
+        self.assertEqual(response.status_code, 404)

@@ -40,3 +40,4 @@ class RunResult(models.Model):
     run = models.ForeignKey(TestRun)
     status = StatusField()
     output = models.TextField()
+    returncode = models.IntegerField()

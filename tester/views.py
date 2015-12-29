@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import TestRun, RunResult, Language, TestType
@@ -60,16 +60,24 @@ def grade(request):
     return JsonResponse(result, status=202)
 
 
-def result(request, run_id):
+@csrf_exempt
+def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
     except ObjectDoesNotExist as e:
-        error = "No run with such id {}".format(run_id)
-        return render(request, 'result.html', locals())
+        msg = "Run with id {} not found"
+        msg = msg.format(run_id)
+        return HttpResponseNotFound(msg)
 
     try:
         result = RunResult.objects.get(run=run)
     except ObjectDoesNotExist as e:
-        pass
+        data = {'status': run.status}
+        return JsonResponse(data, status=204)
 
-    return render(request, 'result.html', locals())
+    data = {'run_status': run.status,
+            'result_status': result.status,
+            'run_id': run_id,
+            'output': result.output,
+            'returncode': result.returncode}
+    return JsonResponse(data)
