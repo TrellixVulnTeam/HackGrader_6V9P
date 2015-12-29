@@ -5,6 +5,7 @@ from model_utils import Choices
 
 class Language(models.Model):
     name = models.CharField(max_length=50)
+    extension = models.CharField(max_length=10)
 
     def __str__(self):
         return self.name

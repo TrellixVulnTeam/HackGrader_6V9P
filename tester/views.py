@@ -25,9 +25,9 @@ def supported_test_types(request):
 
 
 # { "language": "Python",
-#   "type":     "unittest",
-#   "problem_code": "....",
-#   "problem_test": "...." }
+#   "test_type":     "unittest",
+#   "code": "....",
+#   "test": "...." }
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
     language = Language.objects.filter(name=payload['language']).first()
@@ -51,6 +51,8 @@ def grade(request):
                   test=payload['test'])
 
     run.save()
+
+    grade_pending_run.delay(run.id)
 
     result = {"run_id": run.id}
     return JsonResponse(result)
