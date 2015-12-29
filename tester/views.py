@@ -72,8 +72,7 @@ def check_result(request, run_id):
     try:
         result = RunResult.objects.get(run=run)
     except ObjectDoesNotExist as e:
-        data = {'status': run.status}
-        return JsonResponse(data, status=204)
+        return HttpResponse(status=204)
 
     data = {'run_status': run.status,
             'result_status': result.status,

@@ -1,8 +1,10 @@
 import requests
+import time
+
 
 API_URL = 'http://46.101.117.211'
 GRADE_URL = API_URL + '/grade'
-CHECK_RESULT_URL = API_URL + "/check_result"
+CHECK_RESULT_URL = API_URL + "/check_result/{}"
 
 
 def get_problem():
@@ -50,12 +52,13 @@ print(r.text)
 run_id = r.json()['run_id']
 print(run_id)
 
-r1 = requests.get(CHECK_RESULT_URL, params={'run_id': run_id})
+check_url = CHECK_RESULT_URL.format(run_id)
+r1 = requests.get(check_url)
 
 while r1.status_code == 204:
     print(r1.status_code)
-    # print(r1.json()['status'])
-    r1 = requests.get(CHECK_RESULT_URL, params={'run_id': run_id})
+    r1 = requests.get(check_url)
+    time.sleep(1)
 
 print(r1.text)
 # print(r1.json())
