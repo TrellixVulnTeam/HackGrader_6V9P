@@ -20,8 +20,8 @@ class TestType(models.Model):
 class TestRun(models.Model):
     STATUS = Choices('pending', 'running', 'done', 'failed')
 
-    problem_code = models.TextField()
-    problem_test = models.TextField()
+    code = models.TextField()
+    test = models.TextField()
     language = models.ForeignKey(Language)
     test_type = models.ForeignKey(TestType)
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)

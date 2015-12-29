@@ -2,10 +2,12 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 
-from .models import TestRun, RunResult, Language
+from .models import TestRun, RunResult, Language, TestType
 from .tasks import grade_pending_run
+
+import json
 
 
 def index(request):
@@ -22,14 +24,31 @@ def supported_languages(request):
 #   "problem_code": "....",
 #   "problem_test": "...." }
 def grade(request):
-    # run = TestRun(status='pending',
-    #               problem_test=test,
-    #               code=post_data['code'])
-    # run.save()
+    payload = json.loads(request.body.decode('utf-8'))
+    language = Language.objects.filter(name=payload['language']).first()
 
-    # grade_pending_run.delay(run.id)
+    if language is None:
+        msg = "Language {} not supported. Please check GET /supported_languages"
+        msg = msg.format(payload['language'])
+        return HttpResponseBadRequest(msg)
 
-    return redirect(reverse('tester:result', args=(run.id,)))
+    test_type = TestType.objects.filter(value=payload['test_type']).first()
+
+    if test_type is None:
+        msg = "Test type {} not supported. Please check GET /supported_test_types"
+        msg = msg.format(payload['test_type'])
+        return HttpResponseBadRequest(msg)
+
+    run = TestRun(status='pending',
+                  language=language,
+                  test_type=test_type,
+                  code=payload['code'],
+                  test=payload['test'])
+
+    run.save()
+
+    result = {"run_id": run.id}
+    return JsonResponse(result)
 
 
 def result(request, run_id):
