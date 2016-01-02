@@ -1,10 +1,18 @@
+import sys
 import requests
 import time
 
+run_local = False
 
-API_URL = 'http://46.101.117.211'
+if len(sys.argv) and sys.argv[1] == 'local':
+    run_local = True
+
+if run_local:
+    API_URL = 'http://localhost:8000'
+else:
+    API_URL = 'http://46.101.117.211'
+
 GRADE_URL = API_URL + '/grade'
-CHECK_RESULT_URL = API_URL + "/check_result/{}"
 
 
 def get_problem():
@@ -44,15 +52,16 @@ if __name__ == '__main__':
 
 r = requests.post(GRADE_URL, json=get_problem())
 print(r.status_code)  # Returns 202 accepted
-print(r.text)
+print(r.headers['Location'])  # The url for polling
+check_url = r.headers['Location']
 
+print(r.text)
 # Returns JSON that looks like this:
 # {"run_id": 2}
 
 run_id = r.json()['run_id']
 print(run_id)
 
-check_url = CHECK_RESULT_URL.format(run_id)
 r1 = requests.get(check_url)
 
 while r1.status_code == 204:
