@@ -9,6 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import TestRun, RunResult, Language, TestType
 from .tasks import grade_pending_run
 
+from .utils import get_base_url
+
 import json
 
 
@@ -58,11 +60,20 @@ def grade(request):
     grade_pending_run.delay(run.id)
 
     result = {"run_id": run.id}
-    return JsonResponse(result, status=202)
+    result_location = "{}{}"
+    result_location = result_location.format(
+            get_base_url(request.build_absolute_uri()),
+            reverse('tester:check_result', args=(run.id, )))
+
+    response = JsonResponse(result, status=202)
+    response['Location'] = result_location
+
+    return response
 
 
 @csrf_exempt
 def check_result(request, run_id):
+    print(get_base_url(request.build_absolute_uri()))
     try:
         run = TestRun.objects.get(pk=run_id)
     except ObjectDoesNotExist as e:
