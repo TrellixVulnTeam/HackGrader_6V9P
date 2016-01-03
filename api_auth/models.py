@@ -20,6 +20,7 @@ class ApiUser(models.Model):
 
 class ApiRequest(models.Model):
     nonce = models.BigIntegerField(db_index=True)
+    request_info = models.CharField(max_length=140)
     digest = models.CharField(max_length=64)
     user = models.ForeignKey(ApiUser)
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)

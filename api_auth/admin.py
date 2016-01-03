@@ -10,4 +10,4 @@ class ApiUserAdmin(admin.ModelAdmin):
 
 @admin.register(ApiRequest)
 class ApiRequestAdmin(admin.ModelAdmin):
-    list_display = ('nonce', 'user', 'created_at')
+    list_display = ('request_info', 'nonce', 'user', 'created_at')

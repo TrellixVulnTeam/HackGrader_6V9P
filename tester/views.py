@@ -74,6 +74,7 @@ def grade(request):
 
 
 @csrf_exempt
+@require_api_authentication
 def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
