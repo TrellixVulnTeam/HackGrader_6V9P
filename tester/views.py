@@ -8,12 +8,14 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import TestRun, RunResult, Language, TestType
 from .tasks import grade_pending_run
+from .decorators import require_api_authentication
 
 from .utils import get_base_url
 
 import json
 
 
+@require_api_authentication
 def index(request):
     return render(request, 'index.html', locals())
 
