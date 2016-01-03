@@ -1,0 +1,22 @@
+{
+    "POST /grade": [
+        1,
+        2
+    ],
+    "GET /check_result/36/": [
+        1,
+        2,
+        3,
+        4
+    ],
+    "GET /check_result/35/": [
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "POST /path": [
+        1
+    ]
+}
