@@ -7,6 +7,25 @@ import json
 
 from settings import API_KEY, API_SECRET
 
+
+def get_and_update_nonce():
+    used = []
+    r = -1
+
+    with open('nonce.json', 'r') as f:
+        used = json.load(f)
+        if len(used) == 0:
+            r = 1
+        else:
+            r = max(used) + 1
+
+        used.append(r)
+
+    with open('nonce.json', 'w') as f:
+        json.dump(used, f)
+
+    return str(r)
+
 run_local = False
 
 if len(sys.argv) > 1 and sys.argv[1] == 'local':
@@ -55,7 +74,7 @@ if __name__ == '__main__':
 
     return d
 
-nonce = '1'
+nonce = get_and_update_nonce()
 date = 'asdf'
 body = json.dumps(get_problem())
 msg = body + date + nonce
@@ -89,6 +108,7 @@ r1 = requests.get(check_url)
 
 while r1.status_code == 204:
     print(r1.status_code)
+    print(r1.headers['X-Run-Status'])
     r1 = requests.get(check_url)
     time.sleep(1)
 

@@ -75,7 +75,6 @@ def grade(request):
 
 @csrf_exempt
 def check_result(request, run_id):
-    print(get_base_url(request.build_absolute_uri()))
     try:
         run = TestRun.objects.get(pk=run_id)
     except ObjectDoesNotExist as e:
@@ -86,7 +85,11 @@ def check_result(request, run_id):
     try:
         result = RunResult.objects.get(run=run)
     except ObjectDoesNotExist as e:
-        return HttpResponse(status=204)
+        run.refresh_from_db()
+        response = HttpResponse(status=204)
+        response['X-Run-Status'] = run.status
+
+        return response
 
     data = {'run_status': run.status,
             'result_status': result.status,
