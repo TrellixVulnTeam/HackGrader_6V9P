@@ -5,7 +5,7 @@ import json
 import hashlib
 import hmac
 
-from .models import ApiUser
+from .models import ApiUser, ApiRequest
 from .utils import keys_not_present
 
 KEYS = ['HTTP_AUTHENTICATION',
@@ -37,6 +37,12 @@ def require_api_authentication(func):
             msg = "No API User for key {}".format(api_key)
             return HttpResponseForbidden(msg)
 
+        api_request = ApiRequest.objects.filter(user=api_user, nonce=nonce).first()
+
+        if api_request is not None:
+            msg = 'Nonce check failed'
+            return HttpResponseForbidden(msg)
+
         msg = body.decode('utf-8') + date + nonce
         check_digest = hmac.new(bytearray(api_user.secret.encode('utf-8')),
                                 msg=msg.encode('utf-8'),
@@ -45,6 +51,9 @@ def require_api_authentication(func):
         if digest != check_digest:
             msg = 'None-matching digest'
             return HttpResponseForbidden(msg)
+
+        api_request = ApiRequest(nonce=nonce, user=api_user, digest=check_digest)
+        api_request.save()
 
         return func(request, *args, **kwargs)
 

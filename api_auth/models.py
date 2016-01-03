@@ -16,3 +16,10 @@ class ApiUser(models.Model):
         secret = generate_random_key(host)
 
         return ApiUser(host=host, key=key, secret=secret)
+
+
+class ApiRequest(models.Model):
+    nonce = models.BigIntegerField(db_index=True)
+    digest = models.CharField(max_length=64)
+    user = models.ForeignKey(ApiUser)
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
