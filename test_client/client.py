@@ -4,6 +4,7 @@ import time
 import hmac
 import hashlib
 import json
+from urllib.parse import urlparse
 
 from settings import API_KEY, API_SECRET
 
@@ -44,29 +45,29 @@ if __name__ == '__main__':
     return d
 
 
-def get_and_update_nonce():
-    used = []
+def get_and_update_nonce(resource):
+    data = {}
     r = -1
 
     with open('nonce.json', 'r') as f:
-        used = json.load(f)
-        if len(used) == 0:
-            r = 1
-        else:
-            r = max(used) + 1
+        data = json.load(f)
 
-        used.append(r)
+    if resource not in data:
+        r = 1
+        data[resource] = [r]
+    else:
+        r = max(data[resource]) + 1
+        data[resource].append(r)
 
     with open('nonce.json', 'w') as f:
-        json.dump(used, f)
+        json.dump(data, f, indent=4)
 
     return str(r)
 
 
-def get_headers():
-    nonce = get_and_update_nonce()
+def get_headers(body, req_and_resource):
+    nonce = get_and_update_nonce(req_and_resource)
     date = time.strftime("%c")
-    body = json.dumps(get_problem())
     msg = body + date + nonce
     digest = hmac.new(bytearray(API_SECRET.encode('utf-8')),
                       msg=msg.encode('utf-8'),
@@ -89,10 +90,12 @@ if run_local:
 else:
     API_URL = 'http://46.101.117.211'
 
-GRADE_URL = API_URL + '/grade'
+GRADE_PATH = '/grade'
+GRADE_URL = API_URL + GRADE_PATH
 
-
-r = requests.post(GRADE_URL, json=get_problem(), headers=get_headers())
+req_and_resource = "POST {}".format(GRADE_PATH)
+headers = get_headers(json.dumps(get_problem()), req_and_resource)
+r = requests.post(GRADE_URL, json=get_problem(), headers=headers)
 
 print(r.status_code)  # Should return 202 accepted
 
@@ -110,12 +113,14 @@ check_url = r.headers['Location']
 run_id = r.json()['run_id']
 print(run_id)
 
-r1 = requests.get(check_url)
+path = urlparse(check_url).path
+req_and_resource = "GET {}".format(path)
+r1 = requests.get(check_url, headers=get_headers(path, req_and_resource))
 
 while r1.status_code == 204:
     print(r1.status_code)
     print(r1.headers['X-Run-Status'])
-    r1 = requests.get(check_url)
+    r1 = requests.get(check_url, headers=get_headers(path, req_and_resource))
     time.sleep(1)
 
 print(r1.text)
