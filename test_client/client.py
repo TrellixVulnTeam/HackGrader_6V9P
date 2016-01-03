@@ -8,37 +8,6 @@ import json
 from settings import API_KEY, API_SECRET
 
 
-def get_and_update_nonce():
-    used = []
-    r = -1
-
-    with open('nonce.json', 'r') as f:
-        used = json.load(f)
-        if len(used) == 0:
-            r = 1
-        else:
-            r = max(used) + 1
-
-        used.append(r)
-
-    with open('nonce.json', 'w') as f:
-        json.dump(used, f)
-
-    return str(r)
-
-run_local = False
-
-if len(sys.argv) > 1 and sys.argv[1] == 'local':
-    run_local = True
-
-if run_local:
-    API_URL = 'http://localhost:8000'
-else:
-    API_URL = 'http://46.101.117.211'
-
-GRADE_URL = API_URL + '/grade'
-
-
 def get_problem():
     d = {"test_type": "unittest",
          "language": "python"}
@@ -74,19 +43,56 @@ if __name__ == '__main__':
 
     return d
 
-nonce = get_and_update_nonce()
-date = 'asdf'
-body = json.dumps(get_problem())
-msg = body + date + nonce
-digest = hmac.new(bytearray(API_SECRET.encode('utf-8')),
-                  msg=msg.encode('utf-8'),
-                  digestmod=hashlib.sha256).hexdigest()
 
-request_headers = {'Authentication': digest,
-                   'Date': date,
-                   'X-API-Key': API_KEY,
-                   'X-Nonce-Number': nonce}
-r = requests.post(GRADE_URL, json=get_problem(), headers=request_headers)
+def get_and_update_nonce():
+    used = []
+    r = -1
+
+    with open('nonce.json', 'r') as f:
+        used = json.load(f)
+        if len(used) == 0:
+            r = 1
+        else:
+            r = max(used) + 1
+
+        used.append(r)
+
+    with open('nonce.json', 'w') as f:
+        json.dump(used, f)
+
+    return str(r)
+
+
+def get_headers():
+    nonce = get_and_update_nonce()
+    date = time.strftime("%c")
+    body = json.dumps(get_problem())
+    msg = body + date + nonce
+    digest = hmac.new(bytearray(API_SECRET.encode('utf-8')),
+                      msg=msg.encode('utf-8'),
+                      digestmod=hashlib.sha256).hexdigest()
+
+    request_headers = {'Authentication': digest,
+                       'Date': date,
+                       'X-API-Key': API_KEY,
+                       'X-Nonce-Number': nonce}
+
+    return request_headers
+
+run_local = False
+
+if len(sys.argv) > 1 and sys.argv[1] == 'local':
+    run_local = True
+
+if run_local:
+    API_URL = 'http://localhost:8000'
+else:
+    API_URL = 'http://46.101.117.211'
+
+GRADE_URL = API_URL + '/grade'
+
+
+r = requests.post(GRADE_URL, json=get_problem(), headers=get_headers())
 
 print(r.status_code)  # Should return 202 accepted
 
