@@ -2,3 +2,5 @@ db.sqlite3
 *.swp
 __pycache__
 *.pyc
+
+test_client/settings.py

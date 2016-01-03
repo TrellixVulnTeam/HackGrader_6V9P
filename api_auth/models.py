@@ -3,8 +3,8 @@ from .utils import generate_random_key
 
 
 class ApiUser(models.Model):
-    host = models.CharField(max_length=140)
-    key = models.CharField(max_length=64)
+    host = models.CharField(max_length=140, db_index=True)
+    key = models.CharField(max_length=64, db_index=True)
     secret = models.CharField(max_length=64)
 
     def __str__(self):

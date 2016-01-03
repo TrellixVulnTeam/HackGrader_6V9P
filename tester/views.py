@@ -15,7 +15,6 @@ from .utils import get_base_url
 import json
 
 
-@require_api_authentication
 def index(request):
     return render(request, 'index.html', locals())
 
@@ -35,6 +34,7 @@ def supported_test_types(request):
 #   "code": "....",
 #   "test": "...." }
 @csrf_exempt
+@require_api_authentication
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
     language = Language.objects.filter(name=payload['language']).first()

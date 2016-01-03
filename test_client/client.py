@@ -1,10 +1,15 @@
 import sys
 import requests
 import time
+import hmac
+import hashlib
+import json
+
+from settings import API_KEY, API_SECRET
 
 run_local = False
 
-if len(sys.argv) and sys.argv[1] == 'local':
+if len(sys.argv) > 1 and sys.argv[1] == 'local':
     run_local = True
 
 if run_local:
@@ -50,14 +55,32 @@ if __name__ == '__main__':
 
     return d
 
-r = requests.post(GRADE_URL, json=get_problem())
-print(r.status_code)  # Returns 202 accepted
+nonce = '1'
+date = 'asdf'
+body = json.dumps(get_problem())
+msg = body + date + nonce
+digest = hmac.new(bytearray(API_SECRET.encode('utf-8')),
+                  msg=msg.encode('utf-8'),
+                  digestmod=hashlib.sha256).hexdigest()
+
+request_headers = {'Authentication': digest,
+                   'Date': date,
+                   'X-API-Key': API_KEY,
+                   'X-Nonce-Number': nonce}
+r = requests.post(GRADE_URL, json=get_problem(), headers=request_headers)
+
+print(r.status_code)  # Should return 202 accepted
+
+# Returns JSON that looks like this:
+# {"run_id": 2}
+print(r.text)
+
+if r.status_code not in [200, 202]:
+    sys.exit(1)
+
 print(r.headers['Location'])  # The url for polling
 check_url = r.headers['Location']
 
-print(r.text)
-# Returns JSON that looks like this:
-# {"run_id": 2}
 
 run_id = r.json()['run_id']
 print(run_id)
@@ -70,4 +93,3 @@ while r1.status_code == 204:
     time.sleep(1)
 
 print(r1.text)
-# print(r1.json())
