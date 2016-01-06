@@ -5,7 +5,7 @@ from .models import ApiUser, ApiRequest
 @admin.register(ApiUser)
 class ApiUserAdmin(admin.ModelAdmin):
     list_display = ('host', 'key')
-    readonly_fields = ('secret', )
+    readonly_fields = ('secret', 'key')
 
 
 @admin.register(ApiRequest)
