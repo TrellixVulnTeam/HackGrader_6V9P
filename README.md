@@ -1,5 +1,16 @@
 # Simple Code Tester with Django and Celery
 
+## How to run
+
+1. [Install RabbitMQ](https://www.rabbitmq.com/install-debian.html) - `$ sudo apt-get install rabbitmq-server`
+2. Install all pip requiremetns: `$ pip install -r requirements.txt`
+3. Build Docker image:
+
+```
+$ cd docker
+$ docker build -t grader .
+```
+
 ## Celery readings
 
 * https://www.reddit.com/r/django/comments/1wx587/how_do_i_return_the_result_of_a_celery_task_to/
