@@ -13,10 +13,12 @@ $ docker build -t grader .
 
 **After this:**
 
-1. Run Django - migrations, etc.
-2. Run Celery: `$ celery -A HackTester worker -B -E --loglevel=info` where `HackTester` is the main Django app.
+1. Delete database from this repository & run django migrations.
+2. Create superuser for admin.
 3. Create API User from command: `$ python3 manage.py create_api_user education.hackbulgaria.com`
 4. Take API key and API secret and give them to the client.
+5. Run Django.
+6. Run Celery: `$ celery -A HackTester worker -B -E --loglevel=info` where `HackTester` is the main Django app.
 
 ## Celery readings
 
