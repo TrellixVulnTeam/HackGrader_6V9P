@@ -11,6 +11,9 @@ $ cd docker
 $ docker build -t grader .
 ```
 
+4. Run Django
+5. Run Celery: `$ celery -A HackTester worker -B -E --loglevel=info` where `HackTester` is the main Django app.
+
 ## Celery readings
 
 * https://www.reddit.com/r/django/comments/1wx587/how_do_i_return_the_result_of_a_celery_task_to/
