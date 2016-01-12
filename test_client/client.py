@@ -6,7 +6,7 @@ import hashlib
 import json
 from urllib.parse import urlparse
 
-from settings import API_KEY, API_SECRET
+from settings import API_KEY, API_SECRET, APIS
 
 
 def get_problem():
@@ -80,15 +80,12 @@ def get_headers(body, req_and_resource):
 
     return request_headers
 
-run_local = False
+API_URL = APIS['local']
 
-if len(sys.argv) > 1 and sys.argv[1] == 'local':
-    run_local = True
+if len(sys.argv) > 1 and sys.argv[1] in APIS:
+    API_URL = APIS[sys.argv[1]]
 
-if run_local:
-    API_URL = 'http://localhost:8000'
-else:
-    API_URL = 'http://46.101.117.211'
+print("Using API_URL: {}".format(API_URL))
 
 GRADE_PATH = '/grade'
 GRADE_URL = API_URL + GRADE_PATH
