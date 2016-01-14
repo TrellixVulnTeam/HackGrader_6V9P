@@ -8,7 +8,7 @@ set :repo_url, 'git@github.com:HackBulgaria/HackTester.git'
 ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, '/hack/HackTester'
+set :deploy_to, '/hack/grader'
 
 # Default value for :scm is :git
 # set :scm, :git
@@ -38,13 +38,14 @@ set :linked_dirs, fetch(:linked_dirs, []).push('static', 'media')
 namespace :deploy do
   task :pip_install do
     on roles(:all) do |h|
-      execute "/hack/HackTester/shared/virtualenv/bin/pip install -r /hack/HackTester/current/requirements.txt"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/common.txt"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/production.txt"
     end
   end
 
   task :run_migrations do
     on roles(:all) do |h|
-      execute "/hack/HackTester/shared/virtualenv/bin/python3 /hack/HackTester/current/source/manage.py migrate --noinput"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/python3 #{fetch :deploy_to}/current/source/manage.py migrate --noinput"
     end
   end
 
