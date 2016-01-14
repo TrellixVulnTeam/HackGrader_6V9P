@@ -24,7 +24,7 @@ set :deploy_to, '/hack/HackTester'
 
 # Default value for :linked_files is []
 # set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml')
-set :linked_files, fetch(:linked_files, []).push('HackTester/local_settings.py')
+set :linked_files, fetch(:linked_files, []).push('source/HackTester/local_settings.py')
 
 # Default value for linked_dirs is []
 set :linked_dirs, fetch(:linked_dirs, []).push('static', 'media')
@@ -44,13 +44,13 @@ namespace :deploy do
 
   task :run_migrations do
     on roles(:all) do |h|
-      execute "/hack/HackTester/shared/virtualenv/bin/python3 /hack/HackTester/current/manage.py migrate --noinput"
+      execute "/hack/HackTester/shared/virtualenv/bin/python3 /hack/HackTester/current/source/manage.py migrate --noinput"
     end
   end
 
   task :run_collect_static do
     on roles(:all) do |h|
-      execute "/hack/HackTester/shared/virtualenv/bin/python3 /hack/HackTester/current/manage.py collectstatic --noinput"
+      execute "/hack/HackTester/shared/virtualenv/bin/python3 /hack/HackTester/current/source/manage.py collectstatic --noinput"
     end
   end
 
