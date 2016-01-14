@@ -51,7 +51,7 @@ namespace :deploy do
 
   task :run_collect_static do
     on roles(:all) do |h|
-      execute "/hack/HackTester/shared/virtualenv/bin/python3 /hack/HackTester/current/source/manage.py collectstatic --noinput"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/python3 #{fetch :deploy_to}/current/source/manage.py collectstatic --noinput"
     end
   end
 
