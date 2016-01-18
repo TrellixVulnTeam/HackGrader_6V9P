@@ -5,20 +5,26 @@ from settings import INPUT
 from grader_factory import GraderFactory
 
 
+def exit_with_error(desc):
+    error_dict = {
+        'error': desc
+    }
+
+    print(json.dumps(error_dict), file=sys.stderr)
+    sys.exit(1)
+
+
 def main():
     data_file = os.path.join(INPUT, 'data.json')
 
     if not os.path.exists(data_file):
-        # TODO - Log errors somewhere
-        print("Cannot located {}".format(data_file), file=sys.stderr)
-        sys.exit(1)
+        exit_with_error("Cannot find {}".format(data_file))
 
     with open(data_file) as f:
         data = json.load(f)
 
     if 'language' not in data:
-        print('There is no language set in {}'.format(data_file),
-              file=sys.stderr)
+        exit_with_error("Key 'language' not set in data.json")
 
     Grader = GraderFactory.get_grader(data['language'])
     solution = os.path.join(INPUT, data['solution'])
