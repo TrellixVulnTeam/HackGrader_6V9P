@@ -57,7 +57,7 @@ namespace :deploy do
 
   task :restart do
     on roles(:all) do |h|
-      execute "sudo restart HackTester"
+      execute "sudo restart grader"
     end
   end
 
