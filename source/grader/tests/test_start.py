@@ -55,10 +55,35 @@ class TestGraderStart(unittest.TestCase):
         self.assertEqual(expected_output, output)
 
     def test_start_with_not_present_solution_file(self):
-        pass
+        data = {
+            'language': 'python',
+        }
+        save_data_json(data)
+
+        with self.assertRaises(CalledProcessError) as cm:
+            call_start()
+
+        expected_output = {
+            'error': "Key 'solution' not set in data.json"
+        }
+        output = json.loads(cm.exception.output.decode('utf-8'))
+        self.assertEqual(expected_output, output)
 
     def test_start_with_not_present_tests_file(self):
-        pass
+        data = {
+            'language': 'python',
+            'solution': 'solution.py'
+        }
+        save_data_json(data)
+
+        with self.assertRaises(CalledProcessError) as cm:
+            call_start()
+
+        expected_output = {
+            'error': "Key 'tests' not set in data.json"
+        }
+        output = json.loads(cm.exception.output.decode('utf-8'))
+        self.assertEqual(expected_output, output)
 
 if __name__ == '__main__':
     unittest.main()

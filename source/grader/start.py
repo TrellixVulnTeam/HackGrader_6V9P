@@ -23,8 +23,11 @@ def main():
     with open(data_file) as f:
         data = json.load(f)
 
-    if 'language' not in data:
-        exit_with_error("Key 'language' not set in data.json")
+    KEYS = ['language', 'solution', 'tests']
+
+    for key in KEYS:
+        if key not in data:
+            exit_with_error("Key '{}' not set in data.json".format(key))
 
     Grader = GraderFactory.get_grader(data['language'])
     solution = os.path.join(INPUT, data['solution'])
