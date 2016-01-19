@@ -2,23 +2,10 @@ import sys
 import os
 import unittest
 import json
-from subprocess import check_output, STDOUT, CalledProcessError
+from subprocess import CalledProcessError
 import contextlib
 
-sys.path.append('../')
-from settings import INPUT
-
-DATA_FILE = os.path.join(INPUT, 'data.json')
-
-
-def call_start(args=None):
-    return check_output(['python3', 'start.py'], stderr=STDOUT)
-
-
-def save_data_json(data):
-    with open(DATA_FILE, 'w') as f:
-        f.write(json.dumps(data))
-
+from helpers import save_data_json, call_start, DATA_FILE
 
 class TestGraderStart(unittest.TestCase):
     def setUp(self):
