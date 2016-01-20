@@ -22,7 +22,6 @@ def get_fixture(name, extension):
         "tests": ""
     }
 
-    print(os.getcwd())
     result['solution'] = read_file(os.path.join(FIXTURES, solution_file))
     result['tests'] = read_file(os.path.join(FIXTURES, tests_file))
 

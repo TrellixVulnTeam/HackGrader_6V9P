@@ -20,7 +20,6 @@ class TestGraders(unittest.TestCase):
         sample_files = glob.glob("{}/*.sample".format(INPUT))
         created_by_test = set(all_files) - set(sample_files)
 
-        print(created_by_test)
         for path in created_by_test:
             with contextlib.suppress(IsADirectoryError, FileNotFoundError):
                 os.remove(path)
