@@ -6,7 +6,27 @@ import json
 sys.path.append('../')
 from settings import INPUT
 
+# BASE_DIR = os.path.dirname(os.path.abspath("../"))
+# print(BASE_DIR)
+# INPUT = os.path.join(BASE_DIR, 'input/')
 DATA_FILE = os.path.join(INPUT, 'data.json')
+FIXTURES = os.path.join("tests", "fixtures")
+
+
+def get_fixture(name, extension):
+    solution_file = "{}_solution.{}".format(name, extension)
+    tests_file = "{}_tests.{}".format(name, extension)
+
+    result = {
+        "solution": "",
+        "tests": ""
+    }
+
+    print(os.getcwd())
+    result['solution'] = read_file(os.path.join(FIXTURES, solution_file))
+    result['tests'] = read_file(os.path.join(FIXTURES, tests_file))
+
+    return result
 
 
 def call_start():
@@ -23,3 +43,12 @@ def save_file(name, code):
 
     with open(path, 'w') as f:
         f.write(code)
+
+
+def read_file(path):
+    contents = ""
+
+    with open(path, 'r') as f:
+        contents = f.read()
+
+    return contents

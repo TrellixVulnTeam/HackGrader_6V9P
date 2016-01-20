@@ -4,7 +4,8 @@ import contextlib
 import json
 import glob
 
-from helpers import call_start, save_data_json, save_file, DATA_FILE, INPUT
+from helpers import call_start, save_data_json, save_file, get_fixture,\
+        DATA_FILE, INPUT
 
 
 class TestGraders(unittest.TestCase):
@@ -25,31 +26,9 @@ class TestGraders(unittest.TestCase):
                 os.remove(path)
 
     def test_grader_with_python_with_correct_tests_and_solution(self):
-        code = """
-def fact(n):
-    if n in [0, 1]:
-        return 1
-    return n * fact(n - 1)
-"""
-
-        test = """
-import unittest
-from solution import fact
-
-class TestStringMethods(unittest.TestCase):
-    def test_fact_of_zero(self):
-        self.assertEqual(fact(0), 1)
-
-    def test_fact_of_one(self):
-        self.assertEqual(fact(1), 1)
-
-    def test_fact_of_five(self):
-        self.assertEqual(fact(5), 120)
-
-
-if __name__ == '__main__':
-    unittest.main()
-"""
+        fixture = get_fixture('fact', 'py')
+        solution = fixture['solution']
+        tests = fixture['tests']
 
         data = {
             'language': 'python',
@@ -57,12 +36,31 @@ if __name__ == '__main__':
             'tests': 'tests.py'
         }
         save_data_json(data)
-        save_file('solution.py', code)
-        save_file('tests.py', test)
+        save_file('solution.py', solution)
+        save_file('tests.py', tests)
 
         output = json.loads(call_start())
         self.assertEqual(0, output['returncode'])
         self.assertIn('OK', output['output'])
+
+    def test_grader_when_test_is_calling_solution_from_check_output(self):
+        fixture = get_fixture('derivatives', 'py')
+        solution = fixture['solution']
+        tests = fixture['tests']
+
+        data = {
+            'language': 'python',
+            'solution': 'solution.py',
+            'tests': 'tests.py'
+        }
+        save_data_json(data)
+        save_file('solution.py', solution)
+        save_file('tests.py', tests)
+
+        output = json.loads(call_start())
+        self.assertEqual(0, output['returncode'])
+        self.assertIn('OK', output['output'])
+
 
 if __name__ == '__main__':
     unittest.main()
