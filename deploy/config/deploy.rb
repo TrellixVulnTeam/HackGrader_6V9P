@@ -61,9 +61,21 @@ namespace :deploy do
     end
   end
 
-  task :restart do
+  task :stop_grader do
     on roles(:all) do |h|
-      execute "sudo restart grader"
+      execute "sudo stop grader"
+    end
+  end
+
+  task :start_grader do
+    on roles(:all) do |_h|
+      execute "sudo start grader"
+    end
+  end
+
+  task :restart_celery do
+    on roles(:all) do |h|
+      execute "sudo restart celery"
     end
   end
 
@@ -71,5 +83,7 @@ namespace :deploy do
   after :pip_install, :run_migrations
   after :run_migrations, :rebuild_docker
   after :run_migrations, :run_collect_static
-  after :run_migrations, :restart
+  after :run_collect_static, :stop_grader
+  after :stop_grader, :restart_celery
+  after :restart_celery, :start_grader
 end
