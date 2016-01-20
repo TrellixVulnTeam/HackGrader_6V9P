@@ -55,14 +55,21 @@ namespace :deploy do
     end
   end
 
+  task :rebuild_docker do
+    on roles(:all) do |h|
+      execute "docker build -t grader #{fetch :deploy_to}/current/source/docker/."
+    end
+  end
+
   task :restart do
     on roles(:all) do |h|
-      execute "sudo restart HackTester"
+      execute "sudo restart grader"
     end
   end
 
   after :published, :pip_install
   after :pip_install, :run_migrations
+  after :run_migrations, :rebuild_docker
   after :run_migrations, :run_collect_static
   after :run_migrations, :restart
 end
