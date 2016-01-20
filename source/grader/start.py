@@ -33,8 +33,13 @@ def main():
     solution = os.path.join(INPUT, data['solution'])
     tests = os.path.join(INPUT, data['tests'])
 
+    prev_dir = os.getcwd()
+    os.chdir(INPUT)
+
     grader = Grader(solution, tests)
     returncode, output = grader.run_code()
+
+    os.chdir(prev_dir)
 
     result = {
         'returncode': returncode,
