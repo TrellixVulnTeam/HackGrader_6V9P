@@ -60,6 +60,23 @@ class TestGraders(unittest.TestCase):
         self.assertEqual(0, output['returncode'])
         self.assertIn('OK', output['output'])
 
+    def test_grader_with_while_true_pass_loop(self):
+        fixture = get_fixture('while_true', 'py')
+        solution = fixture['solution']
+        tests = fixture['tests']
+
+        data = {
+            'language': 'python',
+            'solution': 'solution.py',
+            'tests': 'tests.py'
+        }
+        save_data_json(data)
+        save_file('solution.py', solution)
+        save_file('tests.py', tests)
+
+        output = json.loads(call_start())
+        self.assertEqual(1, output['returncode'])
+        self.assertEqual('Time limit exceeded. Maybe infinite loop?', output['output'])
 
 if __name__ == '__main__':
     unittest.main()
