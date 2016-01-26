@@ -27,7 +27,7 @@ DOCKER_COMMAND = """docker run -d \
         --net=none \
         -v {grader}:/grader -v {sandbox}:/grader/input \
         {docker_image} \
-        python3 grader/start.py"""
+        /bin/bash --login -c 'python3 grader/start.py'"""
 DOCKER_COMMAND = DOCKER_COMMAND \
         .format(**{"grader": os.path.join(BASE_DIR, "grader"),
                    "sandbox": os.path.join(BASE_DIR, SANDBOX),
