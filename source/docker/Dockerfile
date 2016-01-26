@@ -9,7 +9,9 @@ RUN useradd -m -p grader grader && chsh -s /bin/bash grader | adduser grader sud
 
 USER grader
 
-RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3
+# keys.gnupg.net
+RUN gpg --keyserver hkp://5.135.158.148 --recv-keys D39DC0E3
+
 RUN /bin/bash -l -c "curl -L get.rvm.io | bash -s stable --ruby"
 RUN /bin/bash -l -c "rvm install 2.2"
 RUN /bin/bash -l -c "echo 'gem: --no-ri --no-rdoc' > ~/.gemrc"
