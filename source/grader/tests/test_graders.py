@@ -56,5 +56,11 @@ class TestGraders(unittest.TestCase):
         output = json.loads(call_start())
         self.assertEqual(1, output['returncode'])
 
+    def test_grader_with_cyrillic_in_input_ifle(self):
+        prepare('cyrillic', 'py', 'python')
+
+        output = json.loads(call_start())
+        self.assertEqual(1, output['returncode'])
+
 if __name__ == '__main__':
     unittest.main()
