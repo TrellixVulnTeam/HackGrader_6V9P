@@ -1,7 +1,12 @@
 import os
 from settings import TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR
 
-from subprocess import CalledProcessError, check_output, STDOUT, TimeoutExpired
+import shlex
+from subprocess import (CalledProcessError, TimeoutExpired,
+                        Popen, check_output,
+                        STDOUT, PIPE)
+
+from .proc import run_cmd, killall
 
 
 class BaseGrader:
@@ -19,13 +24,19 @@ class BaseGrader:
         args = self.__class__.ARGS.format(**keys)
 
         try:
-            output = check_output([command, args],
-                                  stderr=STDOUT,
-                                  shell=False,
-                                  timeout=TIMELIMIT).decode('utf-8')
-            returncode = 0
+            command = command + " " + args
+            returncode, output = run_cmd(command, TIMELIMIT)
+
+            if returncode == 137:
+                output = TIMELIMIT_EXCEEDED_ERROR
+                returncode = 1
+            # output = check_output([command, args],
+            #                       stderr=STDOUT,
+            #                       shell=False,
+            #                       timeout=TIMELIMIT).decode('utf-8')
+            # returncode = 0
         except CalledProcessError as e:
-            output = e.output.decode('utf-8')
+            output = e.output
             returncode = e.returncode
         except TimeoutExpired as e:
             output = TIMELIMIT_EXCEEDED_ERROR
@@ -36,4 +47,4 @@ class BaseGrader:
         return (returncode, output)
 
     def clean_up(self):
-        pass
+        killall(self.__class__.COMMAND)
