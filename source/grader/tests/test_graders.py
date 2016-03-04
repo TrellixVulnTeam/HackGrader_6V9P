@@ -4,8 +4,7 @@ import contextlib
 import json
 import glob
 
-from helpers import call_start, save_data_json, save_file, get_fixture,\
-        DATA_FILE, INPUT
+from helpers import (call_start, prepare, DATA_FILE, INPUT)
 
 
 class TestGraders(unittest.TestCase):
@@ -25,58 +24,31 @@ class TestGraders(unittest.TestCase):
                 os.remove(path)
 
     def test_grader_with_python_with_correct_tests_and_solution(self):
-        fixture = get_fixture('fact', 'py')
-        solution = fixture['solution']
-        tests = fixture['tests']
-
-        data = {
-            'language': 'python',
-            'solution': 'solution.py',
-            'tests': 'tests.py'
-        }
-        save_data_json(data)
-        save_file('solution.py', solution)
-        save_file('tests.py', tests)
+        prepare('fact', 'py', 'python')
 
         output = json.loads(call_start())
         self.assertEqual(0, output['returncode'])
         self.assertIn('OK', output['output'])
 
     def test_grader_when_test_is_calling_solution_from_check_output(self):
-        fixture = get_fixture('derivatives', 'py')
-        solution = fixture['solution']
-        tests = fixture['tests']
-
-        data = {
-            'language': 'python',
-            'solution': 'solution.py',
-            'tests': 'tests.py'
-        }
-        save_data_json(data)
-        save_file('solution.py', solution)
-        save_file('tests.py', tests)
+        prepare('derivatives', 'py', 'python')
 
         output = json.loads(call_start())
         self.assertEqual(0, output['returncode'])
         self.assertIn('OK', output['output'])
 
     def test_grader_with_while_true_pass_loop(self):
-        fixture = get_fixture('while_true', 'py')
-        solution = fixture['solution']
-        tests = fixture['tests']
-
-        data = {
-            'language': 'python',
-            'solution': 'solution.py',
-            'tests': 'tests.py'
-        }
-        save_data_json(data)
-        save_file('solution.py', solution)
-        save_file('tests.py', tests)
+        prepare('while_true', 'py', 'python')
 
         output = json.loads(call_start())
         self.assertEqual(1, output['returncode'])
         self.assertEqual('Time limit exceeded. Maybe infinite loop?', output['output'])
+
+    def test_grader_with_exec(self):
+        prepare('ruby_exec', 'rb', 'ruby')
+
+        output = json.loads(call_start())
+        self.assertEqual(1, output['returncode'])
 
 if __name__ == '__main__':
     unittest.main()

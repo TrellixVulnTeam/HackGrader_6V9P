@@ -51,3 +51,23 @@ def read_file(path):
         contents = f.read()
 
     return contents
+
+
+def prepare(name, extension, language):
+    fixture = get_fixture(name, extension)
+
+    solution_file = 'solution.{}'.format(extension)
+    solution = fixture['solution']
+
+    tests_file = 'tests.{}'.format(extension)
+    tests = fixture['tests']
+
+    data = {
+        'language': language,
+        'solution': solution_file,
+        'tests': tests_file
+    }
+
+    save_data_json(data)
+    save_file(solution_file, solution)
+    save_file(tests_file, tests)
