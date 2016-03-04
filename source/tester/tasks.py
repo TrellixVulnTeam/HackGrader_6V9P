@@ -46,8 +46,8 @@ DOCKER_CLEAR_COMMAND = "docker rm {container_id}"
 def save_input(where, contents):
     path = os.path.join(BASE_DIR, SANDBOX, where)
 
-    with open(path, 'w') as f:
-        f.write(contents.encode('utf-8'))
+    with open(path, mode='w', encoding='utf-8') as f:
+        f.write(contents)
 
 
 def get_output(logs):
