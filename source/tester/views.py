@@ -16,7 +16,34 @@ import json
 
 
 def index(request):
-    return render(request, 'index.html', locals())
+    data = {
+        'pending': 0,
+        'running': 0,
+        'graded': {
+            'total': 0
+        }
+    }
+
+    runs = TestRun.objects.all()
+
+    for run in runs:
+        if run.status in ['pending', 'running']:
+            data[run.status] += 1
+
+        if run.status == 'done':
+            data['graded']['total'] += 1
+
+            lang = run.language.name
+
+            if lang not in data['graded']:
+                data['graded'][lang] = 0
+
+            data['graded'][lang] += 1
+
+    r = HttpResponse(json.dumps(data, indent=4),
+                     content_type='application/json')
+
+    return r
 
 
 def supported_languages(request):
