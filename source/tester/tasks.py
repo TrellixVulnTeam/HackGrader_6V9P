@@ -47,7 +47,7 @@ def save_input(where, contents):
     path = os.path.join(BASE_DIR, SANDBOX, where)
 
     with open(path, 'w') as f:
-        f.write(contents)
+        f.write(contents.encode('utf-8'))
 
 
 def get_output(logs):
