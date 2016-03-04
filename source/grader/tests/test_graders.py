@@ -50,5 +50,11 @@ class TestGraders(unittest.TestCase):
         output = json.loads(call_start())
         self.assertEqual(1, output['returncode'])
 
+    def test_grader_with_exec_loop(self):
+        prepare('exec_loop', 'rb', 'ruby')
+
+        output = json.loads(call_start())
+        self.assertEqual(1, output['returncode'])
+
 if __name__ == '__main__':
     unittest.main()
