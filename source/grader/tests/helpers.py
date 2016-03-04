@@ -1,6 +1,6 @@
 import sys
 import os
-from subprocess import check_output, STDOUT
+from subprocess import check_output, STDOUT, CalledProcessError
 import json
 
 sys.path.append('../')
@@ -29,7 +29,13 @@ def get_fixture(name, extension):
 
 
 def call_start():
-    return check_output(['python3', 'start.py'], stderr=STDOUT).decode('utf-8')
+    try:
+        output = check_output(['python3', 'start.py'], stderr=STDOUT).decode('utf-8')
+        return output
+    except CalledProcessError as e:
+        print(e)
+        print(e.output)
+        raise
 
 
 def save_data_json(data):
