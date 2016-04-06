@@ -30,13 +30,14 @@ def main():
             exit_with_error("Key '{}' not set in data.json".format(key))
 
     Grader = GraderFactory.get_grader(data['language'])
-    solution = os.path.join(INPUT, data['solution'])
-    tests = os.path.join(INPUT, data['tests'])
+
+    data['solution'] = os.path.join(INPUT, data['solution'])
+    data['tests'] = os.path.join(INPUT, data['tests'])
 
     prev_dir = os.getcwd()
     os.chdir(INPUT)
 
-    grader = Grader(solution, tests)
+    grader = Grader(data)
     returncode, output = grader.run()
 
     os.chdir(prev_dir)

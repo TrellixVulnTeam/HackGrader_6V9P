@@ -22,9 +22,16 @@ class RunException(Exception):
 
 
 class BaseGrader:
-    def __init__(self, solution, tests):
-        self.solution = solution
-        self.tests = tests
+    def __init__(self, data):
+        self.data = data
+        self.solution = data['solution']
+        self.tests = data['tests']
+
+    def prepare(self):
+        """
+        Hook for setting everything up before next operations
+        Use self.data to access everything passed
+        """
 
     def lint(self):
         """
