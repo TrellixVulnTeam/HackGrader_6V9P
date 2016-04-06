@@ -41,7 +41,7 @@ class TestGraders(unittest.TestCase):
         prepare('while_true', 'py', 'python')
 
         output = json.loads(call_start())
-        self.assertEqual(1, output['returncode'])
+        self.assertEqual(5, output['returncode'])
         self.assertEqual('Time limit exceeded. Maybe infinite loop?', output['output'])
 
     def test_grader_with_exec(self):
@@ -54,7 +54,7 @@ class TestGraders(unittest.TestCase):
         prepare('exec_loop', 'rb', 'ruby')
 
         output = json.loads(call_start())
-        self.assertEqual(1, output['returncode'])
+        self.assertEqual(5, output['returncode'])
 
     def test_grader_with_cyrillic_in_input_ifle(self):
         prepare('cyrillic', 'py', 'python')

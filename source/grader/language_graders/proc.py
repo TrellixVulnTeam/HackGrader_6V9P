@@ -21,7 +21,7 @@ def run_cmd(cmd, timeout):
         returncode = proc.returncode
     except TimeoutExpired:
         proc.kill()
-        returncode = 137
+        raise
     finally:
         with open(output.name, 'r') as f:
             output = f.read()

@@ -9,42 +9,87 @@ from subprocess import (CalledProcessError, TimeoutExpired,
 from .proc import run_cmd, killall
 
 
+class LintException(Exception):
+    pass
+
+
+class CompileException(Exception):
+    pass
+
+
+class RunException(Exception):
+    pass
+
+
 class BaseGrader:
     def __init__(self, solution, tests):
         self.solution = solution
         self.tests = tests
 
-    def run_code(self):
-        keys = {
-            "tests": self.tests,
-            "solution": self.solution
-        }
+    def lint(self):
+        """
+        Hook for running a linter.
+        If linter fails, raise LintException with the error as message
+        """
 
-        command = self.__class__.COMMAND.format(**keys)
-        args = self.__class__.ARGS.format(**keys)
+    def compile(self):
+        """
+        Hook for compiling the code
+        If compiling fails, raise CompileException with the error as message
+        """
 
+    def execute(self):
+        """
+        Hook for running the code / compiled code
+        Should return the output as result.
+        Raise RunException if something fails
+        """
+
+    def run(self):
         try:
-            command = command + " " + args
-            returncode, output = run_cmd(command, TIMELIMIT)
-
-            if returncode == 137:
-                output = TIMELIMIT_EXCEEDED_ERROR
-                returncode = 1
-            # output = check_output([command, args],
-            #                       stderr=STDOUT,
-            #                       shell=False,
-            #                       timeout=TIMELIMIT).decode('utf-8')
-            # returncode = 0
-        except CalledProcessError as e:
-            output = e.output
-            returncode = e.returncode
+            self.lint()
+            self.compile()
+            returncode, output = self.execute()
+        except LintException as e:
+            returncode = 2
+            output = str(e)
+        except CompileException as e:
+            returncode = 3
+            output = str(e)
+        except RunException as e:
+            returncode = 4
+            output = str(e)
         except TimeoutExpired as e:
+            returncode = 5
             output = TIMELIMIT_EXCEEDED_ERROR
-            returncode = 1
         finally:
             self.clean_up()
-
-        return (returncode, output)
+            return (returncode, output)
 
     def clean_up(self):
         killall(self.__class__.COMMAND)
+
+
+class DynamicLanguageExecuteMixin:
+    """
+    Executes dynamic languages like python & ruby in the following form
+    $ python tests.py
+    $ ruby tests.rb
+    $ node tests.js
+    """
+
+    def execute(self):
+        args = {
+            "command": self.__class__.COMMAND,
+            "tests": self.tests
+        }
+
+        command = "{command} {tests}".format(**args)
+
+        try:
+            returncode, output = run_cmd(command, TIMELIMIT)
+        except CalledProcessError as e:
+            output = e.output
+            returncode = e.returncode
+
+        return (returncode, output)

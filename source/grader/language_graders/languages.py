@@ -1,13 +1,21 @@
-from .base import BaseGrader
+import os
+
+from .base import BaseGrader, DynamicLanguageExecuteMixin
+from .proc import run_cmd
+from settings import TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR
+
+from subprocess import (CalledProcessError, TimeoutExpired,
+                        Popen, check_output,
+                        STDOUT, PIPE)
+
+from .proc import run_cmd, killall
 
 
-class PythonGrader(BaseGrader):
-    LANGUAGE_NAME = 'python'
+class PythonGrader(DynamicLanguageExecuteMixin, BaseGrader):
     COMMAND = 'python3'
-    ARGS = '{tests}'
+    LANGUAGE_NAME = 'python'
 
 
-class RubyGrader(BaseGrader):
-    LANGUAGE_NAME = 'ruby'
+class RubyGrader(DynamicLanguageExecuteMixin, BaseGrader):
     COMMAND = 'ruby'
-    ARGS = '{tests}'
+    LANGUAGE_NAME = 'ruby'

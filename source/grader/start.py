@@ -37,7 +37,7 @@ def main():
     os.chdir(INPUT)
 
     grader = Grader(solution, tests)
-    returncode, output = grader.run_code()
+    returncode, output = grader.run()
 
     os.chdir(prev_dir)
 
