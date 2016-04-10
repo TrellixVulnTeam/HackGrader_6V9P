@@ -123,8 +123,8 @@ def grade_pending_run(run_id):
     solution = 'solution{}'.format(extension)
     tests = 'tests{}'.format(extension)
 
-    save_input(solution, pending_task.code)
-    save_input(tests, pending_task.test)
+    save_input(solution, pending_task.solution_code)
+    save_input(tests, pending_task.test_code)
 
     data = {
         'language': language,
