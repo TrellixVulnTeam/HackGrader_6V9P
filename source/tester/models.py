@@ -1,6 +1,7 @@
 from django.db import models
 from model_utils.fields import StatusField
 from model_utils import Choices
+from jsonfield import JSONField
 
 
 class Language(models.Model):
@@ -25,6 +26,7 @@ class TestRun(models.Model):
     test_type = models.ForeignKey(TestType)
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
     status = StatusField(db_index=True)
+    extra_options = JSONField(null=True, blank=True)
 
     def is_plain(self):
         return hasattr(self, "testwithplaintext")

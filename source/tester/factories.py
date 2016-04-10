@@ -10,6 +10,8 @@ class TestRunFactory:
     def create_run(data, files=None):
         language = data['language']
         test_type = data['test_type']
+        extra_options = data.get('extra_options', None)
+
         run = None
 
         if data['file_type'] == 'plain':
@@ -17,7 +19,8 @@ class TestRunFactory:
                                     language=language,
                                     test_type=test_type,
                                     solution_code=data['code'],
-                                    test_code=data['test'])
+                                    test_code=data['test'],
+                                    extra_options=extra_options)
 
         if data['file_type'] == 'binary':
             solution = base64.b64decode(data['code'])
@@ -32,6 +35,7 @@ class TestRunFactory:
                                      language=language,
                                      test_type=test_type,
                                      solution=solution,
-                                     tests=tests)
+                                     tests=tests,
+                                     extra_options=extra_options)
 
         return run
