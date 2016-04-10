@@ -3,7 +3,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 
 from tester.models import TestRun, TestWithPlainText, RunResult, Language
-from HackTester.settings import BASE_DIR
+from HackTester.settings import BASE_DIR, MEDIA_ROOT
 from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
         DOCKER_MEMORY_LIMIT, DOCKER_USER, DOCKER_IMAGE, \
         DOCKER_USER, DOCKER_TIME_LIMIT
@@ -45,6 +45,11 @@ DOCKER_CLEAR_COMMAND = "docker rm {container_id}"
 
 
 def move_file(where, what):
+    media = os.path.dirname(os.path.abspath(MEDIA_ROOT))
+
+    if what.startswith('/'):
+        what = what[1:]
+
     src = os.path.join(BASE_DIR, what)
     dest = os.path.join(BASE_DIR, SANDBOX, where)
 
