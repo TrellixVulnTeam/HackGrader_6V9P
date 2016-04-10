@@ -154,7 +154,7 @@ def grade_pending_run(run_id):
     }
 
     if pending_task.extra_options is not None:
-        for key, value in pending_task.items():
+        for key, value in pending_task.extra_options.items():
             data[key] = value
 
     save_input('data.json', json.dumps(data))
