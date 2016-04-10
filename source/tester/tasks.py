@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
-from tester.models import TestRun, RunResult, Language
+from tester.models import TestRun, TestWithPlainText, RunResult, Language
 from HackTester.settings import BASE_DIR
 from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
         DOCKER_MEMORY_LIMIT, DOCKER_USER, DOCKER_IMAGE, \
@@ -105,11 +105,11 @@ def get_result_status(returncode):
 @shared_task
 def grade_pending_run(run_id):
     if run_id is None:
-        pending_task = TestRun.objects.filter(status='pending') \
-                                      .order_by('-created_at') \
-                                      .first()
+        pending_task = TestWithPlainText.objects.filter(status='pending') \
+                                                .order_by('-created_at') \
+                                                .first()
     else:
-        pending_task = TestRun.objects.filter(pk=run_id).first()
+        pending_task = TestWithPlainText.objects.filter(pk=run_id).first()
 
     if pending_task is None:
         return "No tasks to run right now."

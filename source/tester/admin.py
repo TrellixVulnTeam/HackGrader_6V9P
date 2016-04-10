@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Language, TestRun, RunResult, TestType
+from .models import Language, TestRun, RunResult, TestType, TestWithPlainText
 from djcelery.models import TaskMeta
 
 
@@ -21,6 +21,11 @@ class TestTypeAdmin(admin.ModelAdmin):
 
 @admin.register(TestRun)
 class TestRunAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(TestWithPlainText)
+class TestWithPlainTextAdmin(admin.ModelAdmin):
     pass
 
 

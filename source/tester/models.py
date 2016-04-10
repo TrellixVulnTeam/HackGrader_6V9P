@@ -21,8 +21,6 @@ class TestType(models.Model):
 class TestRun(models.Model):
     STATUS = Choices('pending', 'running', 'done', 'failed')
 
-    code = models.TextField()
-    test = models.TextField()
     language = models.ForeignKey(Language)
     test_type = models.ForeignKey(TestType)
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
@@ -32,6 +30,15 @@ class TestRun(models.Model):
         return "[{}:{}] for {} at {}]"\
                 .format(self.id, self.status,
                         self.language, self.created_at)
+
+
+class TestWithPlainText(TestRun):
+    solution_code = models.TextField()
+    test_code = models.TextField()
+
+
+class TestWithBinaryFile(TestRun):
+    pass
 
 
 class RunResult(models.Model):

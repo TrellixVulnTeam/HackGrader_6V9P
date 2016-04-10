@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFou
         HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import TestRun, RunResult, Language, TestType
+from .models import TestRun, TestWithPlainText, RunResult, Language, TestType
 from .tasks import grade_pending_run
 from api_auth.decorators import require_api_authentication
 
@@ -78,11 +78,11 @@ def grade(request):
         msg = msg.format(payload['test_type'])
         return HttpResponseBadRequest(msg)
 
-    run = TestRun(status='pending',
-                  language=language,
-                  test_type=test_type,
-                  code=payload['code'],
-                  test=payload['test'])
+    run = TestWithPlainText(status='pending',
+                            language=language,
+                            test_type=test_type,
+                            solution_code=payload['code'],
+                            test_code=payload['test'])
 
     run.save()
 
