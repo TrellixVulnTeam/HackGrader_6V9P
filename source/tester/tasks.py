@@ -105,9 +105,9 @@ def get_result_status(returncode):
 @shared_task
 def grade_pending_run(run_id):
     if run_id is None:
-        pending_task = TestRun.objects.filter(status='pending') \
-                                                .order_by('-created_at') \
-                                                .first()
+        pending_task = TestRun.objects.filter(status='pending')\
+                                      .order_by('-created_at')\
+                                      .first()
     else:
         pending_task = TestRun.objects.filter(pk=run_id).first()
 
@@ -126,6 +126,9 @@ def grade_pending_run(run_id):
     if pending_task.is_plain():
         save_input(solution, pending_task.testwithplaintext.solution_code)
         save_input(tests, pending_task.testwithplaintext.test_code)
+
+    if pending_task.is_binary():
+        pass
 
     data = {
         'language': language,
