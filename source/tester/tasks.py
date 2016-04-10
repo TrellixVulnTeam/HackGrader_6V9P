@@ -50,7 +50,7 @@ def move_file(where, what):
     if what.startswith('/'):
         what = what[1:]
 
-    src = os.path.join(BASE_DIR, what)
+    src = os.path.join(media, what)
     dest = os.path.join(BASE_DIR, SANDBOX, where)
 
     logger.info(src)
