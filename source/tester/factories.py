@@ -1,3 +1,7 @@
+import uuid
+import base64
+from django.core.files.base import ContentFile
+
 from .models import TestRun, TestWithPlainText, TestWithBinaryFile
 
 
@@ -16,10 +20,18 @@ class TestRunFactory:
                                     test_code=data['test'])
 
         if data['file_type'] == 'binary':
+            solution = base64.b64decode(data['code'])
+            solution = ContentFile(content=solution,
+                                   name=str(uuid.uuid4()))
+
+            tests = base64.b64decode(data['test'])
+            tests = ContentFile(content=tests,
+                                name=str(uuid.uuid4()))
+
             run = TestWithBinaryFile(status='pending',
                                      language=language,
                                      test_type=test_type,
-                                     solution=files['code'],
-                                     tests=files['test'])
+                                     solution=solution,
+                                     tests=tests)
 
         return run

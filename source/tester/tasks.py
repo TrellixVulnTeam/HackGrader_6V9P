@@ -128,7 +128,7 @@ def grade_pending_run(run_id):
         save_input(tests, pending_task.testwithplaintext.test_code)
 
     if pending_task.is_binary():
-        pass
+        return "No binary support for now"
 
     data = {
         'language': language,
