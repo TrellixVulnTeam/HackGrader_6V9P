@@ -80,8 +80,12 @@ def grade(request):
 
     payload['language'] = language
     payload['test_type'] = test_type
+    files = request.FILES
 
-    run = TestRunFactory.create_run(data=payload, files=request.FILES)
+    if bool(request.FILES) is False:
+        files = None
+
+    run = TestRunFactory.create_run(data=payload, files=files)
     run.save()
 
     grade_pending_run.delay(run.id)
