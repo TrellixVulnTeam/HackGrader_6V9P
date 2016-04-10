@@ -62,5 +62,11 @@ class TestGraders(unittest.TestCase):
         output = json.loads(call_start())
         self.assertEqual(1, output['returncode'])
 
+    def test_java_junit_jar_grader(self):
+        prepare('add', 'jar', 'java', copy=True, qualified_class_name='com.hackbulgaria.grader.Tests')
+
+        output = json.loads(call_start())
+        self.assertEqual(0, output['returncode'])
+
 if __name__ == '__main__':
     unittest.main()

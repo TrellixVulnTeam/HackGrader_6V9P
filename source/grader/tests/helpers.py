@@ -1,16 +1,29 @@
+import shutil
 import sys
 import os
 from subprocess import check_output, STDOUT, CalledProcessError
 import json
 
+
 sys.path.append('../')
 from settings import INPUT
 
-# BASE_DIR = os.path.dirname(os.path.abspath("../"))
-# print(BASE_DIR)
-# INPUT = os.path.join(BASE_DIR, 'input/')
 DATA_FILE = os.path.join(INPUT, 'data.json')
 FIXTURES = os.path.join("tests", "fixtures")
+
+
+def copy_fixture(name, extension):
+    solution_file = "{}_solution.{}".format(name, extension)
+    tests_file = "{}_tests.{}".format(name, extension)
+
+    solution_src = os.path.join(FIXTURES, solution_file)
+    solution_dest = os.path.join(INPUT, 'solution.{}'.format(extension))
+
+    test_src = os.path.join(FIXTURES, tests_file)
+    test_dest = os.path.join(INPUT, 'tests.{}'.format(extension))
+
+    shutil.copyfile(solution_src, solution_dest)
+    shutil.copyfile(test_src, test_dest)
 
 
 def get_fixture(name, extension):
@@ -33,8 +46,6 @@ def call_start():
         output = check_output(['python3', 'start.py'], stderr=STDOUT).decode('utf-8')
         return output
     except CalledProcessError as e:
-        print(e)
-        print(e.output)
         raise
 
 
@@ -59,14 +70,9 @@ def read_file(path):
     return contents
 
 
-def prepare(name, extension, language):
-    fixture = get_fixture(name, extension)
-
+def prepare(name, extension, language, copy=False, **kwargs):
     solution_file = 'solution.{}'.format(extension)
-    solution = fixture['solution']
-
     tests_file = 'tests.{}'.format(extension)
-    tests = fixture['tests']
 
     data = {
         'language': language,
@@ -74,6 +80,17 @@ def prepare(name, extension, language):
         'tests': tests_file
     }
 
+    for key, value in kwargs.items():
+        data[key] = value
+
     save_data_json(data)
-    save_file(solution_file, solution)
-    save_file(tests_file, tests)
+
+    if copy is not False:
+        copy_fixture(name, extension)
+    else:
+        fixture = get_fixture(name, extension)
+        solution = fixture['solution']
+        tests = fixture['tests']
+
+        save_file(solution_file, solution)
+        save_file(tests_file, tests)

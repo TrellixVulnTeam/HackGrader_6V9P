@@ -1,0 +1,6 @@
+{
+  "language": "java",
+  "solution": "solution.jar",
+  "tests": "tests.jar",
+  "qualified_class_name": "com.hackbulgaria.grader.Tests"
+}

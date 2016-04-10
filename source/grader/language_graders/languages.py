@@ -22,7 +22,7 @@ class RubyGrader(DynamicLanguageExecuteMixin, BaseGrader):
     LANGUAGE_NAME = 'ruby'
 
 
-class JavaJarGrader(BaseGrader):
+class JavaJarJUnitGrader(BaseGrader):
     LANGUAGE_NAME = 'java'
     COMMAND = 'java'
 
