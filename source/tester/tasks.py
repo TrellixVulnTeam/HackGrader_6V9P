@@ -164,6 +164,7 @@ def grade_pending_run(run_id):
         wait_while_docker_finishes(container_id)
 
         logs = get_docker_logs(container_id)
+        logger.info(logs)
         returncode, output = get_output(logs)
 
         status = 'done'
