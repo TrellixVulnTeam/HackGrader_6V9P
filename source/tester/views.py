@@ -78,6 +78,9 @@ def grade(request):
         msg = msg.format(payload['test_type'])
         return HttpResponseBadRequest(msg)
 
+    payload['language'] = language
+    payload['test_type'] = test_type
+
     run = TestRunFactory.create_run(data=payload)
     run.save()
 
