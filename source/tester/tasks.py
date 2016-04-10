@@ -124,8 +124,8 @@ def grade_pending_run(run_id):
     tests = 'tests{}'.format(extension)
 
     if pending_task.is_plain():
-        save_input(solution, pending_task.solution_code)
-        save_input(tests, pending_task.test_code)
+        save_input(solution, pending_task.testwithplaintext.solution_code)
+        save_input(tests, pending_task.testwithplaintext.test_code)
 
     data = {
         'language': language,
