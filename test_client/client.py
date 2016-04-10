@@ -7,40 +7,41 @@ import json
 from urllib.parse import urlparse
 
 from settings import API_KEY, API_SECRET, APIS, DEFAULT_API
+from helpers import read_file, read_binary_file
+
+API_URL = APIS[DEFAULT_API]
+
+if len(sys.argv) > 1 and sys.argv[1] in APIS:
+    API_URL = APIS[sys.argv[1]]
+
+print("Using API_URL: {}".format(API_URL))
+
+GRADE_PATH = '/grade'
+GRADE_URL = API_URL + GRADE_PATH
 
 
-def get_problem():
+def get_plain_problem():
     d = {"test_type": "unittest",
-         "language": "python"}
+         "language": "python",
+         "file_type": 'plain',
+         "code": read_file('fixtures/plain/solution.py'),
+         "test": read_file('fixtures/plain/tests.py'),
+         "extra_options": {
+             "foo": "bar"
+          }}
 
-    code = """
-def fact(n):
-    if n in [0, 1]:
-        return 1
-    return n * fact(n - 1)
-"""
-
-    test = """
-import unittest
-from solution import fact
-
-class TestStringMethods(unittest.TestCase):
-    def test_fact_of_zero(self):
-        self.assertEqual(fact(0), 1)
-
-    def test_fact_of_one(self):
-        self.assertEqual(fact(1), 1)
-
-    def test_fact_of_five(self):
-        self.assertEqual(fact(5), 120)
+    return d
 
 
-if __name__ == '__main__':
-    unittest.main()
-"""
-
-    d['code'] = code
-    d['test'] = test
+def get_binary_problem():
+    d = {'test_type': 'unittest',
+         'language': 'java',
+         'file_type': 'binary',
+         'code': read_binary_file('fixtures/binary/solution.jar'),
+         'test': read_binary_file('fixtures/binary/tests.jar'),
+         'extra_options': {
+             'qualified_class_name': 'com.hackbulgaria.grader.Tests',
+          }}
 
     return d
 
@@ -80,44 +81,44 @@ def get_headers(body, req_and_resource):
 
     return request_headers
 
-API_URL = APIS[DEFAULT_API]
 
-if len(sys.argv) > 1 and sys.argv[1] in APIS:
-    API_URL = APIS[sys.argv[1]]
+def make_request(problem):
+    req_and_resource = "POST {}".format(GRADE_PATH)
 
-print("Using API_URL: {}".format(API_URL))
+    headers = get_headers(json.dumps(problem), req_and_resource)
+    r = requests.post(GRADE_URL, json=problem, headers=headers)
 
-GRADE_PATH = '/grade'
-GRADE_URL = API_URL + GRADE_PATH
+    print(r.status_code)  # Should return 202 accepted
 
-req_and_resource = "POST {}".format(GRADE_PATH)
-headers = get_headers(json.dumps(get_problem()), req_and_resource)
-r = requests.post(GRADE_URL, json=get_problem(), headers=headers)
+    # Returns JSON that looks like this:
+    # {"run_id": 2}
+    print(r.text)
 
-print(r.status_code)  # Should return 202 accepted
+    if r.status_code not in [200, 202]:
+        sys.exit(1)
 
-# Returns JSON that looks like this:
-# {"run_id": 2}
-print(r.text)
+    print(r.headers['Location'])  # The url for polling
+    check_url = r.headers['Location']
 
-if r.status_code not in [200, 202]:
-    sys.exit(1)
+    run_id = r.json()['run_id']
+    print(run_id)
 
-print(r.headers['Location'])  # The url for polling
-check_url = r.headers['Location']
-
-
-run_id = r.json()['run_id']
-print(run_id)
-
-path = urlparse(check_url).path
-req_and_resource = "GET {}".format(path)
-r1 = requests.get(check_url, headers=get_headers(path, req_and_resource))
-
-while r1.status_code == 204:
-    print(r1.status_code)
-    print(r1.headers['X-Run-Status'])
+    path = urlparse(check_url).path
+    req_and_resource = "GET {}".format(path)
     r1 = requests.get(check_url, headers=get_headers(path, req_and_resource))
-    time.sleep(1)
 
-print(r1.text)
+    while r1.status_code == 204:
+        print(r1.status_code)
+        print(r1.headers['X-Run-Status'])
+        r1 = requests.get(check_url, headers=get_headers(path, req_and_resource))
+        time.sleep(1)
+
+    print(r1.text)
+
+
+def main():
+    make_request(get_plain_problem())
+    make_request(get_binary_problem())
+
+if __name__ == '__main__':
+    main()
