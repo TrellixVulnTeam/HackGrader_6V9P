@@ -105,11 +105,11 @@ def get_result_status(returncode):
 @shared_task
 def grade_pending_run(run_id):
     if run_id is None:
-        pending_task = TestWithPlainText.objects.filter(status='pending') \
+        pending_task = TestRun.objects.filter(status='pending') \
                                                 .order_by('-created_at') \
                                                 .first()
     else:
-        pending_task = TestWithPlainText.objects.filter(pk=run_id).first()
+        pending_task = TestRun.objects.filter(pk=run_id).first()
 
     if pending_task is None:
         return "No tasks to run right now."
@@ -123,8 +123,9 @@ def grade_pending_run(run_id):
     solution = 'solution{}'.format(extension)
     tests = 'tests{}'.format(extension)
 
-    save_input(solution, pending_task.solution_code)
-    save_input(tests, pending_task.test_code)
+    if pending_task.is_plain():
+        save_input(solution, pending_task.solution_code)
+        save_input(tests, pending_task.test_code)
 
     data = {
         'language': language,

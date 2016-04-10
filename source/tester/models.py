@@ -26,6 +26,12 @@ class TestRun(models.Model):
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
     status = StatusField(db_index=True)
 
+    def is_plain(self):
+        return hasattr(self, "testwithplaintext")
+
+    def is_binary(self):
+        return hasattr(self, "testwithbinaryfile")
+
     def __str__(self):
         return "[{}:{}] for {} at {}]"\
                 .format(self.id, self.status,
@@ -37,8 +43,21 @@ class TestWithPlainText(TestRun):
     test_code = models.TextField()
 
 
+def solution_upload_path(instance, filename):
+    return "solution_{}/{}_{}".format(instance.language.name,
+                                      instance.id,
+                                      filename)
+
+
+def tests_upload_path(instance, filename):
+    return "tests_{}/{}_{}".format(instance.language.name,
+                                   instance.id,
+                                   filename)
+
+
 class TestWithBinaryFile(TestRun):
-    pass
+    solution = models.FileField(upload_to=solution_upload_path)
+    tests = models.FileField(upload_to=tests_upload_path)
 
 
 class RunResult(models.Model):
