@@ -21,7 +21,7 @@ class TestTypeAdmin(admin.ModelAdmin):
 
 @admin.register(TestRun)
 class TestRunAdmin(admin.ModelAdmin):
-    list_display = ('id', 'language', 'test_type', 'is_plain', 'is_binary')
+    list_display = ('id', 'language', 'test_type', 'status', 'is_plain', 'is_binary')
 
 
 @admin.register(TestWithPlainText)
