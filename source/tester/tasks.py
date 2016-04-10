@@ -12,6 +12,7 @@ from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
 import os
 import json
 import time
+import shutil
 
 from subprocess import CalledProcessError, check_output, STDOUT, TimeoutExpired
 
@@ -41,6 +42,16 @@ DOCKER_COMMAND = DOCKER_COMMAND \
 DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
 DOCKER_LOG_COMMAND = "docker logs {container_id}"
 DOCKER_CLEAR_COMMAND = "docker rm {container_id}"
+
+
+def move_file(where, what):
+    src = os.path.join(BASE_DIR, what)
+    dest = os.path.join(BASE_DIR, SANDBOX, where)
+
+    logger.info(src)
+    logger.info(dest)
+
+    shutil.copyfile(src, dest)
 
 
 def save_input(where, contents):
@@ -128,7 +139,8 @@ def grade_pending_run(run_id):
         save_input(tests, pending_task.testwithplaintext.test_code)
 
     if pending_task.is_binary():
-        return "No binary support for now"
+        move_file(solution, pending_task.testwithbinaryfile.solution)
+        move_file(tests, pending_task.testwithbinaryfile.tests)
 
     data = {
         'language': language,
