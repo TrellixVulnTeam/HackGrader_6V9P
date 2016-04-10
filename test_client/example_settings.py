@@ -6,3 +6,5 @@ APIS = {
     'staging': 'staging url here',
     'production': 'production url here'
 }
+
+DEFAULT_API = 'staging'

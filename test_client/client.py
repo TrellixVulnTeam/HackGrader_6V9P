@@ -6,7 +6,7 @@ import hashlib
 import json
 from urllib.parse import urlparse
 
-from settings import API_KEY, API_SECRET, APIS
+from settings import API_KEY, API_SECRET, APIS, DEFAULT_API
 
 
 def get_problem():
@@ -80,7 +80,7 @@ def get_headers(body, req_and_resource):
 
     return request_headers
 
-API_URL = APIS['local']
+API_URL = APIS[DEFAULT_API]
 
 if len(sys.argv) > 1 and sys.argv[1] in APIS:
     API_URL = APIS[sys.argv[1]]
