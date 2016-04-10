@@ -139,8 +139,8 @@ def grade_pending_run(run_id):
         save_input(tests, pending_task.testwithplaintext.test_code)
 
     if pending_task.is_binary():
-        move_file(solution, pending_task.testwithbinaryfile.solution)
-        move_file(tests, pending_task.testwithbinaryfile.tests)
+        move_file(solution, pending_task.testwithbinaryfile.solution.url)
+        move_file(tests, pending_task.testwithbinaryfile.tests.url)
 
     data = {
         'language': language,
