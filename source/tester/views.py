@@ -1,3 +1,5 @@
+import json
+
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
@@ -5,14 +7,12 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound,\
         HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-
-from .models import TestRun, RunResult, Language, TestType
-from .tasks import grade_pending_run
 from api_auth.decorators import require_api_authentication
 
+from .models import TestRun, TestWithPlainText, RunResult, Language, TestType
+from .tasks import grade_pending_run
 from .utils import get_base_url
-
-import json
+from .factories import TestRunFactory
 
 
 def index(request):
@@ -78,12 +78,10 @@ def grade(request):
         msg = msg.format(payload['test_type'])
         return HttpResponseBadRequest(msg)
 
-    run = TestRun(status='pending',
-                  language=language,
-                  test_type=test_type,
-                  code=payload['code'],
-                  test=payload['test'])
+    payload['language'] = language
+    payload['test_type'] = test_type
 
+    run = TestRunFactory.create_run(data=payload)
     run.save()
 
     grade_pending_run.delay(run.id)

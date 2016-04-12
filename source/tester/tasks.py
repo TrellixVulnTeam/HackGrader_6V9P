@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
-from tester.models import TestRun, RunResult, Language
-from HackTester.settings import BASE_DIR
+from tester.models import TestRun, TestWithPlainText, RunResult, Language
+from HackTester.settings import BASE_DIR, MEDIA_ROOT
 from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
         DOCKER_MEMORY_LIMIT, DOCKER_USER, DOCKER_IMAGE, \
         DOCKER_USER, DOCKER_TIME_LIMIT
@@ -12,6 +12,7 @@ from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
 import os
 import json
 import time
+import shutil
 
 from subprocess import CalledProcessError, check_output, STDOUT, TimeoutExpired
 
@@ -41,6 +42,21 @@ DOCKER_COMMAND = DOCKER_COMMAND \
 DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
 DOCKER_LOG_COMMAND = "docker logs {container_id}"
 DOCKER_CLEAR_COMMAND = "docker rm {container_id}"
+
+
+def move_file(where, what):
+    media = os.path.dirname(os.path.abspath(MEDIA_ROOT))
+
+    if what.startswith('/'):
+        what = what[1:]
+
+    src = os.path.join(media, what)
+    dest = os.path.join(BASE_DIR, SANDBOX, where)
+
+    logger.info(src)
+    logger.info(dest)
+
+    shutil.copyfile(src, dest)
 
 
 def save_input(where, contents):
@@ -105,8 +121,8 @@ def get_result_status(returncode):
 @shared_task
 def grade_pending_run(run_id):
     if run_id is None:
-        pending_task = TestRun.objects.filter(status='pending') \
-                                      .order_by('-created_at') \
+        pending_task = TestRun.objects.filter(status='pending')\
+                                      .order_by('-created_at')\
                                       .first()
     else:
         pending_task = TestRun.objects.filter(pk=run_id).first()
@@ -123,14 +139,24 @@ def grade_pending_run(run_id):
     solution = 'solution{}'.format(extension)
     tests = 'tests{}'.format(extension)
 
-    save_input(solution, pending_task.code)
-    save_input(tests, pending_task.test)
+    if pending_task.is_plain():
+        save_input(solution, pending_task.testwithplaintext.solution_code)
+        save_input(tests, pending_task.testwithplaintext.test_code)
+
+    if pending_task.is_binary():
+        move_file(solution, pending_task.testwithbinaryfile.solution.url)
+        move_file(tests, pending_task.testwithbinaryfile.tests.url)
 
     data = {
         'language': language,
         'solution': solution,
         'tests': tests
     }
+
+    if pending_task.extra_options is not None:
+        for key, value in pending_task.extra_options.items():
+            data[key] = value
+
     save_input('data.json', json.dumps(data))
 
     try:
@@ -138,6 +164,7 @@ def grade_pending_run(run_id):
         wait_while_docker_finishes(container_id)
 
         logs = get_docker_logs(container_id)
+        logger.info(logs)
         returncode, output = get_output(logs)
 
         status = 'done'
