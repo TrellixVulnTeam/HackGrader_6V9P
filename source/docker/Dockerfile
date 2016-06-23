@@ -13,8 +13,15 @@ RUN export JAVA_HOME
 
 RUN java -version
 
+#install rvm and ruby2.3.1
+RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+RUN \curl -sSL https://get.rvm.io | bash -s stable
+RUN echo "source /etc/profile.d/rvm.sh" >> /etc/bash.bashrc
+RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && rvm install ruby 2.3.1"
+
 RUN apt-get clean
 
 RUN useradd -m -p grader grader && chsh -s /bin/bash grader | adduser grader sudo
+RUN usermod -a -G rvm grader
 
 USER grader

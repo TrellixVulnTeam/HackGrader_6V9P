@@ -20,17 +20,29 @@ GRADE_PATH = '/grade'
 GRADE_URL = API_URL + GRADE_PATH
 
 
-def get_plain_problem():
-    d = {"test_type": "unittest",
-         "language": "python",
-         "file_type": 'plain',
-         "code": read_file('fixtures/plain/solution.py'),
-         "test": read_file('fixtures/plain/tests.py'),
-         "extra_options": {
-             "foo": "bar"
-          }}
+def get_plain_ruby_problem():
+    data = {"test_type": "unittest",
+            "language": "ruby",
+            "file_type": 'plain',
+            "code": read_file('fixtures/plain/solution.rb'),
+            "test": read_file('fixtures/plain/tests.rb'),
+            }
 
-    return d
+    return data
+
+
+
+def get_plain_python_problem():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "file_type": 'plain',
+            "code": read_file('fixtures/plain/solution.py'),
+            "test": read_file('fixtures/plain/tests.py'),
+            "extra_options": {
+                "foo": "bar"    # wtf? lol
+            }}
+
+    return data
 
 
 def get_binary_problem():
@@ -117,7 +129,8 @@ def make_request(problem):
 
 
 def main():
-    make_request(get_plain_problem())
+    make_request(get_plain_ruby_problem())
+    make_request(get_plain_python_problem())
     make_request(get_binary_problem())
 
 if __name__ == '__main__':
