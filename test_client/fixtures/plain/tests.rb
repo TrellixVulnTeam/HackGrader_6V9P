@@ -1,7 +1,8 @@
 require_relative "solution"
-require "test/unit"
+require 'minitest/autorun'
 
-class TestSimpleNumber < Test::Unit::TestCase
+
+class TestSimpleNumber < Minitest::Test
 
   def test_add_positive
     assert_equal(4, add(3, 1))
