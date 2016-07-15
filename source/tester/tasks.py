@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from celery.exceptions import SoftTimeLimitExceeded
+
+from django.conf import settings
 
 from tester.models import TestRun, TestWithPlainText, RunResult, Language
 from HackTester.settings import BASE_DIR, MEDIA_ROOT
@@ -29,19 +32,24 @@ DOCKER_COMMAND = """docker run -d \
         -v {grader}:/grader -v {sandbox}:/grader/input \
         {docker_image} \
         /bin/bash --login -c 'python3 grader/start.py'"""
-DOCKER_COMMAND = DOCKER_COMMAND \
-        .format(**{"grader": os.path.join(BASE_DIR, "grader"),
-                   "sandbox": os.path.join(BASE_DIR, SANDBOX),
-                   "docker_user": DOCKER_USER,
-                   "nproc_soft_limit": NPROC_SOFT_LIMIT,
-                   "nproc_hard_limit": NPROC_HARD_LIMIT,
-                   "docker_memory_limit": DOCKER_MEMORY_LIMIT,
-                   "docker_image": DOCKER_IMAGE})
 
+DOCKER_COMMAND = DOCKER_COMMAND.format(
+    **{"grader": os.path.join(BASE_DIR, "grader"),
+       "sandbox": os.path.join(BASE_DIR, SANDBOX),
+       "docker_user": DOCKER_USER,
+       "nproc_soft_limit": NPROC_SOFT_LIMIT,
+       "nproc_hard_limit": NPROC_HARD_LIMIT,
+       "docker_memory_limit": DOCKER_MEMORY_LIMIT,
+       "docker_image": DOCKER_IMAGE})
 
 DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
 DOCKER_LOG_COMMAND = "docker logs {container_id}"
 DOCKER_CLEAR_COMMAND = "docker rm {container_id}"
+
+
+CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing \
+                               language:{language}, \
+                               solution:{solution}, test:{tests}"""
 
 
 def move_file(where, what):
@@ -90,10 +98,12 @@ def wait_while_docker_finishes(container_id):
         time.sleep(1)
 
 
-def run_code_in_docker():
+def run_code_in_docker(time_limit=None):
+
+    time_limit = time_limit or DOCKER_TIME_LIMIT
     return check_output(['/bin/bash', '-c', DOCKER_COMMAND],
                         stderr=STDOUT,
-                        timeout=DOCKER_TIME_LIMIT).decode('utf-8')
+                        timeout=time_limit).decode('utf-8')
 
 
 def get_docker_logs(container_id):
@@ -118,12 +128,12 @@ def get_result_status(returncode):
     return 'not_ok'
 
 
-@shared_task
-def grade_pending_run(run_id):
+@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
+def grade_pending_run(self, run_id):
     if run_id is None:
-        pending_task = TestRun.objects.filter(status='pending')\
-                                      .order_by('-created_at')\
-                                      .first()
+        pending_task = TestRun.objects.filter(status='pending') \
+            .order_by('-created_at') \
+            .first()
     else:
         pending_task = TestRun.objects.filter(pk=run_id).first()
 
@@ -153,14 +163,16 @@ def grade_pending_run(run_id):
         'tests': tests
     }
 
-    if pending_task.extra_options is not None:
-        for key, value in pending_task.extra_options.items():
-            data[key] = value
-
     save_input('data.json', json.dumps(data))
 
+    extra_options = pending_task.extra_options
+    time_limit = None
+    if extra_options:
+        time_limit = extra_options.get('time_limit')
+
+    container_id = None
     try:
-        container_id = run_code_in_docker()
+        container_id = run_code_in_docker(time_limit)
         wait_while_docker_finishes(container_id)
 
         logs = get_docker_logs(container_id)
@@ -176,9 +188,12 @@ def grade_pending_run(run_id):
         returncode = 127
         output = repr(e)
         status = 'docker_time_limit_hit'
-
-    if container_id:
-        docker_cleanup(container_id)
+    except SoftTimeLimitExceeded as exc:
+        logger.exception(CELERY_TIME_LIMIT_REACHED.format(**data))
+        self.retry(exc=exc)
+    finally:
+        if container_id:
+            docker_cleanup(container_id)
 
     pending_task.status = status
     pending_task.save()

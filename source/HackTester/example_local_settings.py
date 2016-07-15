@@ -30,7 +30,9 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-
+CELERYD_TASK_SOFT_TIME_LIMIT = 60  # in seconds
+CELERYD_TASK_TIME_LIMIT = 120      # in seconds
+CELERY_TASK_MAX_RETRIES = 3
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
