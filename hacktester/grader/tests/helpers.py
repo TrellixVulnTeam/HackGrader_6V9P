@@ -1,15 +1,15 @@
 import shutil
-import sys
 import os
 from subprocess import check_output, STDOUT, CalledProcessError
 import json
 
 
-sys.path.append('../')
-from settings import INPUT
+from ..settings import INPUT
+from django.conf import settings
 
 DATA_FILE = os.path.join(INPUT, 'data.json')
-FIXTURES = os.path.join("tests", "fixtures")
+GRADER_APP = os.path.join(str(settings.APPS_DIR), "grader")
+FIXTURES = os.path.join(str(settings.APPS_DIR), "grader", "tests", "fixtures")
 
 
 def copy_fixture(name, extension):
@@ -43,7 +43,7 @@ def get_fixture(name, extension):
 
 def call_start():
     try:
-        output = check_output(['python3', 'start.py'], stderr=STDOUT).decode('utf-8')
+        output = check_output(['python3', GRADER_APP + '/start.py'], stderr=STDOUT).decode('utf-8')
         return output
     except CalledProcessError as e:
         raise

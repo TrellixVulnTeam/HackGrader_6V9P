@@ -5,12 +5,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
 
-from tester.models import TestRun, TestWithPlainText, RunResult, Language
-from HackTester.settings import BASE_DIR, MEDIA_ROOT
-from HackTester.settings import NPROC_SOFT_LIMIT, NPROC_HARD_LIMIT, \
-        DOCKER_MEMORY_LIMIT, DOCKER_USER, DOCKER_IMAGE, \
-        DOCKER_USER, DOCKER_TIME_LIMIT
-
+from .models import TestRun, TestWithPlainText, RunResult, Language
 
 import os
 import json
@@ -34,13 +29,13 @@ DOCKER_COMMAND = """docker run -d \
         /bin/bash --login -c 'python3 grader/start.py'"""
 
 DOCKER_COMMAND = DOCKER_COMMAND.format(
-    **{"grader": os.path.join(BASE_DIR, "grader"),
-       "sandbox": os.path.join(BASE_DIR, SANDBOX),
-       "docker_user": DOCKER_USER,
-       "nproc_soft_limit": NPROC_SOFT_LIMIT,
-       "nproc_hard_limit": NPROC_HARD_LIMIT,
-       "docker_memory_limit": DOCKER_MEMORY_LIMIT,
-       "docker_image": DOCKER_IMAGE})
+    **{"grader": os.path.join(str(settings.ROOT_DIR), "grader"),
+       "sandbox": os.path.join(str(settings.ROOT_DIR), SANDBOX),
+       "docker_user": settings.DOCKER_USER,
+       "nproc_soft_limit": settings.NPROC_SOFT_LIMIT,
+       "nproc_hard_limit": settings.NPROC_HARD_LIMIT,
+       "docker_memory_limit": settings.DOCKER_MEMORY_LIMIT,
+       "docker_image": settings.DOCKER_IMAGE})
 
 DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
 DOCKER_LOG_COMMAND = "docker logs {container_id}"
@@ -53,13 +48,13 @@ CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing \
 
 
 def move_file(where, what):
-    media = os.path.dirname(os.path.abspath(MEDIA_ROOT))
+    media = os.path.dirname(os.path.abspath(settings.MEDIA_ROOT))
 
     if what.startswith('/'):
         what = what[1:]
 
     src = os.path.join(media, what)
-    dest = os.path.join(BASE_DIR, SANDBOX, where)
+    dest = os.path.join(str(settings.ROOT_DIR), SANDBOX, where)
 
     logger.info(src)
     logger.info(dest)
@@ -68,7 +63,7 @@ def move_file(where, what):
 
 
 def save_input(where, contents):
-    path = os.path.join(BASE_DIR, SANDBOX, where)
+    path = os.path.join(str(settings.ROOT_DIR), SANDBOX, where)
 
     with open(path, mode='w', encoding='utf-8') as f:
         f.write(contents)
@@ -100,7 +95,7 @@ def wait_while_docker_finishes(container_id):
 
 def run_code_in_docker(time_limit=None):
 
-    time_limit = time_limit or DOCKER_TIME_LIMIT
+    time_limit = time_limit or settings.DOCKER_TIME_LIMIT
     return check_output(['/bin/bash', '-c', DOCKER_COMMAND],
                         stderr=STDOUT,
                         timeout=time_limit).decode('utf-8')

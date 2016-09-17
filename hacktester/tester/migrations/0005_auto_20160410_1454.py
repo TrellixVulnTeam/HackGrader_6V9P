@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import tester.models
+import hacktester.tester.models
 
 
 class Migration(migrations.Migration):
@@ -15,13 +15,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='testwithbinaryfile',
             name='solution',
-            field=models.FileField(default='', upload_to=tester.models.solution_upload_path),
+            field=models.FileField(default='', upload_to=hacktester.tester.models.solution_upload_path),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='testwithbinaryfile',
             name='test',
-            field=models.FileField(default='', upload_to=tester.models.tests_upload_path),
+            field=models.FileField(default='', upload_to=hacktester.tester.models.tests_upload_path),
             preserve_default=False,
         ),
     ]

@@ -5,6 +5,6 @@ __pycache__
 local_settings.py
 test_client/settings.py
 test_client/nonce.json
-
+.cache
 .idea
 

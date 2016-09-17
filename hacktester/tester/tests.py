@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core.urlresolvers import reverse
 import json
 
-from tester.models import Language, TestType
+from .models import Language, TestType
 
 
 def create_languages():

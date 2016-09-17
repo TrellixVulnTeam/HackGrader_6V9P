@@ -1,10 +1,17 @@
+# Bleeding edge Django
+django==1.8.7
+# Configuration
+django-environ==0.4.0
+
+# Python-PostgreSQL Database Adapter
+psycopg2==2.6.2
+
 amqp==1.4.7
 anyjson==0.3.3
 Babel==2.1.1
 backports-abc==0.4
 billiard==3.3.0.21
 celery==3.1.19
-Django==1.8.7
 django-celery==3.1.17
 django-model-utils==2.3.1
 jsonfield==1.0.3

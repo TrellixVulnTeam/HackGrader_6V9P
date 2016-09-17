@@ -7,7 +7,8 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound,\
         HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from api_auth.decorators import require_api_authentication
+
+from hacktester.api_auth.decorators import require_api_authentication
 
 from .models import TestRun, TestWithPlainText, RunResult, Language, TestType
 from .tasks import grade_pending_run

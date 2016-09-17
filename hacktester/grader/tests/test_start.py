@@ -5,7 +5,8 @@ import json
 from subprocess import CalledProcessError
 import contextlib
 
-from helpers import save_data_json, call_start, DATA_FILE
+from .helpers import save_data_json, call_start, DATA_FILE
+
 
 class TestGraderStart(unittest.TestCase):
     def setUp(self):
@@ -71,6 +72,3 @@ class TestGraderStart(unittest.TestCase):
         }
         output = json.loads(cm.exception.output.decode('utf-8'))
         self.assertEqual(expected_output, output)
-
-if __name__ == '__main__':
-    unittest.main()
