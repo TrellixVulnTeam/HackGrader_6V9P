@@ -30,7 +30,7 @@ DOCKER_COMMAND = """docker run -d \
 
 DOCKER_COMMAND = DOCKER_COMMAND.format(
     **{"grader": os.path.join(str(settings.APPS_DIR), "grader"),
-       "sandbox": os.path.join(str(settings.APPS_DIR), SANDBOX),
+       "sandbox": os.path.join(str(settings.ROOT_DIR), SANDBOX),
        "docker_user": settings.DOCKER_USER,
        "nproc_soft_limit": settings.NPROC_SOFT_LIMIT,
        "nproc_hard_limit": settings.NPROC_HARD_LIMIT,
