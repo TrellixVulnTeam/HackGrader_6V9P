@@ -9,7 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.local')
 
 from django.conf import settings  # noqa
 
-app = Celery('firelink')
+app = Celery('HackTester')
 
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
