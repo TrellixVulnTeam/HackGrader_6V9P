@@ -29,8 +29,8 @@ DOCKER_COMMAND = """docker run -d \
         /bin/bash --login -c 'python3 grader/start.py'"""
 
 DOCKER_COMMAND = DOCKER_COMMAND.format(
-    **{"grader": os.path.join(str(settings.ROOT_DIR), "grader"),
-       "sandbox": os.path.join(str(settings.ROOT_DIR), SANDBOX),
+    **{"grader": os.path.join(str(settings.APPS_DIR), "grader"),
+       "sandbox": os.path.join(str(settings.APPS_DIR), SANDBOX),
        "docker_user": settings.DOCKER_USER,
        "nproc_soft_limit": settings.NPROC_SOFT_LIMIT,
        "nproc_hard_limit": settings.NPROC_HARD_LIMIT,
