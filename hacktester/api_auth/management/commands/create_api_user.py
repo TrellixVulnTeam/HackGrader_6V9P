@@ -1,5 +1,6 @@
-from django.core.management.base import BaseCommand, CommandError
-from api_auth.models import ApiUser
+from django.core.management.base import BaseCommand
+
+from hacktester.api_auth.models import ApiUser
 
 
 class Command(BaseCommand):
