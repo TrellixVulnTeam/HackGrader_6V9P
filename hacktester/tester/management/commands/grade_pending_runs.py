@@ -1,6 +1,7 @@
-from django.core.management.base import BaseCommand, CommandError
-from tester.models import TestRun
-from tester.tasks import grade_pending_run
+from django.core.management.base import BaseCommand
+
+from hacktester.tester.models import TestRun
+from hacktester.tester.tasks import grade_pending_run
 
 
 class Command(BaseCommand):
