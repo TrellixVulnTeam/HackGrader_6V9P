@@ -1,10 +1,5 @@
-import os
 from settings import TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR
-
-import shlex
-from subprocess import (CalledProcessError, TimeoutExpired,
-                        Popen, check_output,
-                        STDOUT, PIPE)
+from subprocess import CalledProcessError, TimeoutExpired
 
 from .proc import run_cmd, killall
 
@@ -45,12 +40,30 @@ class BaseGrader:
         If compiling fails, raise CompileException with the error as message
         """
 
-    def execute(self):
+    def execute_unittest(self):
         """
-        Hook for running the code / compiled code
-        Should return the output as result.
+        Hook for executing unittests
+        Should return tuple containing returncode and output as result.
         Raise RunException if something fails
         """
+
+    def execute_program(self):
+        """
+        Hook for executing programs for output checking tests
+        Should return tuple containing returncode and output as result.
+        Raise RunException if something fails
+        """
+
+    def execute(self):
+        test_type = self.data['test_type']
+        if test_type == 'unittest':
+            return self.execute_unittest()
+        elif test_type == 'output_checking':
+            return self.execute_program()
+
+        output = "{} is not supported test type".format(test_type)
+        returncode = -1
+        return returncode, output
 
     def run(self):
         try:
@@ -69,15 +82,54 @@ class BaseGrader:
         except TimeoutExpired as e:
             returncode = 5
             output = TIMELIMIT_EXCEEDED_ERROR
+        except Exception as e:
+            returncode = -2
+            output = repr(e)
         finally:
             self.clean_up()
-            return (returncode, output)
+            return returncode, output
 
     def clean_up(self):
         killall(self.__class__.COMMAND)
 
 
-class DynamicLanguageExecuteMixin:
+class OutputCheckingMixin:
+    """
+    Executes programs in the following form
+    $ python solution.py
+    $ ruby solution.rb
+    $ node solution.js
+    $ java solution.jar
+    and supplies input
+    """
+
+    def get_input(self):
+        with open(self.tests) as f:
+            input_string = f.read()
+
+        return input_string
+
+    def execute_program(self):
+        args = {
+            "command": self.__class__.COMMAND,
+            "solution": self.solution
+        }
+
+        command = "{command} {solution}".format(**args)
+        input_string = self.get_input()
+
+        time_limit = self.data.get('time_limit') or TIMELIMIT
+
+        try:
+            returncode, output = run_cmd(command, time_limit, input_string=input_string)
+        except CalledProcessError as e:
+            output = e.output
+            returncode = e.returncode
+
+        return returncode, output
+
+
+class DynamicLanguageUnittestMixin:
     """
     Executes dynamic languages like python & ruby in the following form
     $ python tests.py
@@ -85,7 +137,7 @@ class DynamicLanguageExecuteMixin:
     $ node tests.js
     """
 
-    def execute(self):
+    def execute_unittest(self):
         args = {
             "command": self.__class__.COMMAND,
             "tests": self.tests
@@ -93,10 +145,12 @@ class DynamicLanguageExecuteMixin:
 
         command = "{command} {tests}".format(**args)
 
+        time_limit = self.data.get('time_limit') or TIMELIMIT
+
         try:
-            returncode, output = run_cmd(command, TIMELIMIT)
+            returncode, output = run_cmd(command, time_limit)
         except CalledProcessError as e:
             output = e.output
             returncode = e.returncode
 
-        return (returncode, output)
+        return returncode, output

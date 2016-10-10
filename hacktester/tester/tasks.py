@@ -21,7 +21,6 @@ FILE_EXTENSIONS = {l.name: l.extension for l in Language.objects.all()}
 SANDBOX = 'sandbox/'
 DOCKER_COMMAND = """docker run -d \
         -u {docker_user} \
-        --ulimit nproc={nproc_soft_limit}:{nproc_hard_limit} \
         -m {docker_memory_limit} --memory-swap -1 \
         --net=none \
         -v {grader}:/grader -v {sandbox}:/grader/input \
@@ -136,6 +135,7 @@ def grade_pending_run(self, run_id):
         return "No tasks to run right now."
 
     language = pending_task.language.name.lower()
+    test_type = pending_task.test_type.value
 
     pending_task.status = 'running'
     pending_task.save()
@@ -150,12 +150,13 @@ def grade_pending_run(self, run_id):
 
     if pending_task.is_binary():
         move_file(solution, pending_task.testwithbinaryfile.solution.url)
-        move_file(tests, pending_task.testwithbinaryfile.tests.url)
+        move_file(tests, pending_task.testwithbinaryfile.test.url)
 
     data = {
         'language': language,
         'solution': solution,
-        'tests': tests
+        'tests': tests,
+        'test_type': test_type
     }
 
     save_input('data.json', json.dumps(data))
@@ -186,6 +187,10 @@ def grade_pending_run(self, run_id):
     except SoftTimeLimitExceeded as exc:
         logger.exception(CELERY_TIME_LIMIT_REACHED.format(**data))
         self.retry(exc=exc)
+    except Exception as e:
+        returncode = 14
+        output = repr(e)
+        status = 'docker'
     finally:
         if container_id:
             docker_cleanup(container_id)

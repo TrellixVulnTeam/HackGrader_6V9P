@@ -7,7 +7,7 @@ import json
 from urllib.parse import urlparse
 
 from settings import API_KEY, API_SECRET, APIS, DEFAULT_API
-from helpers import read_file, read_binary_file
+from helpers import read_file, read_binary_file, output_checking_test_binary
 
 API_URL = APIS[DEFAULT_API]
 
@@ -18,6 +18,21 @@ print("Using API_URL: {}".format(API_URL))
 
 GRADE_PATH = '/grade'
 GRADE_URL = API_URL + GRADE_PATH
+
+
+def get_output_check_python():
+    tests = output_checking_test_binary("python")
+    data = {"test_type": "output_checking",
+            "language": "python",
+            "file_type": "plain",
+            "code": read_file('fixtures/output_check/python/code.py'),
+            "test": tests,
+            "extra_options": {
+                "archive_type": "tar_gz"
+            }}
+
+    return data
+
 
 
 def get_plain_ruby_problem():
@@ -52,7 +67,7 @@ def get_binary_problem():
          'code': read_binary_file('fixtures/binary/solution.jar'),
          'test': read_binary_file('fixtures/binary/tests.jar'),
          'extra_options': {
-             'qualified_class_name': 'com.hackbulgaria.grader.Tests',
+             'qualified_class_name': 'com.hackbulgaria.grader.Tests'
           }}
 
     return d
@@ -132,6 +147,7 @@ def main():
     make_request(get_plain_ruby_problem())
     make_request(get_plain_python_problem())
     make_request(get_binary_problem())
+    #make_request(get_output_check_python())
 
 if __name__ == '__main__':
     main()

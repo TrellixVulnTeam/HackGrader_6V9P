@@ -6,13 +6,25 @@ from subprocess import (CalledProcessError, TimeoutExpired,
                         STDOUT, PIPE)
 
 
-def run_cmd(cmd, timeout):
+def create_input_file(input_string):
+    if not input_string:
+        input_string = ""
+
+    input_file = tempfile.NamedTemporaryFile()
+    input_file.write(input_string.encode('utf-8'))
+    input_file.seek(0)
+    return input_file
+
+
+def run_cmd(cmd, timeout, input_string=None):
     args = shlex.split(cmd)
     output = tempfile.NamedTemporaryFile()
+    input_file = create_input_file(input_string)
 
     proc = Popen(args,
                  stdout=output,
                  stderr=output,
+                 stdin=input_file,
                  universal_newlines=True,
                  bufsize=0)
 
@@ -26,7 +38,7 @@ def run_cmd(cmd, timeout):
         with open(output.name, 'r') as f:
             output = f.read()
 
-    return (returncode, output)
+    return returncode, output
 
 
 def kill(pid):

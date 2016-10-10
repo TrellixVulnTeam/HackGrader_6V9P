@@ -10,10 +10,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from hacktester.api_auth.decorators import require_api_authentication
 
-from .models import TestRun, TestWithPlainText, RunResult, Language, TestType
+from .models import TestRun, RunResult, Language, TestType, ArchiveType
 from .tasks import grade_pending_run
 from .utils import get_base_url
-from .factories import TestRunFactory
+from .factories import TestRunFactory, ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError
 
 
 def index(request):
@@ -57,6 +57,11 @@ def supported_test_types(request):
     return JsonResponse(types, safe=False)
 
 
+def supported_archive_types(request):
+    types = [archive.value for archive in ArchiveType.objects.all()]
+    return JsonResponse(types, safe=False)
+
+
 # { "language": "Python",
 #   "test_type":     "unittest",
 #   "code": "....",
@@ -82,7 +87,12 @@ def grade(request):
     payload['language'] = language
     payload['test_type'] = test_type
 
-    run = TestRunFactory.create_run(data=payload)
+    try:
+        run = TestRunFactory.create_run(data=payload)
+    except (ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError) as e:
+        msg = repr(e)
+        return HttpResponseBadRequest(msg)
+
     run.save()
 
     grade_pending_run.delay(run.id)
