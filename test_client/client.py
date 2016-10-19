@@ -34,7 +34,6 @@ def get_output_check_python():
     return data
 
 
-
 def get_plain_ruby_problem():
     data = {"test_type": "unittest",
             "language": "ruby",
@@ -44,7 +43,6 @@ def get_plain_ruby_problem():
             }
 
     return data
-
 
 
 def get_plain_python_problem():
@@ -147,7 +145,7 @@ def main():
     make_request(get_plain_ruby_problem())
     make_request(get_plain_python_problem())
     make_request(get_binary_problem())
-    #make_request(get_output_check_python())
+    make_request(get_output_check_python())
 
 if __name__ == '__main__':
     main()

@@ -40,7 +40,7 @@ class TestFactory:
             test_archive = ContentFile(content=test_archive, name=str(uuid.uuid4()))
 
             extra_options = data.get('extra_options', None)
-            archive_type = TestFactory.get_archive_type(extra_options)
+            archive_type = TestFactory.get_archive(extra_options)
 
             test = BinaryArchiveTest(tests=test_archive, archive_type=archive_type)
 

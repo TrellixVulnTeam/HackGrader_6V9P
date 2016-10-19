@@ -1,4 +1,5 @@
 import json
+import time
 
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
@@ -94,8 +95,7 @@ def grade(request):
         return HttpResponseBadRequest(msg)
 
     run.save()
-
-    grade_pending_run.delay(run.id)
+    grade_pending_run.apply_async((run.id,), countdown=1)
 
     result = {"run_id": run.id}
     result_location = "{}{}"
@@ -118,19 +118,40 @@ def check_result(request, run_id):
         msg = "Run with id {} not found"
         msg = msg.format(run_id)
         return HttpResponseNotFound(msg)
+    if run.test_type.value == "unittest":
+        try:
+            result = RunResult.objects.get(run=run)
+        except ObjectDoesNotExist as e:
+            run.refresh_from_db()
+            response = HttpResponse(status=204)
+            response['X-Run-Status'] = run.status
+            return response
 
-    try:
-        result = RunResult.objects.get(run=run)
-    except ObjectDoesNotExist as e:
-        run.refresh_from_db()
-        response = HttpResponse(status=204)
-        response['X-Run-Status'] = run.status
+        data = {'run_status': run.status,
+                'result_status': result.status,
+                'run_id': run_id,
+                'output': result.output,
+                'returncode': result.returncode}
 
-        return response
+    elif run.test_type.value == "output_checking":
+        results = RunResult.objects.filter(run=run)
+        if len(results) == run.number_of_results:
+            output = ""
+            status = "OK"
+            for result in results:
+                if result.output != "OK":
+                    status = "NOT OK"
+                output += result.output
 
-    data = {'run_status': run.status,
-            'result_status': result.status,
-            'run_id': run_id,
-            'output': result.output,
-            'returncode': result.returncode}
+            data = {'run_status': run.status,
+                    'result_status': status,
+                    'run_id': run_id,
+                    'output': output,
+                    'returncode': 0}  # TODO
+        else:
+            run.refresh_from_db()
+            response = HttpResponse(status=204)
+            response['X-Run-Status'] = run.status
+            return response
+
     return JsonResponse(data)

@@ -5,7 +5,7 @@ def fact(n):
 
 
 def main():
-    n = input()
+    n = int(input())
     print(fact(n))
 
 
