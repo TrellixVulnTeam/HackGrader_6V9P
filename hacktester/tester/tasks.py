@@ -40,6 +40,80 @@ CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing \
                                solution:{solution}, test:{tests}"""
 
 
+class FileSystemManager:
+    _MEDIA = os.path.dirname(os.path.abspath(settings.MEDIA_ROOT))
+    _SANDBOX = os.path.join(str(settings.ROOT_DIR), SANDBOX)
+
+    def __init__(self, name):
+        self.name = str(name)
+        self.inner_folders = {}
+        self.absolute_path = self._create_folder(self.name)
+
+    def _copy_file(self, destination_path, destination_name, file_name, source_path=None):
+        if source_path is None:
+            source_path = FileSystemManager._MEDIA
+        source = os.path.join(str(source_path), str(file_name))
+        destination = os.path.join(str(destination_path), str(destination_name))
+
+        logger.info(source)
+        logger.info(destination)
+
+        shutil.copyfile(source, destination)
+
+        return destination
+
+    def _create_file(self, destination_path, destination_name, content):
+        path = os.path.join(str(destination_path), str(destination_name))
+
+        with open(path, mode='w', encoding='utf-8') as f:
+            f.write(content)
+
+    def _create_folder(self, folder_name, destination_path=None):
+        if destination_path is None:
+            destination_path = FileSystemManager._SANDBOX
+
+        folder_abs_path = os.path.join(str(destination_path), str(folder_name))
+        os.mkdir(folder_abs_path)
+        return folder_abs_path
+
+    def _delete_folder(self, path_to_folder):
+        shutil.rmtree(path_to_folder)
+
+    def add_inner_folder(self, name):
+        # TODO add functionality to add recursively inner_folders
+        self.inner_folders[name] = FileSystemManager(name)
+
+    def copy_file(self, name, destination_file_name, destination_folder=None, source=None):
+        # TODO add functionality to for recursive file addition
+        if destination_folder is None:
+            self._copy_file(self.absolute_path, destination_file_name, name, source)
+        elif destination_folder in self.inner_folders:
+            self.inner_folders[destination_folder].copyfile(name, destination_file_name, source=source)
+        # TODO add an else that returns/raises error message
+
+    def create_new_file(self, name, content, destination_folder=None):
+        # add functionality for recursive additions
+        if destination_folder is None:
+            self._create_file(self.absolute_path, name, content)
+        elif destination_folder in self.inner_folders:
+            self.inner_folders[destination_folder].create_new_file(name, content, None)
+        # TODO add an else that returns/raises error message
+
+    def get_absolute_path(self, folder=None):
+        if folder is None:
+            return self.absolute_path
+        elif folder in self.inner_folders:
+            return self.inner_folders[folder].absolute_path
+        # TODO add an else that returns/raises error message
+
+    def clean_up(self, folder=None):
+        if folder is None:
+            self._delete_folder(self.absolute_path)
+        elif folder in self.inner_folders:
+            self._delete_folder(self.inner_folders[folder])
+        # TODO add an else that returns/raises error message
+
+
 def move_file(where, what, path):
     media = os.path.dirname(os.path.abspath(settings.MEDIA_ROOT))
 
@@ -162,7 +236,7 @@ def get_pending_task(run_id):
     return pending_task
 
 
-def prepare_adn_run_tests(task_obj, run_id):
+def prepare_and_run_tests(task_obj, run_id):
     pending_task = get_pending_task(run_id)
     if pending_task is None:
         return "No tasks to run right now."
@@ -374,4 +448,4 @@ def clean_up_test_env(path_to_folder):
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
 def grade_pending_run(self, run_id):
-    prepare_adn_run_tests(self, run_id)
+    prepare_and_run_tests(self, run_id)
