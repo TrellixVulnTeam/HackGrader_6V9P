@@ -114,6 +114,10 @@ def grade(request):
 def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
+        if run.status != "done":
+            response = HttpResponse(status=204)
+            response['X-Run-Status'] = run.status
+            return response
     except ObjectDoesNotExist as e:
         msg = "Run with id {} not found"
         msg = msg.format(run_id)
@@ -135,7 +139,7 @@ def check_result(request, run_id):
 
     elif run.test_type.value == "output_checking":
         results = RunResult.objects.filter(run=run)
-        if len(results) == run.number_of_results:
+        if len(results) >= run.number_of_results:
             output = ""
             status = "OK"
             for result in results:
