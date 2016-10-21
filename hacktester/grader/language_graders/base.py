@@ -99,7 +99,6 @@ class OutputCheckingMixin:
     $ python solution.py
     $ ruby solution.rb
     $ node solution.js
-    $ java solution.jar
     and supplies input
     """
 
@@ -108,6 +107,12 @@ class OutputCheckingMixin:
             input_string = f.read()
 
         return input_string
+
+    def get_output(self):
+        with open(self.data["output"]) as f:
+            output = f.read()
+
+        return output
 
     def execute_program(self):
         args = {
@@ -125,6 +130,13 @@ class OutputCheckingMixin:
         except CalledProcessError as e:
             output = e.output
             returncode = e.returncode
+
+        expected_output = self.get_output()
+
+        if output == expected_output:
+            output = "OK"
+        else:
+            output = "NOT OK"
 
         return returncode, output
 
