@@ -36,7 +36,6 @@ THIRD_PARTY_APPS = (
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'hacktester.tester',
-    'hacktester.grader',
     'hacktester.api_auth',
 )
 
