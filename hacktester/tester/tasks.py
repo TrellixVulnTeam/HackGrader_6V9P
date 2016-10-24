@@ -12,7 +12,8 @@ from django.conf import settings
 from .test_preparators import (FileSystemManager, prepare_unittest,
                                prepare_output_checking_environment,
                                prepare_output_test)
-from .models import TestRun, RunResult
+from .models import  RunResult
+from .utils import get_result_status, get_pending_task
 from .docker_utils import (run_code_in_docker, wait_while_docker_finishes, get_output,
                            get_docker_logs, docker_cleanup)
 
@@ -21,45 +22,6 @@ logger = get_task_logger(__name__)
 CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing \
                                language:{language}, \
                                solution:{solution}, test:{tests}"""
-
-
-def get_result_status(returncode):
-    if returncode == 0:
-        return 'ok'
-
-    return 'not_ok'
-
-
-def get_pending_task(run_id):
-    return TestRun.objects.filter(pk=run_id).first()
-
-
-def run_tests(task_obj, data, **kwargs_for_docker_command):
-    container_id = None
-    try:
-        container_id = run_code_in_docker(**kwargs_for_docker_command)
-        wait_while_docker_finishes(container_id)
-        logs = get_docker_logs(container_id)
-        logger.info(logs)
-        returncode, output = get_output(logs)
-
-        status = 'done'
-    except CalledProcessError as e:
-        returncode = e.returncode
-        output = repr(e)
-        status = 'failed'
-    except TimeoutExpired as e:
-        returncode = 127
-        output = repr(e)
-        status = 'docker_time_limit_hit'
-    except SoftTimeLimitExceeded as exc:
-        logger.exception(CELERY_TIME_LIMIT_REACHED.format(**data))
-        task_obj.retry(exc=exc)
-    finally:
-        if container_id:
-            docker_cleanup(container_id)
-
-    return status, output, returncode
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
