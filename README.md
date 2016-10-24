@@ -22,6 +22,26 @@ $ cd docker
 $ docker build -t grader .
 ```
 
+Sanity check versions of Python, Ruby and Java:
+
+**Python should be 3+**
+
+```
+$ docker run grader /bin/bash --login -c "python3 --version"
+```
+
+**Ruby should be 2.3**
+
+```
+$ docker run grader /bin/bash --login -c "ruby --version"
+```
+
+**Java should be 1.8**
+
+```
+$ docker run grader /bin/bash --login -c "java -version"
+```
+
 **After this:**
 
 1. Run Django migrations.
