@@ -1,10 +1,7 @@
 from __future__ import absolute_import
-import re
-import os
-import json
 import time
 import shutil
-from subprocess import CalledProcessError, check_output, STDOUT, TimeoutExpired
+from subprocess import CalledProcessError, TimeoutExpired
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -12,15 +9,15 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
 
-from .test_preparators import FileSystemManager
-from .models import TestRun, RunResult, Language
-from .utils import ArchiveFileHandler
+from .test_preparators import (FileSystemManager, prepare_unittest,
+                               prepare_output_checking_environment,
+                               prepare_output_test)
+from .models import TestRun, RunResult
 from .docker_utils import (run_code_in_docker, wait_while_docker_finishes, get_output,
                            get_docker_logs, docker_cleanup)
 
 logger = get_task_logger(__name__)
 
-FILE_EXTENSIONS = {l.name: l.extension for l in Language.objects.all()}
 CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing \
                                language:{language}, \
                                solution:{solution}, test:{tests}"""
@@ -42,7 +39,6 @@ def run_tests(task_obj, data, **kwargs_for_docker_command):
     try:
         container_id = run_code_in_docker(**kwargs_for_docker_command)
         wait_while_docker_finishes(container_id)
-
         logs = get_docker_logs(container_id)
         logger.info(logs)
         returncode, output = get_output(logs)
@@ -64,120 +60,6 @@ def run_tests(task_obj, data, **kwargs_for_docker_command):
             docker_cleanup(container_id)
 
     return status, output, returncode
-
-
-def prepare_unittest(pending_task, language, test_environment):
-    extension = FILE_EXTENSIONS[language]
-    solution = 'solution{}'.format(extension)
-    tests = 'tests{}'.format(extension)
-
-    if pending_task.is_plain():
-        test_environment.create_new_file(solution, pending_task.testwithplaintext.solution_code)
-        test_environment.create_new_file(tests, pending_task.testwithplaintext.test_code)
-
-    if pending_task.is_binary():
-        test_environment.copy_file(pending_task.testwithbinaryfile.solution.url, solution)
-        test_environment.copy_file(pending_task.testwithbinaryfile.test.url, tests)
-
-    data = {
-        'language': language,
-        'solution': solution,
-        'tests': tests,
-        'test_type': 'unittest',
-    }
-
-    if pending_task.extra_options is not None:
-        for key, value in pending_task.extra_options.items():
-            data[key] = value
-
-    test_environment.create_new_file('data.json', json.dumps(data))
-
-    return data
-
-
-def validate_test_files(test_files):
-    input_files = set()
-    output_files = set()
-    for file in test_files:
-        match = re.match("([0-9]+)\.(in|out)", file)
-        if match is not None:
-            test_num = int(match.groups()[0])
-            type = match.groups()[1]
-            if type == "in":
-                input_files.add(test_num)
-            else:
-                output_files.add(test_num)
-        else:
-            "TODO"
-    if input_files != output_files:
-        "TODO"
-
-    return input_files
-
-
-def prepare_output_checking_environment(pending_task, language, test_environment):
-    in_out_file_directory = "tests"
-    test_environment.add_inner_folder(in_out_file_directory)
-    extension = FILE_EXTENSIONS[language]
-    solution = "solution{}".format(extension)
-    archive_name = "archive.tar.gz"
-
-    if pending_task.is_plain():
-        test_environment.create_new_file(solution, pending_task.testwithplaintext.solution_code)
-        test_environment.copy_file(pending_task.testwithplaintext.test_code.url, archive_name)
-        archive_type = pending_task.testwithplaintext.tests.binaryarchivetest.archive_type
-
-    if pending_task.is_binary():
-        test_environment.copy_file(solution, pending_task.testwithbinaryfile.solution.url)
-        test_environment.copy_file(pending_task.testwithbinaryfile.test.url, archive_name)
-        archive_type = pending_task.testwithbinaryfile.test.archive_type
-
-    archive_location = test_environment.get_absolute_path_to(file=archive_name)
-    in_out_file_location = test_environment.get_absolute_path_to(folder=in_out_file_directory)
-    ArchiveFileHandler.extract(archive_type, archive_location, in_out_file_location)
-
-    test_files = os.listdir(test_environment.get_absolute_path_to(in_out_file_directory))
-    tests = validate_test_files(test_files)
-    pending_task.number_of_results = len(tests)
-    pending_task.save()
-
-    data = {
-        'language': language,
-        'solution': solution,
-        'test_type': 'output_checking'
-    }
-
-    if pending_task.extra_options is not None:
-        for key, value in pending_task.extra_options.items():
-            data[key] = value
-    return tests, data, in_out_file_location
-
-
-def prepare_output_test(run_id, data, test_number, test_environment, path_to_in_out_files):
-    solution = data['solution']
-    test_input = "{}.in".format(test_number)
-    test_output = "{}.out".format(test_number)
-    data["tests"] = test_input
-    data["output"] = test_output
-    current_test_dir = str(test_number)
-
-    test_environment.add_inner_folder(name=current_test_dir)
-    test_environment.copy_file(name=solution,
-                               destination_file_name=solution,
-                               destination_folder=current_test_dir,
-                               source=test_environment.get_absolute_path_to())
-
-    test_environment.create_new_file('data.json', json.dumps(data), current_test_dir)
-    test_environment.copy_file(name=test_input,
-                               destination_file_name=test_input,
-                               destination_folder=current_test_dir,
-                               source=path_to_in_out_files)
-    test_environment.copy_file(name=test_output,
-                               destination_file_name=test_output,
-                               destination_folder=current_test_dir,
-                               source=path_to_in_out_files)
-
-    return current_test_dir
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
