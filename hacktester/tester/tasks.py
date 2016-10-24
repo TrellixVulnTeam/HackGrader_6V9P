@@ -66,24 +66,6 @@ def run_tests(task_obj, data, **kwargs_for_docker_command):
     return status, output, returncode
 
 
-def run_unittest(task_obj, data, test_environment, run_id):
-    status, output, returncode = run_tests(task_obj, data, input_folder=test_environment.get_absolute_path_to())
-    pending_task = get_pending_task(run_id)
-
-    clean_up_test_env(test_environment.get_absolute_path_to())
-
-    pending_task.status = status
-    pending_task.save()
-
-    run_result = RunResult()
-    run_result.run = pending_task
-    run_result.returncode = returncode
-    run_result.status = get_result_status(returncode)
-    run_result.output = output
-    run_result.save()
-    return run_result.id
-
-
 def prepare_unittest(pending_task, language, test_environment):
     extension = FILE_EXTENSIONS[language]
     solution = 'solution{}'.format(extension)
@@ -201,7 +183,31 @@ def prepare_output_test(run_id, data, test_number, test_environment, path_to_in_
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
 def run_test(self, run_id, data, input_folder):
     pending_task = get_pending_task(run_id)
-    status, output, returncode = run_tests(self, data, input_folder=input_folder)
+
+    container_id = None
+    try:
+        container_id = run_code_in_docker(input_folder=input_folder)
+        wait_while_docker_finishes(container_id)
+
+        logs = get_docker_logs(container_id)
+        logger.info(logs)
+        returncode, output = get_output(logs)
+
+        status = 'done'
+    except CalledProcessError as e:
+        returncode = e.returncode
+        output = repr(e)
+        status = 'failed'
+    except TimeoutExpired as e:
+        returncode = 127
+        output = repr(e)
+        status = 'docker_time_limit_hit'
+    except SoftTimeLimitExceeded as exc:
+        logger.exception(CELERY_TIME_LIMIT_REACHED.format(**data))
+        self.retry(exc=exc)
+    finally:
+        if container_id:
+            docker_cleanup(container_id)
 
     run_result = RunResult()
     run_result.run = pending_task
@@ -240,7 +246,7 @@ def grade_pending_run(self, run_id):
 
     if test_type == "unittest":
         data = prepare_unittest(pending_task, language, test_environment)
-        run_test(run_id, data, test_environment.get_absolute_path_to())
+        run_test.delay(run_id, data, test_environment.get_absolute_path_to())
 
     if test_type == "output_checking":
         tests, data, path_to_in_out_files = prepare_output_checking_environment(pending_task, language, test_environment)
@@ -251,4 +257,3 @@ def grade_pending_run(self, run_id):
                                   test_environment.get_absolute_path_to(test_dir)),
                                  countdown=1)
     clean_up_test_env.apply_async((pending_task.id, test_environment.get_absolute_path_to()), countdown=2)
-

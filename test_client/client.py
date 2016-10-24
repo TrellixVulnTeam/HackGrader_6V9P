@@ -25,10 +25,39 @@ def get_output_check_python():
     data = {"test_type": "output_checking",
             "language": "python",
             "file_type": "plain",
-            "code": read_file('fixtures/output_check/python/code.py'),
+            "code": read_file('fixtures/output_check/python/solution.py'),
             "test": tests,
             "extra_options": {
                 "archive_type": "tar_gz"
+            }}
+
+    return data
+
+
+def get_output_check_ruby():
+    tests = output_checking_test_binary("ruby")
+    data = {"test_type": "output_checking",
+            "language": "ruby",
+            "file_type": "plain",
+            "code": read_file('fixtures/output_check/ruby/solution.rb'),
+            "test": tests,
+            "extra_options": {
+                "archive_type": "tar_gz"
+            }}
+
+    return data
+
+
+def get_plain_java_output_checking_problem():
+    tests = output_checking_test_binary("ruby")
+    data = {"test_type": "output_checking",
+            "language": "java plain",
+            "file_type": 'plain',
+            "code": read_file('fixtures/output_check/java/solution.java'),
+            "test": tests,
+            "extra_options": {
+                "archive_type": "tar_gz",
+                "class_name": "Factorial"
             }}
 
     return data
@@ -146,6 +175,8 @@ def main():
     make_request(get_plain_python_problem())
     make_request(get_binary_problem())
     make_request(get_output_check_python())
+    make_request(get_output_check_ruby())
+    make_request(get_plain_java_output_checking_problem())
 
 if __name__ == '__main__':
     main()
