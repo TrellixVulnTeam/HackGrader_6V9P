@@ -59,6 +59,13 @@ def run_test(self, run_id, data, input_folder):
     run_result.status = get_result_status(returncode)
     run_result.output = output
     run_result.save()
+
+    results = RunResult.objects.filter(run=pending_task)
+
+    if results.count() == pending_task.number_of_results:
+        pending_task.status = "done"
+        pending_task.save()
+
     return run_result.id
 
 
@@ -66,12 +73,11 @@ def run_test(self, run_id, data, input_folder):
 def clean_up_test_env(run_id, test_folder):
     while True:
         pending_task = get_pending_task(run_id)
-        results = RunResult.objects.filter(run=pending_task)
-        if len(results) == pending_task.number_of_results:
+
+        if pending_task.status == "done":
             shutil.rmtree(test_folder)
-            pending_task.status = "done"
-            pending_task.save()
             break
+
         time.sleep(2)
 
 
