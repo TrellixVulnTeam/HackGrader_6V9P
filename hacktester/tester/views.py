@@ -2,9 +2,7 @@ import json
 import time
 
 from django.core.urlresolvers import reverse
-from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound,\
         HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -13,7 +11,7 @@ from hacktester.api_auth.decorators import require_api_authentication
 
 from .models import TestRun, RunResult, Language, TestType, ArchiveType
 from .tasks import prepare_for_grading
-from .utils import get_base_url
+from .utils import get_base_url, get_run_results
 from .factories import TestRunFactory, ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError
 
 
@@ -114,7 +112,11 @@ def grade(request):
 def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
-        if run.status != "done":
+        run_results = RunResult.objects.filter(run=run)
+        if run.status == "done":
+            data = get_run_results(run, run_results)
+        else:
+            run.refresh_from_db()
             response = HttpResponse(status=204)
             response['X-Run-Status'] = run.status
             return response
@@ -122,40 +124,5 @@ def check_result(request, run_id):
         msg = "Run with id {} not found"
         msg = msg.format(run_id)
         return HttpResponseNotFound(msg)
-    if run.test_type.value == "unittest":
-        try:
-            result = RunResult.objects.get(run=run)
-        except ObjectDoesNotExist as e:
-            run.refresh_from_db()
-            response = HttpResponse(status=204)
-            response['X-Run-Status'] = run.status
-            return response
-
-        data = {'run_status': run.status,
-                'result_status': result.status,
-                'run_id': run_id,
-                'output': result.output,
-                'returncode': result.returncode}
-
-    elif run.test_type.value == "output_checking":
-        results = RunResult.objects.filter(run=run)
-        if len(results) >= run.number_of_results:
-            output = ""
-            status = "OK"
-            for result in results:
-                if result.output != "OK":
-                    status = "NOT OK"
-                output += result.output
-
-            data = {'run_status': run.status,
-                    'result_status': status,
-                    'run_id': run_id,
-                    'output': output,
-                    'returncode': 0}  # TODO
-        else:
-            run.refresh_from_db()
-            response = HttpResponse(status=204)
-            response['X-Run-Status'] = run.status
-            return response
 
     return JsonResponse(data)
