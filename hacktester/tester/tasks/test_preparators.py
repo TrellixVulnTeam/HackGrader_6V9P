@@ -143,7 +143,7 @@ def validate_test_files(test_files):
 
 
 def prepare_output_checking_environment(pending_task, language, test_environment):
-    in_out_file_directory = "tests"
+    in_out_file_directory = 'tests'
     test_environment.add_inner_folder(in_out_file_directory)
     extension = FILE_EXTENSIONS[language]
 
@@ -154,6 +154,7 @@ def prepare_output_checking_environment(pending_task, language, test_environment
         solution = "{}{}".format(data["class_name"], extension)
     else:
         solution = "solution{}".format(extension)
+
     archive_name = "archive.tar.gz"
 
     if pending_task.is_plain():
