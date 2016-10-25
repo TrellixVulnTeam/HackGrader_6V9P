@@ -14,12 +14,14 @@ def get_run_results(run, run_results):
                 'returncode': result.returncode}
 
     elif run.test_type.value == "output_checking":
-        output = ""
-        status = "OK"
+        output = []
+        status = 'ok'
+
         for result in run_results:
-            if result.output != "OK":
-                status = "NOT OK"
-            output += result.output
+            if result.output != 'OK':
+                status = 'not_ok'
+
+            output.append(result.output)
 
         data = {'run_status': run.status,
                 'result_status': status,
