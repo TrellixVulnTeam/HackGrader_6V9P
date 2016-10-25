@@ -51,9 +51,9 @@ class PlainUnittest(Test):
     tests = models.TextField()
 
 
-class BinaryArchiveTest(Test):
+class ArchiveTest(Test):
     """
-    Tested received as archive file
+    Test received as archive file
     For output checking
     """
     tests = models.FileField(upload_to=tests_upload_path)
