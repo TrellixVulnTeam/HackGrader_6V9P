@@ -2,7 +2,7 @@ import uuid
 import base64
 from django.core.files.base import ContentFile
 
-from .models import (TestWithPlainText, TestWithBinaryFile, BinaryArchiveTest,
+from .models import (TestWithPlainText, TestWithBinaryFile, ArchiveTest,
                      BinaryUnittest, PlainUnittest, ArchiveType)
 
 from .exceptions import ArchiveTypeNotSupportedError, ArchiveTypeNotSuppliedError
@@ -42,7 +42,7 @@ class TestFactory:
             extra_options = data.get('extra_options', None)
             archive_type = TestFactory.get_archive(extra_options)
 
-            test = BinaryArchiveTest(tests=test_archive, archive_type=archive_type)
+            test = ArchiveTest(tests=test_archive, archive_type=archive_type)
 
         elif test_type.value == 'unittest':
             if file_type == 'plain':

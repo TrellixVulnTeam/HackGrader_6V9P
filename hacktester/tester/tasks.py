@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import time
 import shutil
 from subprocess import CalledProcessError, TimeoutExpired
+import os
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -12,7 +13,7 @@ from django.conf import settings
 from .test_preparators import (FileSystemManager, prepare_unittest,
                                prepare_output_checking_environment,
                                prepare_output_test)
-from .models import  RunResult
+from .models import RunResult, TestRun
 from .utils import get_result_status, get_pending_task
 from .docker_utils import (run_code_in_docker, wait_while_docker_finishes, get_output,
                            get_docker_logs, docker_cleanup)
@@ -37,15 +38,12 @@ def grade_pending_run(self, run_id, data, input_folder):
         logger.info(logs)
         returncode, output = get_output(logs)
 
-        status = 'done'
     except CalledProcessError as e:
         returncode = e.returncode
         output = repr(e)
-        status = 'failed'
     except TimeoutExpired as e:
         returncode = 127
         output = repr(e)
-        status = 'docker_time_limit_hit'
     except SoftTimeLimitExceeded as exc:
         logger.exception(CELERY_TIME_LIMIT_REACHED.format(**data))
         self.retry(exc=exc)
@@ -70,15 +68,11 @@ def grade_pending_run(self, run_id, data, input_folder):
 
 
 @shared_task
-def clean_up_test_env(run_id, test_folder):
-    while True:
-        pending_task = get_pending_task(run_id)
-
-        if pending_task.status == "done":
-            shutil.rmtree(test_folder)
-            break
-
-        time.sleep(2)
+def clean_up_test_env():
+    test_folders = [folder for folder in os.listdir(FileSystemManager.SANDBOX) if folder.isdigit()]
+    finished_runs = TestRun.objects.filter(pk__in=test_folders, status="done")
+    for run in finished_runs:
+        shutil.rmtree(os.path.join(FileSystemManager.SANDBOX, str(run.id)))
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
@@ -106,4 +100,3 @@ def prepare_for_grading(self, run_id):
                                   test_number,
                                   test_environment.get_absolute_path_to(test_dir)),
                                  countdown=1)
-    clean_up_test_env.apply_async((pending_task.id, test_environment.get_absolute_path_to()), countdown=2)

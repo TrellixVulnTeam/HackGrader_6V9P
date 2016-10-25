@@ -176,7 +176,7 @@ def main():
     make_request(get_binary_problem())
     make_request(get_output_check_python())
     make_request(get_output_check_ruby())
-    make_request(get_plain_java_output_checking_problem())
+    #make_request(get_plain_java_output_checking_problem())
 
 if __name__ == '__main__':
     main()

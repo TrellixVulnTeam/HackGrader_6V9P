@@ -15,8 +15,8 @@ FILE_EXTENSIONS = {l.name: l.extension for l in Language.objects.all()}
 
 
 class FileSystemManager:
-    _MEDIA = os.path.dirname(os.path.abspath(settings.MEDIA_ROOT))
-    _SANDBOX = os.path.join(str(settings.ROOT_DIR), 'sandbox/')
+    MEDIA = os.path.dirname(os.path.abspath(settings.MEDIA_ROOT))
+    SANDBOX = os.path.join(str(settings.ROOT_DIR), 'sandbox/')
 
     def __init__(self, name, destinaton=None, ):
         self.name = str(name)
@@ -25,7 +25,7 @@ class FileSystemManager:
 
     def _copy_file(self, destination_path, destination_name, file_name, source_path=None):
         if source_path is None:
-            source_path = FileSystemManager._MEDIA
+            source_path = FileSystemManager.MEDIA
 
         if file_name.startswith('/'):    # dafaq
             file_name = file_name[1:]
@@ -48,7 +48,7 @@ class FileSystemManager:
 
     def _create_folder(self, folder_name, destination_path=None):
         if destination_path is None:
-            destination_path = FileSystemManager._SANDBOX
+            destination_path = FileSystemManager.SANDBOX
 
         folder_abs_path = os.path.join(str(destination_path), str(folder_name))
         os.mkdir(folder_abs_path)
@@ -153,7 +153,7 @@ def prepare_output_checking_environment(pending_task, language, test_environment
     if pending_task.is_plain():
         test_environment.create_new_file(solution, pending_task.testwithplaintext.solution_code)
         test_environment.copy_file(pending_task.testwithplaintext.test_code.url, archive_name)
-        archive_type = pending_task.testwithplaintext.tests.binaryarchivetest.archive_type
+        archive_type = pending_task.testwithplaintext.tests.archivetest.archive_type
 
     if pending_task.is_binary():
         test_environment.copy_file(solution, pending_task.testwithbinaryfile.solution.url)

@@ -91,7 +91,7 @@ class TestWithPlainText(TestRun):
         if self.test_type.value == "unittest":
             return self.tests.plainunittest.tests
         if self.test_type.value == "output_checking":
-            return self.tests.binaryarchivetest.tests
+            return self.tests.archivetest.tests
 
 
 def solution_upload_path(instance, filename):
@@ -108,7 +108,7 @@ class TestWithBinaryFile(TestRun):
         if self.test_type.value == "unittest":
             return self.tests.binaryunittest.tests
         if self.test_type.value == "output_checking":
-            return self.tests.binaryarchivetest.tests
+            return self.tests.archivetest.tests
 
 
 class RunResult(models.Model):
