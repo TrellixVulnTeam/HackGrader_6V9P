@@ -2,8 +2,7 @@ import os
 import tempfile
 import shlex
 from subprocess import (CalledProcessError, TimeoutExpired,
-                        Popen, call, check_output,
-                        STDOUT, PIPE)
+                        Popen, call, check_output)
 
 
 def create_input_file(input_string):

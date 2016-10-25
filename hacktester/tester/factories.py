@@ -87,4 +87,3 @@ class TestRunFactory:
                                      extra_options=extra_options)
 
         return run
-

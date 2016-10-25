@@ -4,7 +4,7 @@ import contextlib
 import json
 import glob
 
-from .helpers import (call_start, prepare, DATA_FILE, INPUT)
+from .helpers import (call_start, prepare, INPUT)
 
 
 class TestGraders(unittest.TestCase):

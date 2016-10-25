@@ -1,6 +1,5 @@
 from .base import BaseGrader, OutputCheckingMixin, DynamicLanguageUnittestMixin
-from settings import (TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
-                      JUNIT, HAMCREST)
+from settings import TIMELIMIT, JUNIT, HAMCREST
 
 from subprocess import CalledProcessError, call
 
@@ -22,7 +21,7 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
     COMMAND = 'java'
 
     def execute_unittest(self):
-        command = "{command} -cp {junit}:{hamcrest}:{tests}:{solution} org.junit.runner.JUnitCore {qualified_class_name}"
+        command = "{command} -cp {junit}:{hamcrest}:{tests}:{solution} org.junit.runner.JUnitCore {qualified_class_name}"  # flake8: noqa
 
         keys = {
             "command": self.COMMAND,
