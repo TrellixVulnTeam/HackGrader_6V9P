@@ -110,16 +110,16 @@ def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
         run_results = RunResult.objects.filter(run=run)
-        if run.status == "done":
-            data = get_run_results(run, run_results)
-        else:
+
+        if run.status != "done":
             run.refresh_from_db()
             response = HttpResponse(status=204)
             response['X-Run-Status'] = run.status
             return response
+
+        data = get_run_results(run, run_results)
+        return JsonResponse(data)
     except ObjectDoesNotExist as e:
         msg = "Run with id {} not found"
         msg = msg.format(run_id)
         return HttpResponseNotFound(msg)
-
-    return JsonResponse(data)
