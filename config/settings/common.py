@@ -213,7 +213,7 @@ CELERY_TASK_MAX_RETRIES = env('CELERY_TASK_MAX_RERIES', default=3)
 # task that deletes old test folders
 CELERYBEAT_SCHEDULE = {
     'retest-solutions-on-test-change': {
-        'task': 'hacktester.tester.tasks.clean_up_test_env',
+        'task': 'clean_up_test_env',
         'schedule': timedelta(seconds=10),  # every 10 seconds
     }
 }

@@ -6,8 +6,8 @@ import logging
 
 from django.conf import settings
 
-from .utils import ArchiveFileHandler
-from .models import Language
+from .common_utils import ArchiveFileHandler
+from ..models import Language
 
 logger = logging.getLogger(__name__)
 

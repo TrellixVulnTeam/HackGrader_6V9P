@@ -10,11 +10,12 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
 
+from ..models import RunResult, TestRun
+
 from .test_preparators import (FileSystemManager, prepare_unittest,
                                prepare_output_checking_environment,
                                prepare_output_test)
-from .models import RunResult, TestRun
-from .utils import get_result_status, get_pending_task
+from .common_utils import get_result_status, get_pending_task
 from .docker_utils import (run_code_in_docker, wait_while_docker_finishes, get_output,
                            get_docker_logs, docker_cleanup)
 
