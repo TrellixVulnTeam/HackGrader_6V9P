@@ -1,9 +1,22 @@
 from urllib.parse import urlsplit
 import tarfile
 
+from .models import TestRun
+
 
 def get_base_url(uri):
     return "{0.scheme}://{0.netloc}".format(urlsplit(uri))
+
+
+def get_result_status(returncode):
+    if returncode == 0:
+        return 'ok'
+
+    return 'not_ok'
+
+
+def get_pending_task(run_id):
+    return TestRun.objects.filter(pk=run_id).first()
 
 
 class ArchiveFileHandler:

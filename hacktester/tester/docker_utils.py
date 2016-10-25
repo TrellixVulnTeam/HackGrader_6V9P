@@ -14,9 +14,9 @@ DOCKER_COMMAND = """docker run -d \
         -u {docker_user} \
         -m {docker_memory_limit} --memory-swap -1 \
         --net=none \
-        -v {grader}:/grader -v {input}:/grader/input \
+        -v {runner}:/runner -v {input}:/runner/input \
         {docker_image} \
-        /bin/bash --login -c 'python3 grader/start.py {runner_args}'"""
+        /bin/bash --login -c 'python3 runner/start.py {runner_args}'"""
 
 DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
 DOCKER_LOG_COMMAND = "docker logs {container_id}"
@@ -29,7 +29,7 @@ CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing \
 
 def prepare_docker_command(*,
                            input_folder,
-                           runner=os.path.join(str(settings.APPS_DIR), "grader"),
+                           runner=os.path.join(str(settings.APPS_DIR), "runner"),
                            docker_user=settings.DOCKER_USER,
                            nproc_soft_limit=settings.NPROC_SOFT_LIMIT,
                            nproc_hard_limit=settings.NPROC_HARD_LIMIT,
@@ -51,7 +51,7 @@ def prepare_docker_command(*,
     """
 
     return DOCKER_COMMAND.format(
-        **{"grader": runner,
+        **{"runner": runner,
            "input": input_folder,
            "docker_user": docker_user,
            "nproc_soft_limit": nproc_soft_limit,

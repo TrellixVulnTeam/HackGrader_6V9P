@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from hacktester.api_auth.decorators import require_api_authentication
 
 from .models import TestRun, RunResult, Language, TestType, ArchiveType
-from .tasks import grade_pending_run
+from .tasks import prepare_for_grading
 from .utils import get_base_url
 from .factories import TestRunFactory, ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError
 
@@ -95,7 +95,7 @@ def grade(request):
         return HttpResponseBadRequest(msg)
 
     run.save()
-    grade_pending_run.apply_async((run.id,), countdown=1)
+    prepare_for_grading.apply_async((run.id,), countdown=1)
 
     result = {"run_id": run.id}
     result_location = "{}{}"
