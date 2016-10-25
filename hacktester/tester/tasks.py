@@ -90,13 +90,16 @@ def prepare_for_grading(self, run_id):
 
     if test_type == "unittest":
         data = prepare_unittest(pending_task, language, test_environment)
-        grade_pending_run.delay(run_id, data, test_environment.get_absolute_path_to())
+        grade_pending_run.apply_async((run_id,
+                                       data,
+                                       test_environment.get_absolute_path_to()),
+                                      countdown=1)
 
     if test_type == "output_checking":
         tests, data, path_to_in_out_files = prepare_output_checking_environment(pending_task, language, test_environment)
         for test_number in tests:
             test_dir = prepare_output_test(run_id, data, test_number, test_environment, path_to_in_out_files)
             grade_pending_run.apply_async((pending_task.id,
-                                  test_number,
-                                  test_environment.get_absolute_path_to(test_dir)),
-                                 countdown=1)
+                                           test_number,
+                                           test_environment.get_absolute_path_to(test_dir)),
+                                          countdown=1)
