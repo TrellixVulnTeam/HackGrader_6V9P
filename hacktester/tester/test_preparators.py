@@ -90,8 +90,12 @@ class FileSystemManager:
         # TODO add an else that returns/raises error message
 
 
-class TestPreparator:
-    pass
+def get_data(pending_task):
+    data = {}
+    if pending_task.extra_options is not None:
+        for key, value in pending_task.extra_options.items():
+            data[key] = value
+    return data
 
 
 def prepare_unittest(pending_task, language, test_environment):
@@ -107,16 +111,11 @@ def prepare_unittest(pending_task, language, test_environment):
         test_environment.copy_file(pending_task.testwithbinaryfile.solution.url, solution)
         test_environment.copy_file(pending_task.testwithbinaryfile.test.url, tests)
 
-    data = {
-        'language': language,
-        'solution': solution,
-        'tests': tests,
-        'test_type': 'unittest',
-    }
-
-    if pending_task.extra_options is not None:
-        for key, value in pending_task.extra_options.items():
-            data[key] = value
+    data = get_data(pending_task)
+    data['language'] = language
+    data['solution'] = solution
+    data['tests'] = tests
+    data['test_type'] = 'unittest'
 
     test_environment.create_new_file('data.json', json.dumps(data))
 
@@ -147,7 +146,14 @@ def prepare_output_checking_environment(pending_task, language, test_environment
     in_out_file_directory = "tests"
     test_environment.add_inner_folder(in_out_file_directory)
     extension = FILE_EXTENSIONS[language]
-    solution = "solution{}".format(extension)
+
+    data = get_data(pending_task)
+    # TODO raise exception if data is empty dict: "class_name" and "archive_type" are mandatory
+
+    if language == "java plain":
+        solution = "{}{}".format(data["class_name"], extension)
+    else:
+        solution = "solution{}".format(extension)
     archive_name = "archive.tar.gz"
 
     if pending_task.is_plain():
@@ -169,19 +175,14 @@ def prepare_output_checking_environment(pending_task, language, test_environment
     pending_task.number_of_results = len(tests)
     pending_task.save()
 
-    data = {
-        'language': language,
-        'solution': solution,
-        'test_type': 'output_checking'
-    }
+    data['language'] = language
+    data['solution'] = solution
+    data['test_type'] = 'output_checking'
 
-    if pending_task.extra_options is not None:
-        for key, value in pending_task.extra_options.items():
-            data[key] = value
     return tests, data, in_out_file_location
 
 
-def prepare_output_test(run_id, data, test_number, test_environment, path_to_in_out_files):
+def prepare_output_test(data, test_number, test_environment, path_to_in_out_files):
     solution = data['solution']
     test_input = "{}.in".format(test_number)
     test_output = "{}.out".format(test_number)

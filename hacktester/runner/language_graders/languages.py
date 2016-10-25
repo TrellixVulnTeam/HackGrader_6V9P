@@ -2,7 +2,7 @@ from .base import BaseGrader, OutputCheckingMixin, DynamicLanguageUnittestMixin
 from settings import (TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
                       JUNIT, HAMCREST)
 
-from subprocess import CalledProcessError
+from subprocess import CalledProcessError, call
 
 from .proc import run_cmd
 
@@ -44,3 +44,14 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             returncode = e.returncode
 
         return returncode, output
+
+
+class JavaPlainTextRunner(OutputCheckingMixin, BaseGrader):
+    LANGUAGE_NAME = 'java plain'
+    COMMAND = 'java'
+
+    def execute_program(self):
+
+        call(["javac", "{}".format(self.solution)])
+        self.solution = self.data["class_name"]
+        return super().execute_program()

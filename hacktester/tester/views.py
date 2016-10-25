@@ -40,10 +40,7 @@ def index(request):
 
             data['graded'][lang] += 1
 
-    r = HttpResponse(json.dumps(data, indent=4),
-                     content_type='application/json')
-
-    return r
+    return HttpResponse(json.dumps(data, indent=4), content_type='application/json')
 
 
 def supported_languages(request):
