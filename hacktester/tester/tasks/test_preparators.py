@@ -98,28 +98,89 @@ def get_data(pending_task):
     return data
 
 
-def prepare_unittest(pending_task, language, test_environment):
-    extension = FILE_EXTENSIONS[language]
-    solution = 'solution{}'.format(extension)
-    tests = 'tests{}'.format(extension)
+class PreparatorFactory:
+    pass
 
-    if pending_task.is_plain():
-        test_environment.create_new_file(solution, pending_task.testwithplaintext.solution_code)
-        test_environment.create_new_file(tests, pending_task.testwithplaintext.test_code)
 
-    if pending_task.is_binary():
-        test_environment.copy_file(pending_task.testwithbinaryfile.solution.url, solution)
-        test_environment.copy_file(pending_task.testwithbinaryfile.test.url, tests)
+class TestPreparator:
+    def __init__(self, pending_task):
+        self.pending_task = pending_task
+        self.test_data = self.get_data(pending_task)
+        self.language = pending_task.language.name.lower()
+        self.test_environment = FileSystemManager(str(pending_task.id))
+        self.extension = FILE_EXTENSIONS[self.language]
 
-    data = get_data(pending_task)
-    data['language'] = language
-    data['solution'] = solution
-    data['tests'] = tests
-    data['test_type'] = 'unittest'
+    @property
+    def solution_file_name(self):
+        return "solution{}".format(self.extension)
 
-    test_environment.create_new_file('data.json', json.dumps(data))
+    def prepare(self):
+        """
+        This method prepares the test environment for the runner
+        :return dict containing the information needed for task grade_pending_run:
+                    1. "input_folder": absolute path to test folder for the docker instance
+                    2. "run_id": the id of the TestRun instance
 
-    return data
+        If the subclass overrides this method, it must make sure to invoke
+        the base class's method before doing anything else and it's return
+        value should be returned by the overridden method.
+        """
+
+        self.pending_task.status = 'running'
+        run_data = {
+            "run_id": self.pending_task.id,
+            "input_folder": self.test_environment.get_absolute_path_to()
+        }
+        return run_data
+
+    @staticmethod
+    def get_data(pending_task):
+        data = {}
+        if pending_task.extra_options is not None:
+            for key, value in pending_task.extra_options.items():
+                data[key] = value
+        return data
+
+
+class UnittestPreparator(TestPreparator):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def test_file_name(self):
+        return "tests{}".format(self.extension)
+
+    def prepare(self):
+        run_data = super().prepare()
+        if self.pending_task.is_plain():
+            self.test_environment.create_new_file(self.solution_file_name, self.pending_task.testwithplaintext.solution_code)
+            self.test_environment.create_new_file(self.test_file_name, self.pending_task.testwithplaintext.test_code)
+
+        if self.pending_task.is_binary():
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url, self.solution_file_name)
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.test_file_name)
+
+        self.test_data['language'] = self.language
+        self.test_data['solution'] = self.solution_file_name
+        self.test_data['tests'] = self.test_file_name
+        self.test_data['test_type'] = 'unittest'
+
+        self.test_environment.create_new_file('data.json', json.dumps(self.test_data))
+
+        return run_data
+
+
+class OutputCheckingPreparator(TestPreparator):
+
+    @property
+    def test_file_name(self):
+        return "archive"
+
+
+class JavaOutputCheckingPreparator(OutputCheckingPreparator):
+    @property
+    def solution_file_name(self):
+        return "tests{}".format
 
 
 def validate_test_files(test_files):
