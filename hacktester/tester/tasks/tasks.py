@@ -72,15 +72,27 @@ def clean_up_test_env():
         shutil.rmtree(os.path.join(FileSystemManager.SANDBOX, str(run.id)))
 
 
+@shared_task
+def clean_up_after_run(result_id):
+    result = RunResult.objects.get(pk=result_id)
+    run = result.run
+
+    if run.status == 'done':
+        print('Cleaning up after run {}'.format(run.id))
+        shutil.rmtree(os.path.join(FileSystemManager.SANDBOX, str(run.id)))
+
+
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
 def prepare_for_grading(self, run_id):
     pending_task = get_pending_task(run_id)
+
     if pending_task is None:
         return "No tasks to run right now."
 
     preparator = PreparatorFactory.get(pending_task)
     test_runs = preparator.prepare()
+
     for data in test_runs:
-        grade_pending_run.apply_async((data["run_id"],
-                                       data["input_folder"]),
-                                      countdown=1)
+        grade_pending_run.s(**data)\
+                         .set(countdown=1, link=clean_up_after_run.s())\
+                         .delay()
