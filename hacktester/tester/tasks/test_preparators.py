@@ -268,4 +268,4 @@ class OutputCheckingPreparator(TestPreparator):
 class JavaOutputCheckingPreparator(OutputCheckingPreparator):
     @property
     def solution_file_name(self):
-        return "tests{}".format
+        return "{}{}".format(self.test_data["class_name"], self.extension)
