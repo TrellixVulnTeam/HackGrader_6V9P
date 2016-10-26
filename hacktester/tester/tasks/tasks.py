@@ -11,10 +11,7 @@ from django.conf import settings
 
 from ..models import RunResult, TestRun
 
-from .test_preparators import (FileSystemManager,
-                               UnittestPreparator,
-                               OutputCheckingPreparator,
-                               JavaOutputCheckingPreparator)
+from .test_preparators import PreparatorFactory, FileSystemManager
 
 from .common_utils import get_result_status, get_pending_task
 from .docker_utils import (run_code_in_docker, wait_while_docker_finishes, get_output,
@@ -81,22 +78,9 @@ def prepare_for_grading(self, run_id):
     if pending_task is None:
         return "No tasks to run right now."
 
-    test_type = pending_task.test_type.value
-
-    if test_type == "unittest":
-        preparator = UnittestPreparator(pending_task)
-        data = preparator.prepare()
+    preparator = PreparatorFactory.get(pending_task)
+    test_runs = preparator.prepare()
+    for data in test_runs:
         grade_pending_run.apply_async((data["run_id"],
                                        data["input_folder"]),
                                       countdown=1)
-
-    if test_type == "output_checking":
-        if pending_task.language.name.lower() == "java":
-            preparator = JavaOutputCheckingPreparator(pending_task)
-        else:
-            preparator = OutputCheckingPreparator(pending_task)
-        test_data = preparator.prepare()
-        for data in test_data:
-            grade_pending_run.apply_async((data["run_id"],
-                                           data["input_folder"]),
-                                          countdown=1)

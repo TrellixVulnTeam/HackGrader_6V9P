@@ -99,7 +99,18 @@ def get_data(pending_task):
 
 
 class PreparatorFactory:
-    pass
+    @staticmethod
+    def get(pending_task):
+        test_type = pending_task.test_type.value
+
+        if test_type == "unittest":
+            return UnittestPreparator(pending_task)
+
+        if test_type == "output_checking":
+            if pending_task.language.name.lower() == "java":
+                return JavaOutputCheckingPreparator(pending_task)
+            else:
+                return OutputCheckingPreparator(pending_task)
 
 
 class TestPreparator:
@@ -117,7 +128,9 @@ class TestPreparator:
     def prepare(self):
         """
         This method prepares the test environment for the runner
-        :return dict containing the information needed for task grade_pending_run:
+        :return list containing the keyword arguments for each test
+                that is going to be run with grade_pending_run.
+                The keyword arguments are:
                     1. "input_folder": absolute path to test folder for the docker instance
                     2. "run_id": the id of the TestRun instance
 
@@ -132,7 +145,7 @@ class TestPreparator:
             "run_id": self.pending_task.id,
             "input_folder": self.test_environment.get_absolute_path_to()
         }
-        return run_data
+        return [run_data]
 
     @staticmethod
     def get_data(pending_task):
