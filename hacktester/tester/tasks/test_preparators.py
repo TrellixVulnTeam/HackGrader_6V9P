@@ -6,7 +6,7 @@ import logging
 
 from django.conf import settings
 
-from .common_utils import ArchiveFileHandler
+from .common_utils import ArchiveFileHandler, get_pending_task
 from ..models import Language
 
 logger = logging.getLogger(__name__)
@@ -150,7 +150,7 @@ def prepare_output_checking_environment(pending_task, language, test_environment
     data = get_data(pending_task)
     # TODO raise exception if data is empty dict: "class_name" and "archive_type" are mandatory
 
-    if language == "java plain":
+    if language == "java":
         solution = "{}{}".format(data["class_name"], extension)
     else:
         solution = "solution{}".format(extension)

@@ -51,7 +51,7 @@ def get_output_check_ruby():
 def get_output_check_plain_java():
     tests = output_checking_test_binary("ruby")
     data = {"test_type": "output_checking",
-            "language": "java plain",
+            "language": "java",
             "file_type": 'plain',
             "code": read_file('fixtures/output_check/java/solution.java'),
             "test": tests,

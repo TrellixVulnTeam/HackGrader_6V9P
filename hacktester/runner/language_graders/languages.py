@@ -20,6 +20,12 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
     LANGUAGE_NAME = 'java'
     COMMAND = 'java'
 
+    def execute_program(self):
+
+        call(["javac", "{}".format(self.solution)])
+        self.solution = self.data["class_name"]
+        return super().execute_program()
+
     def execute_unittest(self):
         command = "{command} -cp {junit}:{hamcrest}:{tests}:{solution} org.junit.runner.JUnitCore {qualified_class_name}"  # flake8: noqa
 
@@ -43,14 +49,3 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             returncode = e.returncode
 
         return returncode, output
-
-
-class JavaPlainTextRunner(OutputCheckingMixin, BaseGrader):
-    LANGUAGE_NAME = 'java plain'
-    COMMAND = 'java'
-
-    def execute_program(self):
-
-        call(["javac", "{}".format(self.solution)])
-        self.solution = self.data["class_name"]
-        return super().execute_program()
