@@ -122,11 +122,12 @@ class TestPreparator:
                     2. "run_id": the id of the TestRun instance
 
         If the subclass overrides this method, it must make sure to invoke
-        the base class's method before doing anything else and it's return
-        value should be returned by the overridden method.
+        the base class's method before doing anything else and the overridden
+        methods's return value should be the same format.
         """
 
         self.pending_task.status = 'running'
+        self.pending_task.save()
         run_data = {
             "run_id": self.pending_task.id,
             "input_folder": self.test_environment.get_absolute_path_to()
@@ -145,6 +146,7 @@ class TestPreparator:
 class UnittestPreparator(TestPreparator):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.test_type = "unittest"
 
     @property
     def test_file_name(self):
@@ -163,7 +165,7 @@ class UnittestPreparator(TestPreparator):
         self.test_data['language'] = self.language
         self.test_data['solution'] = self.solution_file_name
         self.test_data['tests'] = self.test_file_name
-        self.test_data['test_type'] = 'unittest'
+        self.test_data['test_type'] = self.test_type
 
         self.test_environment.create_new_file('data.json', json.dumps(self.test_data))
 
@@ -172,100 +174,98 @@ class UnittestPreparator(TestPreparator):
 
 class OutputCheckingPreparator(TestPreparator):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.test_type = "output_checking"
+
     @property
     def test_file_name(self):
         return "archive"
+
+    @staticmethod
+    def validate_test_files(test_files):
+        input_files = set()
+        output_files = set()
+        for file in test_files:
+            match = re.match("([0-9]+)\.(in|out)", file)
+            if match is not None:
+                test_num = int(match.groups()[0])
+                type = match.groups()[1]
+                if type == "in":
+                    input_files.add(test_num)
+                else:
+                    output_files.add(test_num)
+            else:
+                "TODO"
+        if input_files != output_files:
+            "TODO"
+
+        return input_files
+
+    def prepare(self):
+        super().prepare()
+        in_out_file_directory = 'tests'
+        self.test_environment.add_inner_folder(in_out_file_directory)
+
+        if self.pending_task.is_plain():
+            self.test_environment.create_new_file(self.solution_file_name, self.pending_task.testwithplaintext.solution_code)
+            self.test_environment.copy_file(self.pending_task.testwithplaintext.test_code.url, self.test_file_name)
+            archive_type = self.pending_task.testwithplaintext.tests.archivetest.archive_type
+
+        if self.pending_task.is_binary():
+            self.test_environment.copy_file(self.solution_file_name, self.pending_task.testwithbinaryfile.solution.url)
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.test_file_name)
+            archive_type = self.pending_task.testwithbinaryfile.test.archive_type
+
+        archive_location = self.test_environment.get_absolute_path_to(file=self.test_file_name)
+        in_out_file_location = self.test_environment.get_absolute_path_to(folder=in_out_file_directory)
+        ArchiveFileHandler.extract(archive_type, archive_location, in_out_file_location)
+
+        test_files = os.listdir(self.test_environment.get_absolute_path_to(in_out_file_directory))
+        tests = self.validate_test_files(test_files)
+        self.pending_task.number_of_results = len(tests)
+        self.pending_task.save()
+
+        self.test_data['language'] = self.language
+        self.test_data['solution'] = self.solution_file_name
+        self.test_data['test_type'] = self.test_type
+
+        result = []
+        for test_number in tests:
+            test_dir = self.prepare_output_test(test_number, self.test_environment.get_absolute_path_to(in_out_file_directory))
+            input_folder = self.test_environment.get_absolute_path_to(test_dir)
+            result.append({"input_folder": input_folder,
+                           "run_id": self.pending_task.id})
+        return result
+
+    def prepare_output_test(self, test_number, path_to_in_out_files):
+        solution = self.test_data['solution']
+        test_input = "{}.in".format(test_number)
+        test_output = "{}.out".format(test_number)
+        self.test_data["tests"] = test_input
+        self.test_data["output"] = test_output
+        current_test_dir = str(test_number)
+
+        self.test_environment.add_inner_folder(name=current_test_dir)
+        self.test_environment.copy_file(name=solution,
+                                        destination_file_name=solution,
+                                        destination_folder=current_test_dir,
+                                        source=self.test_environment.get_absolute_path_to())
+
+        self.test_environment.create_new_file('data.json', json.dumps(self.test_data), current_test_dir)
+        self.test_environment.copy_file(name=test_input,
+                                        destination_file_name=test_input,
+                                        destination_folder=current_test_dir,
+                                        source=path_to_in_out_files)
+        self.test_environment.copy_file(name=test_output,
+                                        destination_file_name=test_output,
+                                        destination_folder=current_test_dir,
+                                        source=path_to_in_out_files)
+
+        return current_test_dir
 
 
 class JavaOutputCheckingPreparator(OutputCheckingPreparator):
     @property
     def solution_file_name(self):
         return "tests{}".format
-
-
-def validate_test_files(test_files):
-    input_files = set()
-    output_files = set()
-    for file in test_files:
-        match = re.match("([0-9]+)\.(in|out)", file)
-        if match is not None:
-            test_num = int(match.groups()[0])
-            type = match.groups()[1]
-            if type == "in":
-                input_files.add(test_num)
-            else:
-                output_files.add(test_num)
-        else:
-            "TODO"
-    if input_files != output_files:
-        "TODO"
-
-    return input_files
-
-
-def prepare_output_checking_environment(pending_task, language, test_environment):
-    in_out_file_directory = 'tests'
-    test_environment.add_inner_folder(in_out_file_directory)
-    extension = FILE_EXTENSIONS[language]
-
-    data = get_data(pending_task)
-    # TODO raise exception if data is empty dict: "class_name" and "archive_type" are mandatory
-
-    if language == "java":
-        solution = "{}{}".format(data["class_name"], extension)
-    else:
-        solution = "solution{}".format(extension)
-
-    archive_name = "archive.tar.gz"
-
-    if pending_task.is_plain():
-        test_environment.create_new_file(solution, pending_task.testwithplaintext.solution_code)
-        test_environment.copy_file(pending_task.testwithplaintext.test_code.url, archive_name)
-        archive_type = pending_task.testwithplaintext.tests.archivetest.archive_type
-
-    if pending_task.is_binary():
-        test_environment.copy_file(solution, pending_task.testwithbinaryfile.solution.url)
-        test_environment.copy_file(pending_task.testwithbinaryfile.test.url, archive_name)
-        archive_type = pending_task.testwithbinaryfile.test.archive_type
-
-    archive_location = test_environment.get_absolute_path_to(file=archive_name)
-    in_out_file_location = test_environment.get_absolute_path_to(folder=in_out_file_directory)
-    ArchiveFileHandler.extract(archive_type, archive_location, in_out_file_location)
-
-    test_files = os.listdir(test_environment.get_absolute_path_to(in_out_file_directory))
-    tests = validate_test_files(test_files)
-    pending_task.number_of_results = len(tests)
-    pending_task.save()
-
-    data['language'] = language
-    data['solution'] = solution
-    data['test_type'] = 'output_checking'
-
-    return tests, data, in_out_file_location
-
-
-def prepare_output_test(data, test_number, test_environment, path_to_in_out_files):
-    solution = data['solution']
-    test_input = "{}.in".format(test_number)
-    test_output = "{}.out".format(test_number)
-    data["tests"] = test_input
-    data["output"] = test_output
-    current_test_dir = str(test_number)
-
-    test_environment.add_inner_folder(name=current_test_dir)
-    test_environment.copy_file(name=solution,
-                               destination_file_name=solution,
-                               destination_folder=current_test_dir,
-                               source=test_environment.get_absolute_path_to())
-
-    test_environment.create_new_file('data.json', json.dumps(data), current_test_dir)
-    test_environment.copy_file(name=test_input,
-                               destination_file_name=test_input,
-                               destination_folder=current_test_dir,
-                               source=path_to_in_out_files)
-    test_environment.copy_file(name=test_output,
-                               destination_file_name=test_output,
-                               destination_folder=current_test_dir,
-                               source=path_to_in_out_files)
-
-    return current_test_dir

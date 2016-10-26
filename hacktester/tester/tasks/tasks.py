@@ -12,8 +12,9 @@ from django.conf import settings
 from ..models import RunResult, TestRun
 
 from .test_preparators import (FileSystemManager,
-                               prepare_output_checking_environment,
-                               prepare_output_test, UnittestPreparator)
+                               UnittestPreparator,
+                               OutputCheckingPreparator)
+
 from .common_utils import get_result_status, get_pending_task
 from .docker_utils import (run_code_in_docker, wait_while_docker_finishes, get_output,
                            get_docker_logs, docker_cleanup)
@@ -79,7 +80,6 @@ def prepare_for_grading(self, run_id):
     if pending_task is None:
         return "No tasks to run right now."
 
-    language = pending_task.language.name.lower()
     test_type = pending_task.test_type.value
 
     if test_type == "unittest":
@@ -88,17 +88,11 @@ def prepare_for_grading(self, run_id):
         grade_pending_run.apply_async((data["run_id"],
                                        data["input_folder"]),
                                       countdown=1)
-        return
 
-    pending_task.save()
-    pending_task.status = 'running'
-    test_environment = FileSystemManager(run_id)
     if test_type == "output_checking":
-        tests, data, path_to_in_out_files = prepare_output_checking_environment(pending_task,
-                                                                                language,
-                                                                                test_environment)
-        for test_number in tests:
-            test_dir = prepare_output_test(data, test_number, test_environment, path_to_in_out_files)
-            grade_pending_run.apply_async((pending_task.id,
-                                           test_environment.get_absolute_path_to(test_dir)),
+        preparator = OutputCheckingPreparator(pending_task)
+        test_data = preparator.prepare()
+        for data in test_data:
+            grade_pending_run.apply_async((data["run_id"],
+                                           data["input_folder"]),
                                           countdown=1)
