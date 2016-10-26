@@ -135,8 +135,6 @@ class OutputCheckingMixin:
 
         if output == expected_output:
             output = "OK"
-        else:
-            output = "NOT OK"
 
         return returncode, output
 
