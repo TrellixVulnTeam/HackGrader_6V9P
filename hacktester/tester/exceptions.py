@@ -4,3 +4,7 @@ class ArchiveTypeNotSupportedError(Exception):
 
 class ArchiveTypeNotSuppliedError(Exception):
     pass
+
+
+class IncorrectTestFileInputError(Exception):
+    pass

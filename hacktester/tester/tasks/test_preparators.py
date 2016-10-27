@@ -6,8 +6,9 @@ import logging
 
 from django.conf import settings
 
-from .common_utils import ArchiveFileHandler, get_pending_task
+from .common_utils import ArchiveFileHandler
 from ..models import Language
+from ..exceptions import IncorrectTestFileInputError
 
 logger = logging.getLogger(__name__)
 
@@ -90,14 +91,6 @@ class FileSystemManager:
         # TODO add an else that returns/raises error message
 
 
-def get_data(pending_task):
-    data = {}
-    if pending_task.extra_options is not None:
-        for key, value in pending_task.extra_options.items():
-            data[key] = value
-    return data
-
-
 class PreparatorFactory:
     @staticmethod
     def get(pending_task):
@@ -125,6 +118,20 @@ class TestPreparator:
     def solution_file_name(self):
         return "solution{}".format(self.extension)
 
+    def save_solution_to_test_environment(self):
+        if self.pending_task.is_plain():
+            self.test_environment.create_new_file(self.solution_file_name,
+                                                  self.pending_task.testwithplaintext.solution_code)
+        if self.pending_task.is_binary():
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url,
+                                            self.solution_file_name)
+
+    def update_test_data(self):
+        self.test_data['language'] = self.language
+        self.test_data['solution'] = self.solution_file_name
+        self.test_data['tests'] = self.test_file_name
+        self.test_data['test_type'] = self.test_type
+
     def prepare(self):
         """
         This method prepares the test environment for the runner
@@ -141,6 +148,8 @@ class TestPreparator:
 
         self.pending_task.status = 'running'
         self.pending_task.save()
+        self.update_test_data()
+
         run_data = {
             "run_id": self.pending_task.id,
             "input_folder": self.test_environment.get_absolute_path_to()
@@ -155,11 +164,19 @@ class TestPreparator:
                 data[key] = value
         return data
 
+    @property
+    def test_file_name(self):
+        raise NotImplementedError
+
+    @property
+    def test_type(self):
+        raise NotImplementedError
+
 
 class UnittestPreparator(TestPreparator):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.test_type = "unittest"
+    @property
+    def test_type(self):
+        return "unittest"
 
     @property
     def test_file_name(self):
@@ -167,18 +184,12 @@ class UnittestPreparator(TestPreparator):
 
     def prepare(self):
         run_data = super().prepare()
+        self.save_solution_to_test_environment()
         if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.solution_file_name, self.pending_task.testwithplaintext.solution_code)
             self.test_environment.create_new_file(self.test_file_name, self.pending_task.testwithplaintext.test_code)
 
         if self.pending_task.is_binary():
-            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url, self.solution_file_name)
             self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.test_file_name)
-
-        self.test_data['language'] = self.language
-        self.test_data['solution'] = self.solution_file_name
-        self.test_data['tests'] = self.test_file_name
-        self.test_data['test_type'] = self.test_type
 
         self.test_environment.create_new_file('data.json', json.dumps(self.test_data))
 
@@ -186,14 +197,41 @@ class UnittestPreparator(TestPreparator):
 
 
 class OutputCheckingPreparator(TestPreparator):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.test_type = "output_checking"
+        self.in_out_file_directory = "tests"
+
+    @property
+    def test_type(self):
+        return "output_checking"
 
     @property
     def test_file_name(self):
         return "archive"
+
+    def save_archive_to_test_environment(self):
+        if self.pending_task.is_plain():
+            self.test_environment.copy_file(self.pending_task.testwithplaintext.test_code.url, self.test_file_name)
+        if self.pending_task.is_binary():
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.test_file_name)
+
+    def get_archive_type(self):
+        if self.pending_task.is_plain():
+            return self.pending_task.testwithplaintext.tests.archivetest.archive_type
+        elif self.pending_task.is_binary():
+            return self.pending_task.testwithbinaryfile.test.archive_type
+
+    def extract_archive(self):
+        archive_type = self.get_archive_type()
+        archive_location = self.test_environment.get_absolute_path_to(file=self.test_file_name)
+        in_out_file_location = self.test_environment.get_absolute_path_to(folder=self.in_out_file_directory)
+        ArchiveFileHandler.extract(archive_type, archive_location, in_out_file_location)
+
+    def update_pending_task_test_number(self):
+        test_files = os.listdir(self.test_environment.get_absolute_path_to(self.in_out_file_directory))
+        tests = self.validate_test_files(test_files)
+        self.pending_task.number_of_results = len(tests)
+        self.pending_task.save()
 
     @staticmethod
     def validate_test_files(test_files):
@@ -202,70 +240,34 @@ class OutputCheckingPreparator(TestPreparator):
         for file in test_files:
             match = re.match("([0-9]+)\.(in|out)", file)
             if match is not None:
-                test_num = int(match.groups()[0])
-                type = match.groups()[1]
-                if type == "in":
+                test_num = match.groups()[0]
+                test_type = match.groups()[1]
+                if test_type == "in":
                     input_files.add(test_num)
                 else:
                     output_files.add(test_num)
             else:
-                "TODO"
+                msg = "File with name '{}' was not expected. " +\
+                      "Expected formats {number}.in where number is a positive integer"
+                logger.warning(msg)
         if input_files != output_files:
-            "TODO"
+            msg = "the set of input files does not match the set of output files. \n" +\
+                  "input files: {} \n" +\
+                  "output files: {} \n"
+            raise IncorrectTestFileInputError(msg.format(input_files, output_files))
 
         return input_files
 
-    def prepare(self):
-        super().prepare()
-        in_out_file_directory = 'tests'
-        self.test_environment.add_inner_folder(in_out_file_directory)
-
-        if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.solution_file_name, self.pending_task.testwithplaintext.solution_code)
-            self.test_environment.copy_file(self.pending_task.testwithplaintext.test_code.url, self.test_file_name)
-            archive_type = self.pending_task.testwithplaintext.tests.archivetest.archive_type
-
-        if self.pending_task.is_binary():
-            self.test_environment.copy_file(self.solution_file_name, self.pending_task.testwithbinaryfile.solution.url)
-            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.test_file_name)
-            archive_type = self.pending_task.testwithbinaryfile.test.archive_type
-
-        archive_location = self.test_environment.get_absolute_path_to(file=self.test_file_name)
-        in_out_file_location = self.test_environment.get_absolute_path_to(folder=in_out_file_directory)
-        ArchiveFileHandler.extract(archive_type, archive_location, in_out_file_location)
-
-        test_files = os.listdir(self.test_environment.get_absolute_path_to(in_out_file_directory))
-        tests = self.validate_test_files(test_files)
-        self.pending_task.number_of_results = len(tests)
-        self.pending_task.save()
-
-        self.test_data['language'] = self.language
-        self.test_data['solution'] = self.solution_file_name
-        self.test_data['test_type'] = self.test_type
-
-        result = []
-        for test_number in tests:
-            test_dir = self.prepare_output_test(test_number, self.test_environment.get_absolute_path_to(in_out_file_directory))
-            input_folder = self.test_environment.get_absolute_path_to(test_dir)
-            result.append({"input_folder": input_folder,
-                           "run_id": self.pending_task.id})
-        return result
-
-    def prepare_output_test(self, test_number, path_to_in_out_files):
-        solution = self.test_data['solution']
-        test_input = "{}.in".format(test_number)
-        test_output = "{}.out".format(test_number)
-        self.test_data["tests"] = test_input
-        self.test_data["output"] = test_output
-        current_test_dir = str(test_number)
-
-        self.test_environment.add_inner_folder(name=current_test_dir)
-        self.test_environment.copy_file(name=solution,
-                                        destination_file_name=solution,
+    def save_solution_to_current_test_dir(self, current_test_dir):
+        self.test_environment.copy_file(name=self.solution_file_name,
+                                        destination_file_name=self.solution_file_name,
                                         destination_folder=current_test_dir,
                                         source=self.test_environment.get_absolute_path_to())
 
-        self.test_environment.create_new_file('data.json', json.dumps(self.test_data), current_test_dir)
+    def save_in_out_files_to_current_test_dir(self, current_test_dir):
+        path_to_in_out_files = self.test_environment.get_absolute_path_to(self.in_out_file_directory)
+        test_input = self.test_data['tests']
+        test_output = self.test_data['output']
         self.test_environment.copy_file(name=test_input,
                                         destination_file_name=test_input,
                                         destination_folder=current_test_dir,
@@ -274,6 +276,40 @@ class OutputCheckingPreparator(TestPreparator):
                                         destination_file_name=test_output,
                                         destination_folder=current_test_dir,
                                         source=path_to_in_out_files)
+
+    def prepare(self):
+        super().prepare()
+        self.test_environment.add_inner_folder(self.in_out_file_directory)
+
+        self.save_solution_to_test_environment()
+        self.save_archive_to_test_environment()
+        self.extract_archive()
+
+        test_files = os.listdir(self.test_environment.get_absolute_path_to(self.in_out_file_directory))
+        tests = self.validate_test_files(test_files)
+        self.pending_task.number_of_results = len(tests)
+        self.pending_task.save()
+
+        result = []
+        for test_number in tests:
+            test_dir = self.prepare_output_test(test_number)
+            input_folder = self.test_environment.get_absolute_path_to(test_dir)
+            result.append({"input_folder": input_folder,
+                           "run_id": self.pending_task.id})
+        return result
+
+    def prepare_output_test(self, test_number):
+        test_input = "{}.in".format(test_number)
+        test_output = "{}.out".format(test_number)
+        self.test_data["tests"] = test_input
+        self.test_data["output"] = test_output
+
+        current_test_dir = test_number
+
+        self.test_environment.add_inner_folder(name=current_test_dir)
+        self.save_solution_to_current_test_dir(current_test_dir)
+        self.save_in_out_files_to_current_test_dir(current_test_dir)
+        self.test_environment.create_new_file('data.json', json.dumps(self.test_data), current_test_dir)
 
         return current_test_dir
 
