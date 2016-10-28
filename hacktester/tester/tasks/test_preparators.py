@@ -95,7 +95,6 @@ class FileSystemManager:
             return self.__inner_folders[folder].get_absolute_path_to(folder=None, file=file)
         elif file is not None:
             return os.path.join(self._absolute_path, file)
-        # TODO add an else that returns/raises error message
 
 
 class PreparatorFactory:

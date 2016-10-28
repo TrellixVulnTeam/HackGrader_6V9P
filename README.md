@@ -28,8 +28,9 @@ $ docker build -t grader .
 2. Create superuser for admin.
 3. Create API User from command: `$ python manage.py create_api_user education.hackbulgaria.com` - here, the URL should be the website that is going to make requests to the grader.
 4. Take API key and API secret and give them to the client.
-5. Run Django.
-6. Run Celery: `$ celery -A HackTester worker -B -E --loglevel=info` where `HackTester` is the main Django app.
+5. Add the initial data needed to run the grader to the database: `$ python manage.py provision_initial_data`
+6. Run Django.
+7. Run Celery: `$ celery -A HackTester worker -B -E --loglevel=info` where `HackTester` is the main Django app.
 
 ## Management commands
 
