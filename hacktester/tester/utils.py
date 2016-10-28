@@ -21,6 +21,9 @@ def get_run_results(run, run_results):
 
             output.append(result.output)
 
+        if len(output) == 1:
+            output = output[1]
+
         data = {'run_status': run.status,
                 'result_status': status,
                 'run_id': run.id,
