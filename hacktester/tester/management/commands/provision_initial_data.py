@@ -16,7 +16,7 @@ LANGUAGES = (
     (RUBY, RUBY_EXTENSION)
 )
 
-ARCHIVE_TYPES = ("tar_gz")
+ARCHIVE_TYPES = ("tar_gz",)
 
 
 class Command(BaseCommand):
