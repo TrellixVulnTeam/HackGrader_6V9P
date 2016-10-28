@@ -22,15 +22,20 @@ ARCHIVE_TYPES = ("tar_gz",)
 class Command(BaseCommand):
     def add_archive_types(self):
         for archive_type in ARCHIVE_TYPES:
-            ArchiveType.objects.create(value=archive_type)
+            if ArchiveType.objects.filter(value=archive_type).last() is None:
+                ArchiveType.objects.create(value=archive_type)
 
     def add_languages(self):
         for language, extension in LANGUAGES:
-            Language.objects.create(name=language, extension=extension)
+            if Language.objects.filter(name=language).last() is None:
+                Language.objects.create(name=language, extension=extension)
 
     def add_test_types(self):
         for test_type_value in TEST_TYPES:
-            TestType.objects.create(value=test_type_value)
+            if TestType.objects.filter(value=test_type_value).last() is None:
+                TestType.objects.create(value=test_type_value)
 
-    def handle(self):
+    def handle(self, *args, **options):
         self.add_test_types()
+        self.add_languages()
+        self.add_archive_types()

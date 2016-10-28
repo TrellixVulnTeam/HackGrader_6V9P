@@ -128,8 +128,6 @@ class TestPreparator:
         if self.pending_task.is_plain():
             self.test_environment.create_new_file(self.solution_file_name,
                                                   self.pending_task.testwithplaintext.solution_code)
-            self.test_environment.create_new_file(self.solution_file_name,
-                                                  self.pending_task.testwithplaintext.solution_code)
         if self.pending_task.is_binary():
             self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url,
                                             self.solution_file_name)
