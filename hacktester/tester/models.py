@@ -3,6 +3,8 @@ from model_utils.fields import StatusField
 from model_utils import Choices
 from jsonfield import JSONField
 
+from hacktester.runner.settings import UNITTEST, OUTPUT_CHECKING
+
 
 class Language(models.Model):
     name = models.CharField(max_length=50)
@@ -88,9 +90,9 @@ class TestWithPlainText(TestRun):
 
     @property
     def test_code(self):
-        if self.test_type.value == "unittest":
+        if self.test_type.value == UNITTEST:
             return self.tests.plainunittest.tests
-        if self.test_type.value == "output_checking":
+        if self.test_type.value == OUTPUT_CHECKING:
             return self.tests.archivetest.tests
 
 
@@ -105,9 +107,9 @@ class TestWithBinaryFile(TestRun):
 
     @property
     def test(self):
-        if self.test_type.value == "unittest":
+        if self.test_type.value == UNITTEST:
             return self.tests.binaryunittest.tests
-        if self.test_type.value == "output_checking":
+        if self.test_type.value == OUTPUT_CHECKING:
             return self.tests.archivetest.tests
 
 

@@ -1,5 +1,6 @@
-from settings import TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR
 from subprocess import CalledProcessError, TimeoutExpired
+from settings import (TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
+                      OUTPUT_CHECKING, UNITTEST)
 
 from .proc import run_cmd, killall
 
@@ -56,9 +57,9 @@ class BaseGrader:
 
     def execute(self):
         test_type = self.data['test_type']
-        if test_type == 'unittest':
+        if test_type == UNITTEST:
             return self.execute_unittest()
-        elif test_type == 'output_checking':
+        elif test_type == OUTPUT_CHECKING:
             return self.execute_program()
 
         output = "{} is not supported test type".format(test_type)

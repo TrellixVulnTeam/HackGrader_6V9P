@@ -1,21 +1,15 @@
 from django.core.management.base import BaseCommand
 
 from hacktester.tester.models import ArchiveType, TestType, Language
+from hacktester.runner.settings import (OUTPUT_CHECKING, UNITTEST,
+                                        JAVA, PYTHON, RUBY)
 
-
-OUTPUT_CHECKING = "output_checking"
-UNITTEST = "unittest"
 
 TEST_TYPES = [OUTPUT_CHECKING, UNITTEST]
 
-JAVA = "java"
 JAVA_EXTENSION = ".java"
-PYTHON = "python"
 PYTHON_EXTENSION = ".py"
-RUBY = "ruby"
 RUBY_EXTENSION = ".rb"
-
-
 LANGUAGES = (
     (JAVA, JAVA_EXTENSION),
     (PYTHON, PYTHON_EXTENSION),

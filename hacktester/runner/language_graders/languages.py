@@ -1,5 +1,7 @@
 from .base import BaseGrader, OutputCheckingMixin, DynamicLanguageUnittestMixin
-from settings import TIMELIMIT, JUNIT, HAMCREST
+from settings import (TIMELIMIT, JUNIT, HAMCREST,
+                      PYTHON, RUBY, JAVA)
+
 
 from subprocess import CalledProcessError, call
 
@@ -8,17 +10,17 @@ from .proc import run_cmd
 
 class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
     COMMAND = 'python3'
-    LANGUAGE_NAME = 'python'
+    LANGUAGE_NAME = PYTHON
 
 
 class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
     COMMAND = 'ruby'
-    LANGUAGE_NAME = 'ruby'
+    LANGUAGE_NAME = RUBY
 
 
 class JavaRunner(OutputCheckingMixin, BaseGrader):
-    LANGUAGE_NAME = 'java'
     COMMAND = 'java'
+    LANGUAGE_NAME = JAVA
 
     def execute_program(self):
 

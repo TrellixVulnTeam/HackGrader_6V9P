@@ -6,6 +6,7 @@ import logging
 
 from django.conf import settings
 
+from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA
 from .common_utils import ArchiveFileHandler
 from ..models import Language
 from ..exceptions import IncorrectTestFileInputError
@@ -96,11 +97,11 @@ class PreparatorFactory:
     def get(pending_task):
         test_type = pending_task.test_type.value
 
-        if test_type == "unittest":
+        if test_type == UNITTEST:
             return UnittestPreparator(pending_task)
 
-        if test_type == "output_checking":
-            if pending_task.language.name.lower() == "java":
+        if test_type == OUTPUT_CHECKING:
+            if pending_task.language.name.lower() == JAVA:
                 return JavaOutputCheckingPreparator(pending_task)
             else:
                 return OutputCheckingPreparator(pending_task)
@@ -176,7 +177,7 @@ class TestPreparator:
 class UnittestPreparator(TestPreparator):
     @property
     def test_type(self):
-        return "unittest"
+        return UNITTEST
 
     @property
     def test_file_name(self):
@@ -203,7 +204,7 @@ class OutputCheckingPreparator(TestPreparator):
 
     @property
     def test_type(self):
-        return "output_checking"
+        return OUTPUT_CHECKING
 
     @property
     def test_file_name(self):

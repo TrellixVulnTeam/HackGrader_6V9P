@@ -1,8 +1,9 @@
 from urllib.parse import urlsplit
+from hacktester.runner.settings import UNITTEST, OUTPUT_CHECKING
 
 
 def get_run_results(run, run_results):
-    if run.test_type.value == "unittest":
+    if run.test_type.value == UNITTEST:
         result = run_results[0]
         data = {'run_status': run.status,
                 'result_status': result.status,
@@ -10,7 +11,7 @@ def get_run_results(run, run_results):
                 'output': result.output,
                 'returncode': result.returncode}
 
-    elif run.test_type.value == "output_checking":
+    elif run.test_type.value == OUTPUT_CHECKING:
         output = []
         status = 'ok'
 

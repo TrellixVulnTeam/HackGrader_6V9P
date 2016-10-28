@@ -7,5 +7,13 @@ JUNIT = os.path.join(LIBS, 'junit.jar')
 HAMCREST = os.path.join(LIBS, 'hamcrest.jar')
 
 # Set timelimit in seconds
-TIMELIMIT = 2
+TIMELIMIT = 3
 TIMELIMIT_EXCEEDED_ERROR = 'Time limit exceeded. Maybe infinite loop?'
+
+
+OUTPUT_CHECKING = "output_checking"
+UNITTEST = "unittest"
+
+JAVA = "java"
+PYTHON = "python"
+RUBY = "ruby"
