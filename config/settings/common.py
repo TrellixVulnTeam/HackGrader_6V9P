@@ -210,15 +210,6 @@ CELERYD_TASK_TIME_LIMIT = env('CELERYD_TASK_TIME_LIMIT', default=60 + 60)
 CELERY_TASK_MAX_RETRIES = env('CELERY_TASK_MAX_RERIES', default=3)
 
 
-# task that deletes old test folders
-CELERYBEAT_SCHEDULE = {
-    'retest-solutions-on-test-change': {
-        'task': 'clean_up_test_env',
-        'schedule': timedelta(seconds=10),  # every 10 seconds
-    }
-}
-
-
 # Your production stuff: Below this line define 3rd party library settings
 
 # ^^^ The above is required if you want to import from the celery

@@ -64,14 +64,6 @@ def grade_pending_run(self, run_id, input_folder):
     return run_result.id
 
 
-@shared_task(name='clean_up_test_env')
-def clean_up_test_env():
-    test_folders = [folder for folder in os.listdir(FileSystemManager.SANDBOX) if folder.isdigit()]
-    finished_runs = TestRun.objects.filter(pk__in=test_folders, status="done")
-    for run in finished_runs:
-        shutil.rmtree(os.path.join(FileSystemManager.SANDBOX, str(run.id)))
-
-
 @shared_task
 def clean_up_after_run(result_id):
     result = RunResult.objects.get(pk=result_id)
