@@ -1,4 +1,4 @@
-from .base import BaseGrader, OutputCheckingMixin, DynamicLanguageUnittestMixin
+from .base import BaseGrader, OutputCheckingMixin, DynamicLanguageUnittestMixin, RunException
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
                       PYTHON, RUBY, JAVA)
 
@@ -24,7 +24,12 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
 
     def execute_program(self):
 
-        call(["javac", "{}".format(self.solution)])
+        time_limit = self.data.get('time_limit') or TIMELIMIT
+        returncode, output = run_cmd("javac {}".format(self.solution), time_limit)
+
+        if returncode != 0:
+            raise RunException(output)
+
         self.solution = self.data["class_name"]
         return super().execute_program()
 
