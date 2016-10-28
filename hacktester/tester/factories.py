@@ -5,6 +5,7 @@ from django.core.files.base import ContentFile
 from .models import (TestWithPlainText, TestWithBinaryFile, ArchiveTest,
                      BinaryUnittest, PlainUnittest, ArchiveType)
 
+from hacktester.runner.settings import UNITTEST, OUTPUT_CHECKING
 from .exceptions import ArchiveTypeNotSupportedError, ArchiveTypeNotSuppliedError
 
 
@@ -35,7 +36,7 @@ class TestFactory:
         test = None
         file_type = data['file_type']
 
-        if test_type.value == 'output_checking':
+        if test_type.value == OUTPUT_CHECKING:
             test_archive = base64.b64decode(data['test'])
             test_archive = ContentFile(content=test_archive, name=str(uuid.uuid4()))
 
@@ -44,7 +45,7 @@ class TestFactory:
 
             test = ArchiveTest(tests=test_archive, archive_type=archive_type)
 
-        elif test_type.value == 'unittest':
+        elif test_type.value == UNITTEST:
             if file_type == 'plain':
                 test = PlainUnittest(tests=data['test'])
 

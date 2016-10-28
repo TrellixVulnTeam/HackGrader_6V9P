@@ -1,6 +1,7 @@
 import json
 import re
 import os
+from os.path import isfile
 import shutil
 import logging
 
@@ -9,7 +10,7 @@ from django.conf import settings
 from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA
 from .common_utils import ArchiveFileHandler
 from ..models import Language
-from ..exceptions import IncorrectTestFileInputError
+from ..exceptions import IncorrectTestFileInputError, FolderAlreadyExistsError
 
 logger = logging.getLogger(__name__)
 
@@ -56,30 +57,35 @@ class FileSystemManager:
         os.mkdir(folder_abs_path)
         return folder_abs_path
 
-    def _delete_folder(self, path_to_folder):
-        shutil.rmtree(path_to_folder)
+    def check_if_file_exists(self, file):
+        files = [f for f in os.listdir(self._absolute_path) if isfile(self.get_absolute_path_to(file=f))]
+        if file in files:
+            msg = "file with name:'{}' already exists in test environment. path:{}"
+            logger.warning(msg.format(file, self.get_absolute_path_to()))
 
     def add_inner_folder(self, name, destination=None):
         # TODO add functionality to add recursively __inner_folders
-        if destination is None:
+        if destination is None and self.__inner_folders.get(name) is None:
             self.__inner_folders[name] = FileSystemManager(name, self._absolute_path)
-        # TODO add error handling if folder with that name already exists
+        elif self.__inner_folders is not None:
+            msg = "A folder with name:'{}' already exists in {}"
+            raise FolderAlreadyExistsError(msg.format(name, self.get_absolute_path_to()))
 
     def copy_file(self, name, destination_file_name, destination_folder=None, source=None):
         # TODO add functionality to for recursive file addition
         if destination_folder is None:
+            self.check_if_file_exists(destination_file_name)
             self._copy_file(self._absolute_path, destination_file_name, name, source)
         elif destination_folder in self.__inner_folders:
             self.__inner_folders[destination_folder].copy_file(name, destination_file_name, source=source)
-        # TODO add an else that returns/raises error message
 
     def create_new_file(self, name, content, destination_folder=None):
         # TODO add functionality for recursive additions
         if destination_folder is None:
+            self.check_if_file_exists(name)
             self._create_file(self._absolute_path, name, content)
         elif destination_folder in self.__inner_folders:
             self.__inner_folders[destination_folder].create_new_file(name, content, None)
-        # TODO add an else that returns/raises error message
 
     def get_absolute_path_to(self, folder=None, file=None):
         # TODO make it recursive
@@ -121,6 +127,8 @@ class TestPreparator:
 
     def save_solution_to_test_environment(self):
         if self.pending_task.is_plain():
+            self.test_environment.create_new_file(self.solution_file_name,
+                                                  self.pending_task.testwithplaintext.solution_code)
             self.test_environment.create_new_file(self.solution_file_name,
                                                   self.pending_task.testwithplaintext.solution_code)
         if self.pending_task.is_binary():

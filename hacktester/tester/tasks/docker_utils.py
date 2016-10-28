@@ -41,9 +41,9 @@ def prepare_docker_command(*,
                          that is being passed to the docker instance
     :param runner: the runner app containing the code of the test runner
     :param docker_user: docker user
-    :param nproc_soft_limit: TODO add descr
-    :param nproc_hard_limit: TODO add descr
-    :param docker_memory_limit: TODO add descr
+    :param nproc_soft_limit: number of processes allowed to run soft limit
+    :param nproc_hard_limit: number of processes allowed to run hard limit
+    :param docker_memory_limit: memory limit for docker instance
     :param docker_image: docker image
     :param command_line_args: A string containing the command line arguments that
                               have to be passed to the runner
