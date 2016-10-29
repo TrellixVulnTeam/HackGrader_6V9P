@@ -113,6 +113,9 @@ class PreparatorFactory:
 
 
 class TestPreparator:
+    test_filename = None
+    test_type = None
+
     def __init__(self, pending_task):
         self.pending_task = pending_task
         self.test_data = self.get_data(pending_task)
@@ -120,23 +123,43 @@ class TestPreparator:
         self.test_environment = FileSystemManager(str(pending_task.id))
         self.extension = FILE_EXTENSIONS[self.language]
 
-    @property
-    def solution_file_name(self):
+    def get_solution_filename(self):
         return "solution{}".format(self.extension)
+
+    def get_test_filename(self):
+        if self.test_filename is None:
+            raise NotImplementedError('You must define test_filename or get_test_filename()')
+
+        return self.test_filename
+
+    def get_test_type(self):
+        if self.test_type is None:
+            raise NotImplementedError('You must define test_type or get_test_type')
+
+        return self.test_type
+
+    def get_data(self, pending_task):
+        data = {}
+
+        if pending_task.extra_options is not None:
+            for key, value in pending_task.extra_options.items():
+                data[key] = value
+
+        return data
 
     def save_solution_to_test_environment(self):
         if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.solution_file_name,
+            self.test_environment.create_new_file(self.get_solution_filename(),
                                                   self.pending_task.testwithplaintext.solution_code)
         if self.pending_task.is_binary():
             self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url,
-                                            self.solution_file_name)
+                                            self.get_solution_filename())
 
     def update_test_data(self):
         self.test_data['language'] = self.language
-        self.test_data['solution'] = self.solution_file_name
-        self.test_data['tests'] = self.test_file_name
-        self.test_data['test_type'] = self.test_type
+        self.test_data['solution'] = self.get_solution_filename()
+        self.test_data['tests'] = self.get_test_filename()
+        self.test_data['test_type'] = self.get_test_type()
 
     def prepare(self):
         """
@@ -154,48 +177,32 @@ class TestPreparator:
 
         self.pending_task.status = 'running'
         self.pending_task.save()
+
         self.update_test_data()
+        self.save_solution_to_test_environment()
 
         run_data = {
-            "run_id": self.pending_task.id,
-            "input_folder": self.test_environment.get_absolute_path_to()
+            'run_id': self.pending_task.id,
+            'input_folder': self.test_environment.get_absolute_path_to()
         }
+
         return [run_data]
-
-    @staticmethod
-    def get_data(pending_task):
-        data = {}
-        if pending_task.extra_options is not None:
-            for key, value in pending_task.extra_options.items():
-                data[key] = value
-        return data
-
-    @property
-    def test_file_name(self):
-        raise NotImplementedError
-
-    @property
-    def test_type(self):
-        raise NotImplementedError
 
 
 class UnittestPreparator(TestPreparator):
-    @property
-    def test_type(self):
-        return UNITTEST
+    test_type = UNITTEST
 
-    @property
-    def test_file_name(self):
+    def get_test_filename(self):
         return "tests{}".format(self.extension)
 
     def prepare(self):
         run_data = super().prepare()
-        self.save_solution_to_test_environment()
+
         if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.test_file_name, self.pending_task.testwithplaintext.test_code)
+            self.test_environment.create_new_file(self.get_test_filename(), self.pending_task.testwithplaintext.test_code)
 
         if self.pending_task.is_binary():
-            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.test_file_name)
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.get_test_filename())
 
         self.test_environment.create_new_file('data.json', json.dumps(self.test_data))
 
@@ -203,23 +210,16 @@ class UnittestPreparator(TestPreparator):
 
 
 class OutputCheckingPreparator(TestPreparator):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.in_out_file_directory = "tests"
-
-    @property
-    def test_type(self):
-        return OUTPUT_CHECKING
-
-    @property
-    def test_file_name(self):
-        return "archive"
+    test_filename = 'archive'
+    test_type = OUTPUT_CHECKING
+    in_out_file_directory = 'tests'
 
     def save_archive_to_test_environment(self):
         if self.pending_task.is_plain():
-            self.test_environment.copy_file(self.pending_task.testwithplaintext.test_code.url, self.test_file_name)
+            self.test_environment.copy_file(self.pending_task.testwithplaintext.test_code.url, self.get_test_filename())
+
         if self.pending_task.is_binary():
-            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.test_file_name)
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.get_test_filename())
 
     def get_archive_type(self):
         if self.pending_task.is_plain():
@@ -229,7 +229,7 @@ class OutputCheckingPreparator(TestPreparator):
 
     def extract_archive(self):
         archive_type = self.get_archive_type()
-        archive_location = self.test_environment.get_absolute_path_to(file=self.test_file_name)
+        archive_location = self.test_environment.get_absolute_path_to(file=self.get_test_filename())
         in_out_file_location = self.test_environment.get_absolute_path_to(folder=self.in_out_file_directory)
         ArchiveFileHandler.extract(archive_type, archive_location, in_out_file_location)
 
@@ -265,8 +265,8 @@ class OutputCheckingPreparator(TestPreparator):
         return input_files
 
     def save_solution_to_current_test_dir(self, current_test_dir):
-        self.test_environment.copy_file(name=self.solution_file_name,
-                                        destination_file_name=self.solution_file_name,
+        self.test_environment.copy_file(name=self.get_solution_filename(),
+                                        destination_file_name=self.get_solution_filename(),
                                         destination_folder=current_test_dir,
                                         source=self.test_environment.get_absolute_path_to())
 
@@ -287,7 +287,6 @@ class OutputCheckingPreparator(TestPreparator):
         super().prepare()
         self.test_environment.add_inner_folder(self.in_out_file_directory)
 
-        self.save_solution_to_test_environment()
         self.save_archive_to_test_environment()
         self.extract_archive()
 
@@ -321,6 +320,5 @@ class OutputCheckingPreparator(TestPreparator):
 
 
 class JavaOutputCheckingPreparator(OutputCheckingPreparator):
-    @property
-    def solution_file_name(self):
-        return "{}{}".format(self.test_data["class_name"], self.extension)
+    def get_solution_filename(self):
+        return "{}{}".format(self.test_data['class_name'], self.extension)
