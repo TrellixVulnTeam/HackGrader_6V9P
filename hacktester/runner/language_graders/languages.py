@@ -1,7 +1,7 @@
 from .base import BaseGrader, OutputCheckingMixin, DynamicLanguageUnittestMixin, RunException
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
                       PYTHON, RUBY, JAVA)
-
+import return_codes
 
 from subprocess import CalledProcessError, call
 
@@ -53,6 +53,6 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             returncode, output = run_cmd(command, time_limit)
         except CalledProcessError as e:
             output = e.output
-            returncode = e.returncode
+            returncode = return_codes.CALLED_PROCESS_ERROR
 
         return returncode, output

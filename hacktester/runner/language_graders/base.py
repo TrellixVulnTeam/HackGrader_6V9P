@@ -1,6 +1,7 @@
 from subprocess import CalledProcessError, TimeoutExpired
 from settings import (TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
                       OUTPUT_CHECKING, UNITTEST)
+import return_codes
 
 from .proc import run_cmd, killall
 
@@ -63,7 +64,7 @@ class BaseGrader:
             return self.execute_program()
 
         output = "{} is not supported test type".format(test_type)
-        returncode = -1
+        returncode = return_codes.UNSUPPORTED_TEST_TYPE
         return returncode, output
 
     def run(self):
@@ -72,19 +73,19 @@ class BaseGrader:
             self.compile()
             returncode, output = self.execute()
         except LintException as e:
-            returncode = 2
+            returncode = return_codes.LINT_ERROR
             output = str(e)
         except CompileException as e:
-            returncode = 3
+            returncode = return_codes.COMPILATION_ERROR
             output = str(e)
         except RunException as e:
-            returncode = 4
+            returncode = return_codes.RUN_EXCEPTION
             output = str(e)
         except TimeoutExpired as e:
-            returncode = 5
+            returncode = return_codes.TIME_LIMIT_ERROR
             output = TIMELIMIT_EXCEEDED_ERROR
         except Exception as e:
-            returncode = -2
+            returncode = return_codes.UNKNOWN_EXCEPTION
             output = repr(e)
         finally:
             self.clean_up()
@@ -130,12 +131,13 @@ class OutputCheckingMixin:
             returncode, output = run_cmd(command, time_limit, input_string=input_string)
         except CalledProcessError as e:
             output = e.output
-            returncode = e.returncode
+            returncode = return_codes.CALLED_PROCESS_ERROR
 
         expected_output = self.get_output()
-
-        if output == expected_output:
-            output = "OK"
+        if returncode != 0:
+            returncode = return_codes.RUN_EXCEPTION
+        elif output == expected_output:
+            returncode = return_codes.WRONG_ANSWER
 
         return returncode, output
 
@@ -162,6 +164,6 @@ class DynamicLanguageUnittestMixin:
             returncode, output = run_cmd(command, time_limit)
         except CalledProcessError as e:
             output = e.output
-            returncode = e.returncode
+            returncode = return_codes.CALLED_PROCESS_ERROR
 
         return returncode, output
