@@ -1,6 +1,10 @@
-from .base import BaseGrader, OutputCheckingMixin, DynamicLanguageUnittestMixin, RunException
+from .base import (BaseGrader, OutputCheckingMixin,
+                   DynamicLanguageUnittestMixin,
+                   CompileException)
+
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
                       PYTHON, RUBY, JAVA)
+
 import return_codes
 
 from subprocess import CalledProcessError, call
@@ -28,7 +32,7 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
         returncode, output = run_cmd("javac {}".format(self.solution), time_limit)
 
         if returncode != 0:
-            raise RunException(output)
+            raise CompileException(output)
 
         self.solution = self.data["class_name"]
         return super().execute_program()
