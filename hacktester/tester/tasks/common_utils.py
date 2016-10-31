@@ -1,13 +1,14 @@
 import tarfile
 
 from ..models import TestRun
+from hacktester.tester.models import RunResult
 
 
 def get_result_status(returncode):
     if returncode == 0:
-        return 'ok'
+        return RunResult.PASSING
 
-    return 'not_ok'
+    return RunResult.FAILED
 
 
 def get_pending_task(run_id):

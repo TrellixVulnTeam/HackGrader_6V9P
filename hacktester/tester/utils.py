@@ -1,5 +1,6 @@
 from urllib.parse import urlsplit
 from hacktester.runner.settings import UNITTEST, OUTPUT_CHECKING
+from .models import RunResult
 
 
 def get_run_results(run, run_results):
@@ -13,11 +14,11 @@ def get_run_results(run, run_results):
 
     elif run.test_type.value == OUTPUT_CHECKING:
         output = []
-        status = 'ok'
+        status = RunResult.PASSING
 
         for result in run_results:
             if result.output != 'OK':
-                status = 'not_ok'
+                status = RunResult.FAILED
 
             output.append(result.output)
 
