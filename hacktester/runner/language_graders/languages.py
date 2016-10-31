@@ -26,7 +26,7 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
     COMMAND = 'java'
     LANGUAGE_NAME = JAVA
 
-    def execute_program(self):
+    def compile(self):
 
         time_limit = self.data.get('time_limit') or TIMELIMIT
         returncode, output = run_cmd("javac {}".format(self.solution), time_limit)
@@ -35,7 +35,6 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             raise CompileException(output)
 
         self.solution = self.data["class_name"]
-        return super().execute_program()
 
     def execute_unittest(self):
         command = "{command} -cp {junit}:{hamcrest}:{tests}:{solution} org.junit.runner.JUnitCore {qualified_class_name}"  # flake8: noqa
