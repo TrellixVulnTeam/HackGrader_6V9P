@@ -137,6 +137,10 @@ class OutputCheckingMixin:
         if returncode != 0:
             returncode = return_codes.RUN_EXCEPTION
         elif output == expected_output:
+            output = "ok"
+            returncode = return_codes.OK
+        else:
+            output = "wrong answer"
             returncode = return_codes.WRONG_ANSWER
 
         return returncode, output
