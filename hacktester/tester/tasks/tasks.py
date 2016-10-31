@@ -9,6 +9,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
 
+from hacktester.runner import return_codes
 from ..models import RunResult, TestRun
 
 from .test_preparators import PreparatorFactory, FileSystemManager
@@ -36,14 +37,17 @@ def grade_pending_run(self, run_id, input_folder):
         returncode, output = get_output(logs)
 
     except CalledProcessError as e:
-        returncode = e.returncode
+        returncode = return_codes.CALLED_PROCESS_ERROR
         output = repr(e)
     except TimeoutExpired as e:
-        returncode = 127
+        returncode = return_codes.TIME_LIMIT_ERROR
         output = repr(e)
     except SoftTimeLimitExceeded as exc:
         logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
         self.retry(exc=exc)
+    except Exception as e:
+        returncode = return_codes.UNKNOWN_EXCEPTION
+        output = repr(e)
     finally:
         if container_id:
             docker_cleanup(container_id)
@@ -71,6 +75,7 @@ def clean_up_after_run(result_id):
 
     if run.status == 'done':
         print('Cleaning up after run {}'.format(run.id))
+        #TODO except FileNotFoundError if folder has been deleted
         shutil.rmtree(os.path.join(FileSystemManager.SANDBOX, str(run.id)))
 
 

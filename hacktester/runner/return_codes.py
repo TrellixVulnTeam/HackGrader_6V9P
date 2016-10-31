@@ -12,13 +12,13 @@ UNSUPPORTED_TEST_TYPE = 9
 
 RETURN_CODE_OUTPUT = {
     OK: "OK",
-    COMPILATION_ERROR: "compilation error",
-    TIME_LIMIT_ERROR: "time limit reached",
-    MEMORY_LIMIT_ERROR: "memory limit reached",
-    WRONG_ANSWER: "incorrect answer",
-    LINT_ERROR: "lint error",
-    RUN_EXCEPTION: "runtime error",
-    UNKNOWN_EXCEPTION: "test failed to run",
-    CALLED_PROCESS_ERROR: "test failed to run",
-    UNSUPPORTED_TEST_TYPE: "test type unsupported"
+    COMPILATION_ERROR: "compilation_error",
+    TIME_LIMIT_ERROR: "time_limit_reached",
+    MEMORY_LIMIT_ERROR: "memory_limit_reached",
+    WRONG_ANSWER: "incorrect_answer",
+    LINT_ERROR: "lint_error",
+    RUN_EXCEPTION: "runtime_error",
+    UNKNOWN_EXCEPTION: "test_failed_to_run",
+    CALLED_PROCESS_ERROR: "test_failed_to_run",
+    UNSUPPORTED_TEST_TYPE: "test_type_unsupported"
 }
