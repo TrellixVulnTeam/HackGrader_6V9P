@@ -114,7 +114,9 @@ class TestWithBinaryFile(TestRun):
 
 
 class RunResult(models.Model):
-    STATUS = Choices('ok', 'not_ok')
+    PASSING = 'ok'
+    FAILED = 'not_ok'
+    STATUS = Choices(PASSING, FAILED)
 
     run = models.ForeignKey(TestRun)
     status = StatusField()
