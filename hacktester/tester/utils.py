@@ -12,7 +12,6 @@ def get_run_results(run, run_results):
             'run_status': run.status,
             'result_status': result.status,
             'run_id': run.id,
-            'returncode': result.returncode,
             'output': {"test_status": test_output,
                        "test_output": result.output}
             }
@@ -37,8 +36,7 @@ def get_run_results(run, run_results):
         data = {'run_status': run.status,
                 'result_status': status,
                 'run_id': run.id,
-                'output': output,
-                'returncode': 0}
+                'output': output}
 
     return data
 
