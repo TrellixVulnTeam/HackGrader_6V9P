@@ -1,5 +1,5 @@
 # config valid only for current version of Capistrano
-lock '3.4.0'
+lock '3.5.0'
 
 set :application, 'HackTester'
 set :repo_url, 'git@github.com:HackBulgaria/HackTester.git'
@@ -38,26 +38,26 @@ set :linked_dirs, fetch(:linked_dirs, []).push('static', 'media')
 namespace :deploy do
   task :pip_install do
     on roles(:all) do |h|
-      execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/common.txt"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/local.txt"
       execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/production.txt"
     end
   end
 
   task :run_migrations do
     on roles(:all) do |h|
-      execute "#{fetch :deploy_to}/shared/virtualenv/bin/python3 #{fetch :deploy_to}/current/source/manage.py migrate --noinput"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/python3 #{fetch :deploy_to}/current/manage.py migrate --noinput"
     end
   end
 
   task :run_collect_static do
     on roles(:all) do |h|
-      execute "#{fetch :deploy_to}/shared/virtualenv/bin/python3 #{fetch :deploy_to}/current/source/manage.py collectstatic --noinput"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/python3 #{fetch :deploy_to}/current/manage.py collectstatic --noinput"
     end
   end
 
   task :rebuild_docker do
     on roles(:all) do |h|
-      execute "docker build -t grader #{fetch :deploy_to}/current/source/docker/."
+      execute "docker build -t grader #{fetch :deploy_to}/current/hacktester/docker/."
     end
   end
 
