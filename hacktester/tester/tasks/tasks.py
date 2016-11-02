@@ -75,8 +75,10 @@ def clean_up_after_run(result_id):
 
     if run.status == 'done':
         print('Cleaning up after run {}'.format(run.id))
-        #TODO except FileNotFoundError if folder has been deleted
-        shutil.rmtree(os.path.join(FileSystemManager.SANDBOX, str(run.id)))
+        try:
+            shutil.rmtree(os.path.join(FileSystemManager.SANDBOX, str(run.id)))
+        except FileNotFoundError as e:
+            logger.info('environment for run {} is clean'.format(run.id))
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
