@@ -1,7 +1,6 @@
 from django.http import HttpResponseForbidden,\
         HttpResponseBadRequest
 from functools import wraps
-import json
 import hashlib
 import hmac
 
@@ -35,7 +34,10 @@ def require_api_authentication(func):
             msg = msg.format(', '.join(missing_headers))
             return HttpResponseBadRequest(msg)
 
+        """
+        TODO: Start using host in check
         host = request.get_host()
+        """
         digest = request.META.get('HTTP_AUTHENTICATION')
         date = request.META.get('HTTP_DATE')
         api_key = request.META.get('HTTP_X_API_KEY')

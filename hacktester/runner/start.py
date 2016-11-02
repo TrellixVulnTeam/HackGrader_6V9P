@@ -16,12 +16,15 @@ def exit_with_error(desc):
 
 def main():
     data_file = os.path.join(INPUT, 'data.json')
-
     if not os.path.exists(data_file):
         exit_with_error("Cannot find {}".format(data_file))
 
     with open(data_file) as f:
         data = json.load(f)
+
+    cmd_args = sys.argv
+    if len(cmd_args) > 1:
+        data["cmd_args"] = cmd_args[1:]
 
     KEYS = ['language', 'solution', 'tests']
 

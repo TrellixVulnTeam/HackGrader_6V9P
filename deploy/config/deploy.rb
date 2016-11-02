@@ -38,7 +38,7 @@ set :linked_dirs, fetch(:linked_dirs, []).push('static', 'media')
 namespace :deploy do
   task :pip_install do
     on roles(:all) do |h|
-      execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/base.txt"
+      execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/local.txt"
       execute "#{fetch :deploy_to}/shared/virtualenv/bin/pip install -r #{fetch :deploy_to}/current/requirements/production.txt"
     end
   end

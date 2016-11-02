@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 
 from .views import index, grade, check_result,\
     supported_languages, supported_test_types
