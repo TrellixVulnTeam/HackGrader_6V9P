@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Language, TestRun, RunResult, TestType, TestWithPlainText, TestWithBinaryFile
+from .models import Language, TestRun, RunResult, TestType, TestWithPlainText, TestWithBinaryFile, ArchiveType
 from djcelery.models import TaskMeta
 
 
@@ -37,3 +37,8 @@ class TestWithBinaryFileAdmin(admin.ModelAdmin):
 @admin.register(RunResult)
 class RunResultAdmin(admin.ModelAdmin):
     list_display = ('run', 'status', 'output')
+
+
+@admin.register(ArchiveType)
+class ArchiveTypeAdmin(admin.ModelAdmin):
+    pass

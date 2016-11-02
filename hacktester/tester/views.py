@@ -1,19 +1,17 @@
 import json
 
 from django.core.urlresolvers import reverse
-from django.shortcuts import redirect
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound,\
         HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from hacktester.api_auth.decorators import require_api_authentication
 
-from .models import TestRun, TestWithPlainText, RunResult, Language, TestType
-from .tasks import grade_pending_run
-from .utils import get_base_url
-from .factories import TestRunFactory
+from .models import TestRun, RunResult, Language, TestType, ArchiveType
+from .tasks import prepare_for_grading
+from .utils import get_base_url, get_run_results
+from .factories import TestRunFactory, ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError
 
 
 def index(request):
@@ -41,10 +39,7 @@ def index(request):
 
             data['graded'][lang] += 1
 
-    r = HttpResponse(json.dumps(data, indent=4),
-                     content_type='application/json')
-
-    return r
+    return HttpResponse(json.dumps(data, indent=4), content_type='application/json')
 
 
 def supported_languages(request):
@@ -54,6 +49,11 @@ def supported_languages(request):
 
 def supported_test_types(request):
     types = [t.value for t in TestType.objects.all()]
+    return JsonResponse(types, safe=False)
+
+
+def supported_archive_types(request):
+    types = [archive.value for archive in ArchiveType.objects.all()]
     return JsonResponse(types, safe=False)
 
 
@@ -82,10 +82,14 @@ def grade(request):
     payload['language'] = language
     payload['test_type'] = test_type
 
-    run = TestRunFactory.create_run(data=payload)
-    run.save()
+    try:
+        run = TestRunFactory.create_run(data=payload)
+    except (ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError) as e:
+        msg = repr(e)
+        return HttpResponseBadRequest(msg)
 
-    grade_pending_run.delay(run.id)
+    run.save()
+    prepare_for_grading.apply_async((run.id,), countdown=1)
 
     result = {"run_id": run.id}
     result_location = "{}{}"
@@ -104,23 +108,17 @@ def grade(request):
 def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
+        run_results = RunResult.objects.filter(run=run)
+
+        if run.status != "done":
+            run.refresh_from_db()
+            response = HttpResponse(status=204)
+            response['X-Run-Status'] = run.status
+            return response
+
+        data = get_run_results(run, run_results)
+        return JsonResponse(data)
     except ObjectDoesNotExist as e:
         msg = "Run with id {} not found"
         msg = msg.format(run_id)
         return HttpResponseNotFound(msg)
-
-    try:
-        result = RunResult.objects.get(run=run)
-    except ObjectDoesNotExist as e:
-        run.refresh_from_db()
-        response = HttpResponse(status=204)
-        response['X-Run-Status'] = run.status
-
-        return response
-
-    data = {'run_status': run.status,
-            'result_status': result.status,
-            'run_id': run_id,
-            'output': result.output,
-            'returncode': result.returncode}
-    return JsonResponse(data)

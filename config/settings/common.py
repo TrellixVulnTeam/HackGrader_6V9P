@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# flake8: noqa
 """
 Django settings for hacksoft project.
 
@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 from __future__ import absolute_import, unicode_literals
 
+from datetime import timedelta
 import environ
 
 ROOT_DIR = environ.Path(__file__) - 3  # (hacksoft/config/settings/common.py - 3 = hacksoft/)
@@ -36,7 +37,6 @@ THIRD_PARTY_APPS = (
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'hacktester.tester',
-    'hacktester.grader',
     'hacktester.api_auth',
 )
 

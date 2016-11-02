@@ -3,6 +3,8 @@ from model_utils.fields import StatusField
 from model_utils import Choices
 from jsonfield import JSONField
 
+from hacktester.runner.settings import UNITTEST, OUTPUT_CHECKING
+
 
 class Language(models.Model):
     name = models.CharField(max_length=50)
@@ -19,6 +21,47 @@ class TestType(models.Model):
         return self.value
 
 
+class ArchiveType(models.Model):
+    value = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.value
+
+
+class Test(models.Model):
+    def __str__(self):
+        return "{} {}".format(self.id, self.__class__.__name__)
+
+
+def tests_upload_path(instance, filename):
+    return "tests_{}_{}_{}".format(instance.__class__.__name__, instance.id, filename)
+
+
+class BinaryUnittest(Test):
+    """
+    Unittest received in binary format
+    example: jar files for Java
+    """
+    tests = models.FileField(upload_to=tests_upload_path)
+
+
+class PlainUnittest(Test):
+    """
+    Unittest received in plain text format
+    example: .py, .rb files
+    """
+    tests = models.TextField()
+
+
+class ArchiveTest(Test):
+    """
+    Test received as archive file
+    For output checking
+    """
+    tests = models.FileField(upload_to=tests_upload_path)
+    archive_type = models.ForeignKey(ArchiveType)
+
+
 class TestRun(models.Model):
     STATUS = Choices('pending', 'running', 'done', 'failed')
 
@@ -27,6 +70,8 @@ class TestRun(models.Model):
     created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
     status = StatusField(db_index=True)
     extra_options = JSONField(null=True, blank=True)
+    number_of_results = models.IntegerField(default=1)
+    tests = models.OneToOneField(Test, null=True, blank=True, related_name="test_run")
 
     def is_plain(self):
         return hasattr(self, "testwithplaintext")
@@ -42,7 +87,13 @@ class TestRun(models.Model):
 
 class TestWithPlainText(TestRun):
     solution_code = models.TextField()
-    test_code = models.TextField()
+
+    @property
+    def test_code(self):
+        if self.test_type.value == UNITTEST:
+            return self.tests.plainunittest.tests
+        if self.test_type.value == OUTPUT_CHECKING:
+            return self.tests.archivetest.tests
 
 
 def solution_upload_path(instance, filename):
@@ -51,19 +102,21 @@ def solution_upload_path(instance, filename):
                                       filename)
 
 
-def tests_upload_path(instance, filename):
-    return "tests_{}/{}_{}".format(instance.language.name,
-                                   instance.id,
-                                   filename)
-
-
 class TestWithBinaryFile(TestRun):
     solution = models.FileField(upload_to=solution_upload_path)
-    tests = models.FileField(upload_to=tests_upload_path)
+
+    @property
+    def test(self):
+        if self.test_type.value == UNITTEST:
+            return self.tests.binaryunittest.tests
+        if self.test_type.value == OUTPUT_CHECKING:
+            return self.tests.archivetest.tests
 
 
 class RunResult(models.Model):
-    STATUS = Choices('ok', 'not_ok')
+    PASSING = 'ok'
+    FAILED = 'not_ok'
+    STATUS = Choices(PASSING, FAILED)
 
     run = models.ForeignKey(TestRun)
     status = StatusField()
