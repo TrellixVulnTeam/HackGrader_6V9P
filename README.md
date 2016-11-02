@@ -103,9 +103,8 @@ for unittest:
     "extra_options": {
         'qualified_class_name': 'com.hackbulgaria.grader.Tests', # for java binary solutions
         'time_limit': number # set time limit for the test suite in seconds
-    }
-}
-```
+    }}
+
 
 for output_checking:
 
@@ -119,8 +118,7 @@ for output_checking:
         "archive_type": "tar_gz",
         "class_name": class_name # name of the class containing the main method for java
         "time_limit": number # set time limit for the test suite in seconds
-    }
-}
+    }}
 
 ### Archive
 
