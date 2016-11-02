@@ -18,7 +18,7 @@ RETURN_CODE_OUTPUT = {
     WRONG_ANSWER: "incorrect_answer",
     LINT_ERROR: "lint_error",
     RUN_EXCEPTION: "runtime_error",
-    UNKNOWN_EXCEPTION: "test_failed_to_run",
+    UNKNOWN_EXCEPTION: "test_run_error",
     CALLED_PROCESS_ERROR: "test_failed_to_run",
     UNSUPPORTED_TEST_TYPE: "test_type_unsupported"
 }
