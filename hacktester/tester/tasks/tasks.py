@@ -10,7 +10,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 
 from hacktester.runner import return_codes
-from ..models import RunResult, TestRun
+from ..models import RunResult
 
 from .test_preparators import PreparatorFactory, FileSystemManager
 

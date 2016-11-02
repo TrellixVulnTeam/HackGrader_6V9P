@@ -199,10 +199,12 @@ class UnittestPreparator(TestPreparator):
         run_data = super().prepare()
 
         if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.get_test_filename(), self.pending_task.testwithplaintext.test_code)
+            self.test_environment.create_new_file(self.get_test_filename(),
+                                                  self.pending_task.testwithplaintext.test_code)
 
         if self.pending_task.is_binary():
-            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url, self.get_test_filename())
+            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url,
+                                            self.get_test_filename())
 
         self.test_environment.create_new_file('data.json', json.dumps(self.test_data))
 
