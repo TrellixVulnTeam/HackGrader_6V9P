@@ -87,3 +87,80 @@ Terminate running tasks:
 ```
 $ celery -A HackTester purge
 ```
+
+## Communication data formats
+
+### Format of the data sent to /grade
+
+for unittest:
+
+    {
+    "test_type": "unittest",
+    "language": language,   # currently supported {java, python, ruby}
+    "file_type": file_type, # plain or binary
+    "code": code, # plain text or base_64 format
+    "test": test_code, # plain text or base_64 format
+    "extra_options": {
+        'qualified_class_name': 'com.hackbulgaria.grader.Tests', # for java binary solutions
+        'time_limit': number # set time limit for the test suite in seconds
+    }
+}
+```
+
+for output_checking:
+
+    {
+    "test_type": "output_checking",
+    "language": language,   # currently supported {java, python, ruby}
+    "file_type": "plain",   # only plain are supported
+    "code": code, # plain text or base_64 format
+    "test": archive, # base_64 format
+    "extra_options": {
+        "archive_type": "tar_gz",
+        "class_name": class_name # name of the class containing the main method for java
+        "time_limit": number # set time limit for the test suite in seconds
+    }
+}
+
+### Archive
+
+sample code for creating a .tar.gz archive with all the files in the current directory:
+
+
+    def create_tar_gz_archive():
+        test_files = os.listdir()
+        with tarfile.open(name="archive.tar.gz", mode="w:gz") as tar:
+            for file in test_files:
+                tar.add(file)
+        return tar.name
+
+The test file names should be in format test\_number.in, test_number.out
+Example:
+
+ 1.in the first input file that should be given to the program
+
+ 1.out the expected output after running solution with the given input(1.in)
+
+
+### Format of the data returned by /check_result
+
+for unittests:
+
+    {
+    'run_status': run.status,  # the status of the test run
+    'result_status': result.status, # the status of the test result
+    'run_id': run.id,
+    'output': {"test_status": test_status,  # the status of the result ("OK", "compilation_error" etc..)
+               "test_output": result.output} # the output of the result
+    }
+
+
+for output_checking:
+
+    {
+    'run_status': run.status,  # the status of the test run
+    'result_status': result.status, # the status of the test result
+    'run_id': run.id,
+    'output': [{"test_status": test_status,
+                "test_output": result.output},] # the list contains results for for each .in .out pair of tests
+    }
