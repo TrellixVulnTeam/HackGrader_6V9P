@@ -24,12 +24,12 @@ CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing run_id:{r
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
-def grade_pending_run(self, run_id, input_folder):
+def grade_pending_run(self, run_id, **docker_command_kwargs):
     pending_task = get_pending_task(run_id)
 
     container_id = None
     try:
-        container_id = run_code_in_docker(input_folder=input_folder)
+        container_id = run_code_in_docker(**docker_command_kwargs)
         wait_while_docker_finishes(container_id)
 
         logs = get_docker_logs(container_id)

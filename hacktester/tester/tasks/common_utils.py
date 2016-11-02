@@ -4,6 +4,14 @@ from ..models import TestRun
 from hacktester.tester.models import RunResult
 
 
+def is_valid_integer(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+
 def get_result_status(returncode):
     if returncode == 0:
         return RunResult.PASSING

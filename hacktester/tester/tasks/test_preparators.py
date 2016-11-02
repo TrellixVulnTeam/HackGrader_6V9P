@@ -8,7 +8,7 @@ import logging
 from django.conf import settings
 
 from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA
-from .common_utils import ArchiveFileHandler
+from .common_utils import ArchiveFileHandler, is_valid_integer
 from ..models import Language
 from ..exceptions import IncorrectTestFileInputError, FolderAlreadyExistsError
 
@@ -181,6 +181,10 @@ class TestPreparator:
             'run_id': self.pending_task.id,
             'input_folder': self.test_environment.get_absolute_path_to()
         }
+
+        memory_limit = self.test_data.get('memory_limit')
+        if memory_limit and is_valid_integer(memory_limit):
+            run_data['docker_memory_limit'] = "{}M".format(memory_limit)
 
         return [run_data]
 
