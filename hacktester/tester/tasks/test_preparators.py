@@ -64,7 +64,6 @@ class FileSystemManager:
             logger.warning(msg.format(file, self.get_absolute_path_to()))
 
     def add_inner_folder(self, name, destination=None):
-        # TODO add functionality to add recursively __inner_folders
         if destination is None and self.__inner_folders.get(name) is None:
             self.__inner_folders[name] = FileSystemManager(name, self._absolute_path)
         elif self.__inner_folders is not None:
@@ -72,7 +71,6 @@ class FileSystemManager:
             raise FolderAlreadyExistsError(msg.format(name, self.get_absolute_path_to()))
 
     def copy_file(self, name, destination_file_name, destination_folder=None, source=None):
-        # TODO add functionality to for recursive file addition
         if destination_folder is None:
             self.check_if_file_exists(destination_file_name)
             self._copy_file(self._absolute_path, destination_file_name, name, source)
@@ -80,7 +78,6 @@ class FileSystemManager:
             self.__inner_folders[destination_folder].copy_file(name, destination_file_name, source=source)
 
     def create_new_file(self, name, content, destination_folder=None):
-        # TODO add functionality for recursive additions
         if destination_folder is None:
             self.check_if_file_exists(name)
             self._create_file(self._absolute_path, name, content)
@@ -88,7 +85,6 @@ class FileSystemManager:
             self.__inner_folders[destination_folder].create_new_file(name, content, None)
 
     def get_absolute_path_to(self, folder=None, file=None):
-        # TODO make it recursive
         if folder is None and file is None:
             return self._absolute_path
         elif folder in self.__inner_folders:
