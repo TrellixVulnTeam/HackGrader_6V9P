@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 DOCKER_COMMAND = """docker run -d \
         -u {docker_user} \
+        --ulimit nproc={nproc_soft_limit}:{nproc_hard_limit} \
         -m {docker_memory_limit} --memory-swap -1 \
         --net=none \
         -v {runner}:/runner -v {input}:/runner/input \
