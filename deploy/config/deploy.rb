@@ -63,7 +63,7 @@ namespace :deploy do
 
   task :restart_grader do
     on roles(:all) do |h|
-      execute "sudo restart grader || sudo start grader"
+      execute "sudo restart hacktester || sudo start hacktester"
     end
   end
 
