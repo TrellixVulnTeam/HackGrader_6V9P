@@ -3,7 +3,7 @@ import shutil
 from subprocess import CalledProcessError, TimeoutExpired
 import os
 
-from celery import shared_task
+from celery import shared_task, chain
 from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -92,6 +92,8 @@ def prepare_for_grading(self, run_id):
     test_runs = preparator.prepare()
 
     for data in test_runs:
-        grade_pending_run.s(**data)\
-                         .set(countdown=1, link=clean_up_after_run.s())\
-                         .delay()
+        grade = grade_pending_run.s(**data).set(countdown=1)
+        clean = clean_up_after_run.s()
+
+        tasks = chain(grade, clean)
+        tasks()
