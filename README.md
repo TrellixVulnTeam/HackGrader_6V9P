@@ -79,13 +79,13 @@ $ docker rm $(docker ps -aq)
 Check for currently running tasks:
 
 ```
-$ celery -A HackTester inspect active
+$ celery -A hacktester inspect active
 ```
 
 Terminate running tasks:
 
 ```
-$ celery -A HackTester purge
+$ celery -A hacktester purge
 ```
 
 ## Communication data formats
