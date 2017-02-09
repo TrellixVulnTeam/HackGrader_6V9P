@@ -13,7 +13,7 @@ from .proc import run_cmd
 
 
 class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
-    COMMAND = 'python3'
+    COMMAND = 'python3.5'
     LANGUAGE_NAME = PYTHON
 
 
