@@ -24,6 +24,12 @@ RUN \curl -sSL https://get.rvm.io | bash -s stable
 RUN echo "source /etc/profile.d/rvm.sh" >> /etc/bash.bashrc
 RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && rvm install ruby 2.3.1"
 
+RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+RUN sudo apt-get install -y nodejs
+RUN node -v
+RUN npm -v
+RUN npm install mocha
+
 RUN apt-get clean
 
 RUN useradd -m -p grader grader && chsh -s /bin/bash grader | adduser grader sudo
