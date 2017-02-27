@@ -7,7 +7,7 @@ import logging
 
 from django.conf import settings
 
-from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA
+from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA, NODEJS
 from .common_utils import ArchiveFileHandler
 from ..models import Language
 from ..exceptions import IncorrectTestFileInputError, FolderAlreadyExistsError
@@ -99,13 +99,14 @@ class PreparatorFactory:
         test_type = pending_task.test_type.value
 
         if test_type == UNITTEST:
+            if pending_task.language.name.lower() == NODEJS:
+                return NodeJSPreparator(pending_task)
             return UnittestPreparator(pending_task)
 
         if test_type == OUTPUT_CHECKING:
             if pending_task.language.name.lower() == JAVA:
                 return JavaOutputCheckingPreparator(pending_task)
-            else:
-                return OutputCheckingPreparator(pending_task)
+            return OutputCheckingPreparator(pending_task)
 
 
 class TestPreparator:
@@ -189,7 +190,7 @@ class UnittestPreparator(TestPreparator):
     test_type = UNITTEST
 
     def get_test_filename(self):
-        return "tests{}".format(self.extension)
+        return "test{}".format(self.extension)
 
     def prepare(self):
         run_data = super().prepare()
@@ -203,6 +204,22 @@ class UnittestPreparator(TestPreparator):
                                             self.get_test_filename())
 
         self.test_environment.create_new_file('data.json', json.dumps(self.test_data))
+
+        return run_data
+
+
+class NodeJSPreparator(UnittestPreparator):
+
+    def prepare(self):
+        run_data = super().prepare()
+
+        project_json_data = {
+            "scripts": {
+                "test": "mocha --reporter tap"
+            }
+        }
+
+        self.test_environment.create_new_file('package.json', json.dumps(project_json_data))
 
         return run_data
 

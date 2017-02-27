@@ -3,7 +3,7 @@ from .base import (BaseGrader, OutputCheckingMixin,
                    CompileException)
 
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
-                      PYTHON, RUBY, JAVA)
+                      PYTHON, RUBY, JAVA, NODEJS)
 
 import return_codes
 
@@ -60,3 +60,15 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             returncode = return_codes.CALLED_PROCESS_ERROR
 
         return returncode, output
+
+
+class NodeJSRunner(OutputCheckingMixin,
+                   DynamicLanguageUnittestMixin,
+                   BaseGrader):
+
+    COMMAND = 'npm'
+    LANGUAGE_NAME = NODEJS
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tests = 'test'

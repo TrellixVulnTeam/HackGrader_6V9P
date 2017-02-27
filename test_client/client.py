@@ -74,6 +74,17 @@ def get_plain_ruby_problem():
     return data
 
 
+def get_plain_nodejs_problem():
+    data = {"test_type": "unittest",
+            "language": "nodejs",
+            "file_type": 'plain',
+            "code": read_file('fixtures/plain/solution.js'),
+            "test": read_file('fixtures/plain/tests.js'),
+            }
+
+    return data
+
+
 def get_plain_python_problem():
     data = {"test_type": "unittest",
             "language": "python",
@@ -95,7 +106,7 @@ def get_binary_problem():
          'test': read_binary_file('fixtures/binary/tests.jar'),
          'extra_options': {
              'qualified_class_name': 'com.hackbulgaria.grader.Tests'
-          }}
+         }}
 
     return d
 
@@ -167,16 +178,19 @@ def make_request(problem):
         r1 = requests.get(check_url, headers=get_headers(path, req_and_resource))
         time.sleep(1)
 
+    r1.text.encode('utf-8', 'ignore')
     print(r1.text)
 
 
 def main():
     make_request(get_plain_ruby_problem())
+    make_request(get_plain_nodejs_problem())
     make_request(get_plain_python_problem())
     make_request(get_binary_problem())
     make_request(get_output_check_python())
     make_request(get_output_check_ruby())
     make_request(get_output_check_plain_java())
+
 
 if __name__ == '__main__':
     main()
