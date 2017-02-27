@@ -28,7 +28,8 @@ RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 RUN sudo apt-get install -y nodejs
 RUN node -v
 RUN npm -v
-RUN npm install mocha
+RUN npm install -g mocha
+RUN npm install -g chai
 
 RUN apt-get clean
 
