@@ -50,7 +50,7 @@ $ docker run grader /bin/bash --login -c "java -version"
 4. Take API key and API secret and give them to the client.
 5. Add the initial data needed to run the grader to the database: `$ python manage.py provision_initial_data`
 6. Run Django.
-7. Run Celery: `$ celery -A HackTester worker -B -E --loglevel=info` where `HackTester` is the main Django app.
+7. Run Celery: `$ celery -A hacktester worker -B -E --loglevel=info` .
 
 ## Management commands
 
@@ -96,7 +96,7 @@ for unittest:
 
     {
     "test_type": "unittest",
-    "language": language,   # currently supported {java, python, ruby}
+    "language": language,   # currently supported {java, python, ruby, nodejs}
     "file_type": file_type, # plain or binary
     "code": code, # plain text or base_64 format
     "test": test_code, # plain text or base_64 format
@@ -104,6 +104,16 @@ for unittest:
         'qualified_class_name': 'com.hackbulgaria.grader.Tests', # for java binary solutions
         'time_limit': number # set time limit for the test suite in seconds
     }}
+
+#### Format of the *code* and *test* data for JS
+```
+Functions in *code* must be exported (e.g., module.exports = function() {};)
+```
+
+```
+- Test functions must require the function from *code* in the **solution** file (e.g., var testedFun = require('solution'))
+- Use *describe* or *it*
+```
 
 
 for output_checking:
