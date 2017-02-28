@@ -212,7 +212,6 @@ class NodeJSPreparator(UnittestPreparator):
 
     def prepare(self):
         run_data = super().prepare()
-
         project_json_data = {
             "scripts": {
                 "test": "mocha --reporter tap"

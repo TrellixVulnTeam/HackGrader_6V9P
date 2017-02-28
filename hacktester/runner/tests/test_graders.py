@@ -70,7 +70,7 @@ class TestGraders(unittest.TestCase):
         self.assertEqual(OK, output['returncode'])
 
     def test_grader_with_nodejs_with_correct_testes_and_solution(self):
-        prepare('firstElement', 'js', 'nodejs', 'unittest')
-
+        prepare('maybeFirst', 'js', 'nodejs', 'unittest')
         output = json.loads(call_start())
+
         self.assertEqual(OK, output['returncode'])

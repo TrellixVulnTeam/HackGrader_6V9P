@@ -52,8 +52,8 @@ def save_data_json(data):
         f.write(json.dumps(data))
 
 
-def save_file(name, code):
-    path = os.path.join(INPUT, name)
+def save_file(name, code, help_dir=''):
+    path = os.path.join(INPUT, help_dir, name)
 
     with open(path, 'w') as f:
         f.write(code)
@@ -77,6 +77,7 @@ def prepare(name, extension, language, test_type, copy=False, **kwargs):
         'tests': tests_file,
         'test_type': test_type
     }
+
     for key, value in kwargs.items():
         data[key] = value
 
@@ -90,4 +91,13 @@ def prepare(name, extension, language, test_type, copy=False, **kwargs):
         tests = fixture['tests']
 
         save_file(solution_file, solution)
-        save_file(tests_file, tests)
+        if language is not "nodejs":
+            save_file(tests_file, tests)
+        else:
+            save_file(tests_file, tests, help_dir="test")
+            package_json_data = {
+                "scripts": {
+                    "test": "mocha --reporter tap --recursive"
+                }
+            }
+            save_file('package.json', json.dumps(package_json_data))
