@@ -30,6 +30,7 @@ RUN node -v
 RUN npm -v
 RUN npm install -g mocha
 RUN npm install -g chai
+RUN npm install -g sinon
 
 RUN apt-get clean
 
