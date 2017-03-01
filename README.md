@@ -107,9 +107,9 @@ $ celery -A hacktester purge
 
 #### Format of the **code** and **test** data for `NodeJS`
 
-###### - Functions in `code` must be exported (e.g., module.exports = function() {};)
-###### - Test functions must require the function from `code` in the **solution** file (e.g., var testedFunc = require('solution'))
-###### - Use `describe` or `it`
+* Functions in `code` must be exported (e.g., module.exports = function() {};)
+* Test functions must require the function from `code` in the **solution** file (e.g., var testedFunc = require('solution'))
+* Use `describe` or `it`
 
 
 
