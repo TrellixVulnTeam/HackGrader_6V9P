@@ -69,8 +69,20 @@ class TestGraders(unittest.TestCase):
         output = json.loads(call_start())
         self.assertEqual(OK, output['returncode'])
 
-    def test_grader_with_nodejs_with_correct_testes_and_solution(self):
+    def test_grader_with_nodejs_with_correct_tests_and_solution(self):
         prepare('maybeFirst', 'js', 'nodejs', 'unittest')
-        output = json.loads(call_start())
 
+        output = json.loads(call_start())
         self.assertEqual(OK, output['returncode'])
+
+    def test_grader_with_nodejs_with_wrong_solution(self):
+        prepare('maybeFirstWrong', 'js', 'nodejs', 'unittest')
+
+        output = json.loads(call_start())
+        self.assertEqual(WRONG_ANSWER, output['returncode'])
+
+    def test_grader_with_nodejs_with_infinite_forloop_solution(self):
+        prepare('infiniteLoop', 'js', 'nodejs', 'unittest')
+
+        output = json.loads(call_start())
+        self.assertEqual(TIME_LIMIT_ERROR, output['returncode'])
