@@ -62,8 +62,7 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
         return returncode, output
 
 
-class JavaScriptRunner(OutputCheckingMixin,
-                       DynamicLanguageUnittestMixin,
+class JavaScriptRunner(DynamicLanguageUnittestMixin,
                        BaseGrader):
     """
     COMMAND is nodejs because this is what is running the JavaScript file
