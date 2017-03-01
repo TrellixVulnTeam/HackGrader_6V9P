@@ -3,7 +3,7 @@ from .base import (BaseGrader, OutputCheckingMixin,
                    CompileException)
 
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
-                      PYTHON, RUBY, JAVA, NODEJS)
+                      PYTHON, RUBY, JAVA, JAVASCRIPT)
 
 import return_codes
 
@@ -62,12 +62,12 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
         return returncode, output
 
 
-class NodeJSRunner(OutputCheckingMixin,
-                   DynamicLanguageUnittestMixin,
-                   BaseGrader):
+class JavaScriptRunner(OutputCheckingMixin,
+                       DynamicLanguageUnittestMixin,
+                       BaseGrader):
 
     COMMAND = 'npm'
-    LANGUAGE_NAME = NODEJS
+    LANGUAGE_NAME = JAVASCRIPT
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

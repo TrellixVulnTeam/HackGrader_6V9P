@@ -4,7 +4,7 @@ from subprocess import check_output, STDOUT, CalledProcessError
 import json
 
 
-from ..settings import INPUT, NODEJS
+from ..settings import INPUT, JAVASCRIPT
 from django.conf import settings
 
 DATA_FILE = os.path.join(INPUT, 'data.json')
@@ -92,7 +92,7 @@ def prepare(name, extension, language, test_type, copy=False, **kwargs):
 
         save_file(solution_file, solution)
 
-        if language is not NODEJS:
+        if language != JAVASCRIPT:
             save_file(tests_file, tests)
         else:
             save_file(tests_file, tests, help_dir="test")

@@ -7,7 +7,7 @@ import logging
 
 from django.conf import settings
 
-from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA, NODEJS
+from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA, JAVASCRIPT
 from .common_utils import ArchiveFileHandler
 from ..models import Language
 from ..exceptions import IncorrectTestFileInputError, FolderAlreadyExistsError
@@ -99,8 +99,8 @@ class PreparatorFactory:
         test_type = pending_task.test_type.value
 
         if test_type == UNITTEST:
-            if pending_task.language.name.lower() == NODEJS:
-                return NodeJSPreparator(pending_task)
+            if pending_task.language.name.lower() == JAVASCRIPT:
+                return JavaScriptPreparator(pending_task)
             return UnittestPreparator(pending_task)
 
         if test_type == OUTPUT_CHECKING:
@@ -208,7 +208,7 @@ class UnittestPreparator(TestPreparator):
         return run_data
 
 
-class NodeJSPreparator(UnittestPreparator):
+class JavaScriptPreparator(UnittestPreparator):
 
     def prepare(self):
         run_data = super().prepare()

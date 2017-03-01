@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 from hacktester.tester.models import ArchiveType, TestType, Language
 from hacktester.runner.settings import (OUTPUT_CHECKING, UNITTEST,
-                                        JAVA, PYTHON, RUBY, NODEJS)
+                                        JAVA, PYTHON, RUBY, JAVASCRIPT)
 
 
 TEST_TYPES = [OUTPUT_CHECKING, UNITTEST]
@@ -10,12 +10,12 @@ TEST_TYPES = [OUTPUT_CHECKING, UNITTEST]
 JAVA_EXTENSION = ".java"
 PYTHON_EXTENSION = ".py"
 RUBY_EXTENSION = ".rb"
-NODEJS_EXTENSION = ".js"
+JAVASCRIPT_EXTENSION = ".js"
 LANGUAGES = (
     (JAVA, JAVA_EXTENSION),
     (PYTHON, PYTHON_EXTENSION),
     (RUBY, RUBY_EXTENSION),
-    (NODEJS, NODEJS_EXTENSION)
+    (JAVASCRIPT, JAVASCRIPT_EXTENSION)
 )
 
 ARCHIVE_TYPES = ("tar_gz",)

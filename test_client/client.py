@@ -76,7 +76,7 @@ def get_plain_ruby_problem():
 
 def get_plain_nodejs_problem():
     data = {"test_type": "unittest",
-            "language": "nodejs",
+            "language": "javascript/nodejs",
             "file_type": 'plain',
             "code": read_file('fixtures/plain/solution.js'),
             "test": read_file('fixtures/plain/tests.js'),
