@@ -42,12 +42,31 @@ class BaseGrader:
         If compiling fails, raise CompileException with the error as message
         """
 
+    def get_command_for_unittest(self):
+        args = {
+            "command": self.__class__.COMMAND,
+            "tests": self.tests
+        }
+
+        command = "{command} {tests}".format(**args)
+
+        return command
+
     def execute_unittest(self):
         """
         Hook for executing unittests
         Should return tuple containing returncode and output as result.
         Raise RunException if something fails
         """
+
+    def get_command_for_output_checking(self):
+        args = {
+            "command": self.__class__.COMMAND,
+            "solution": self.solution
+        }
+        command = "{command} {solution}".format(**args)
+
+        return command
 
     def execute_program(self):
         """
@@ -117,12 +136,7 @@ class OutputCheckingMixin:
         return output
 
     def execute_program(self):
-        args = {
-            "command": self.__class__.COMMAND,
-            "solution": self.solution
-        }
-
-        command = "{command} {solution}".format(**args)
+        command = self.get_command_for_output_checking()
         input_string = self.get_input()
 
         time_limit = self.data.get('time_limit') or TIMELIMIT
@@ -155,13 +169,7 @@ class DynamicLanguageUnittestMixin:
     """
 
     def execute_unittest(self):
-        args = {
-            "command": self.__class__.COMMAND,
-            "tests": self.tests
-        }
-
-        command = "{command} {tests}".format(**args)
-
+        command = self.get_command_for_unittest()
         time_limit = self.data.get('time_limit') or TIMELIMIT
 
         try:

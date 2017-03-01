@@ -65,10 +65,13 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
 class JavaScriptRunner(OutputCheckingMixin,
                        DynamicLanguageUnittestMixin,
                        BaseGrader):
-
-    COMMAND = 'npm'
+    """
+    COMMAND is nodejs because this is what is running the JavaScript file
+    but the command that starts mocha is npm test
+    That's why we have both.
+    """
+    COMMAND = 'nodejs'
     LANGUAGE_NAME = JAVASCRIPT
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.tests = 'test'
+    def get_command_for_unittest(self):
+        return 'npm test'
