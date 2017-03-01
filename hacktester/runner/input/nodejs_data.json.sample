@@ -1,0 +1,5 @@
+{
+  "language": "javascript/nodejs",
+  "solution": "solution.js",
+  "tests": "tests.js"
+}

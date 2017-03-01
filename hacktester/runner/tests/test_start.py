@@ -71,3 +71,21 @@ class TestGraderStart(unittest.TestCase):
         }
         output = json.loads(cm.exception.output.decode('utf-8'))
         self.assertEqual(expected_output, output)
+
+    def test_start_with_no_present_test_type(self):
+        data = {
+            'language': 'python',
+            'solution': 'solution.py',
+            'tests': 'tests.py'
+        }
+        save_data_json(data)
+
+        with self.assertRaises(CalledProcessError) as cm:
+            call_start()
+
+        expected_output = {
+            'error': "Key 'test_type' not set in data.json"
+        }
+
+        output = json.loads(cm.exception.output.decode('utf-8'))
+        self.assertEqual(expected_output, output)

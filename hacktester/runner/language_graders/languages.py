@@ -3,7 +3,7 @@ from .base import (BaseGrader, OutputCheckingMixin,
                    CompileException)
 
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
-                      PYTHON, RUBY, JAVA)
+                      PYTHON, RUBY, JAVA, JAVASCRIPT)
 
 import return_codes
 
@@ -60,3 +60,18 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             returncode = return_codes.CALLED_PROCESS_ERROR
 
         return returncode, output
+
+
+class JavaScriptRunner(OutputCheckingMixin,
+                       DynamicLanguageUnittestMixin,
+                       BaseGrader):
+    """
+    COMMAND is nodejs because this is what is running the JavaScript file
+    but the command that starts mocha is npm test
+    That's why we have both.
+    """
+    COMMAND = 'nodejs'
+    LANGUAGE_NAME = JAVASCRIPT
+
+    def get_command_for_unittest(self):
+        return 'npm test'

@@ -26,12 +26,11 @@ def main():
     if len(cmd_args) > 1:
         data["cmd_args"] = cmd_args[1:]
 
-    KEYS = ['language', 'solution', 'tests']
+    KEYS = ['language', 'solution', 'tests', 'test_type']
 
     for key in KEYS:
         if key not in data:
             exit_with_error("Key '{}' not set in data.json".format(key))
-
     Grader = GraderFactory.get_grader(data['language'])
 
     data['solution'] = os.path.join(INPUT, data['solution'])

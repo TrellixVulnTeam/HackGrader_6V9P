@@ -4,24 +4,22 @@ from subprocess import check_output, STDOUT, CalledProcessError
 import json
 
 
-from ..settings import INPUT
+from ..settings import INPUT, JAVASCRIPT
 from django.conf import settings
 
 DATA_FILE = os.path.join(INPUT, 'data.json')
-GRADER_APP = os.path.join(str(settings.APPS_DIR), "grader")
-FIXTURES = os.path.join(str(settings.APPS_DIR), "grader", "tests", "fixtures")
+GRADER_APP = os.path.join(str(settings.APPS_DIR), "runner")
+FIXTURES = os.path.join(str(settings.APPS_DIR), "runner", "tests", "fixtures")
 
 
 def copy_fixture(name, extension):
     solution_file = "{}_solution.{}".format(name, extension)
     tests_file = "{}_tests.{}".format(name, extension)
-
     solution_src = os.path.join(FIXTURES, solution_file)
     solution_dest = os.path.join(INPUT, 'solution.{}'.format(extension))
 
     test_src = os.path.join(FIXTURES, tests_file)
     test_dest = os.path.join(INPUT, 'tests.{}'.format(extension))
-
     shutil.copyfile(solution_src, solution_dest)
     shutil.copyfile(test_src, test_dest)
 
@@ -70,14 +68,14 @@ def read_file(path):
     return contents
 
 
-def prepare(name, extension, language, copy=False, **kwargs):
+def prepare(name, extension, language, test_type, copy=False, **kwargs):
     solution_file = 'solution.{}'.format(extension)
     tests_file = 'tests.{}'.format(extension)
-
     data = {
         'language': language,
         'solution': solution_file,
-        'tests': tests_file
+        'tests': tests_file,
+        'test_type': test_type
     }
 
     for key, value in kwargs.items():
@@ -93,4 +91,13 @@ def prepare(name, extension, language, copy=False, **kwargs):
         tests = fixture['tests']
 
         save_file(solution_file, solution)
+
         save_file(tests_file, tests)
+
+        if language == JAVASCRIPT:
+            package_json_data = {
+                "scripts": {
+                    "test": "mocha --reporter tap tests.js"
+                }
+            }
+            save_file('package.json', json.dumps(package_json_data))
