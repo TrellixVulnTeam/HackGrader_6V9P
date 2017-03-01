@@ -214,7 +214,7 @@ class JavaScriptPreparator(UnittestPreparator):
         run_data = super().prepare()
         project_json_data = {
             "scripts": {
-                "test": "mocha --reporter tap"
+                "test": "mocha --reporter tap test.js"
             }
         }
 
