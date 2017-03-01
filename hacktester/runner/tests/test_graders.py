@@ -46,10 +46,14 @@ class TestGraders(unittest.TestCase):
         self.assertEqual(TIMELIMIT_EXCEEDED_ERROR, output['output'])
 
     def test_grader_with_exec(self):
+        """
+        The solution code executes ls command,which is not the expected output,
+        but the status is OK.
+        """
         prepare('ruby_exec', 'rb', 'ruby', 'unittest')
 
         output = json.loads(call_start())
-        self.assertEqual(WRONG_ANSWER, output['returncode'])
+        self.assertEqual(OK, output['returncode'])
 
     def test_grader_with_exec_loop(self):
         prepare('exec_loop', 'rb', 'ruby', 'unittest')
