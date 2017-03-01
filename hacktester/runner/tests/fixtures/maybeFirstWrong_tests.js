@@ -1,5 +1,5 @@
 var assert = require('assert');
-var maybeFirst = require('../solution');
+var maybeFirst = require('./solution');
 
 describe('maybeFirst', function() {
   it('returns the first element of an array', function() {

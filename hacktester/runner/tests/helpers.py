@@ -52,8 +52,8 @@ def save_data_json(data):
         f.write(json.dumps(data))
 
 
-def save_file(name, code, help_dir=''):
-    path = os.path.join(INPUT, help_dir, name)
+def save_file(name, code):
+    path = os.path.join(INPUT, name)
 
     with open(path, 'w') as f:
         f.write(code)
@@ -92,13 +92,12 @@ def prepare(name, extension, language, test_type, copy=False, **kwargs):
 
         save_file(solution_file, solution)
 
-        if language != JAVASCRIPT:
-            save_file(tests_file, tests)
-        else:
-            save_file(tests_file, tests, help_dir="test")
+        save_file(tests_file, tests)
+
+        if language == JAVASCRIPT:
             package_json_data = {
                 "scripts": {
-                    "test": "mocha --reporter tap --recursive"
+                    "test": "mocha --reporter tap tests.js"
                 }
             }
             save_file('package.json', json.dumps(package_json_data))
