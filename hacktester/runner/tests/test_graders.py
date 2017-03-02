@@ -61,7 +61,7 @@ class TestGraders(unittest.TestCase):
         output = json.loads(call_start())
         self.assertEqual(TIME_LIMIT_ERROR, output['returncode'])
 
-    def test_grader_with_cyrillic_in_input_ifle(self):
+    def test_grader_with_cyrillic_in_input_file(self):
         prepare('cyrillic', 'py', 'python', 'unittest')
 
         output = json.loads(call_start())

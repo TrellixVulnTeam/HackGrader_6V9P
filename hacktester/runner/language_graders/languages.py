@@ -1,20 +1,24 @@
 from .base import (BaseGrader, OutputCheckingMixin,
                    DynamicLanguageUnittestMixin,
-                   CompileException)
+                   CompileException, LintException)
 
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
                       PYTHON, RUBY, JAVA, JAVASCRIPT)
 
 import return_codes
 
-from subprocess import CalledProcessError, call
-
+from subprocess import CalledProcessError
 from .proc import run_cmd
 
 
 class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
     COMMAND = 'python3.5'
     LANGUAGE_NAME = PYTHON
+
+    def lint(self):
+        returncode, output = run_cmd('flake8 {}'.format(self.solution), timeout=TIMELIMIT)
+        if returncode != 0:
+            raise LintException("flake8: {}".format(output))
 
 
 class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
@@ -69,7 +73,7 @@ class JavaScriptRunner(DynamicLanguageUnittestMixin,
     but the command that starts mocha is npm test
     That's why we have both.
     """
-    COMMAND = 'nodejs'
+    COMMAND = 'node'
     LANGUAGE_NAME = JAVASCRIPT
 
     def get_command_for_unittest(self):

@@ -26,11 +26,12 @@ RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && rvm install ruby 2.3.1"
 
 RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 RUN sudo apt-get install -y nodejs
-RUN node -v
-RUN npm -v
-RUN npm install -g mocha
-RUN npm install -g chai
-RUN npm install -g sinon
+RUN node -v && npm -v
+RUN npm install -g mocha chai sinon
+
+#install flake8
+RUN apt-get update && apt-get install -y python-pip python-dev
+RUN easy_install -U pip && pip install flake8
 
 RUN apt-get clean
 

@@ -98,6 +98,19 @@ def get_plain_python_problem():
     return data
 
 
+def get_plain_python_problem_with_flake8_error():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "file_type": 'plain',
+            "code": read_file('fixtures/plain/solution_flake8_error.py'),
+            "test": read_file('fixtures/plain/tests.py'),
+            "extra_options": {
+                "foo": "bar"    # wtf? lol
+            }}
+
+    return data
+
+
 def get_binary_problem():
     d = {'test_type': 'unittest',
          'language': 'java',
@@ -186,6 +199,7 @@ def main():
     make_request(get_plain_ruby_problem())
     make_request(get_plain_nodejs_problem())
     make_request(get_plain_python_problem())
+    make_request(get_plain_python_problem_with_flake8_error())
     make_request(get_binary_problem())
     make_request(get_output_check_python())
     make_request(get_output_check_ruby())
