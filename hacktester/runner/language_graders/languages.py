@@ -16,7 +16,7 @@ class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader
     LANGUAGE_NAME = PYTHON
 
     def lint(self):
-        returncode, output = run_cmd('flake8 {} --ignore=W292'.format(self.solution), timeout=TIMELIMIT)
+        returncode, output = run_cmd('flake8 {}'.format(self.solution), timeout=TIMELIMIT)
         if returncode != 0:
             raise LintException("flake8: {}".format(output))
 

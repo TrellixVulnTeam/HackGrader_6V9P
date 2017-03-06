@@ -7,7 +7,7 @@ import logging
 
 from django.conf import settings
 
-from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA, JAVASCRIPT
+from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA, JAVASCRIPT, PYTHON
 from .common_utils import ArchiveFileHandler
 from ..models import Language
 from ..exceptions import IncorrectTestFileInputError, FolderAlreadyExistsError
@@ -101,6 +101,8 @@ class PreparatorFactory:
         if test_type == UNITTEST:
             if pending_task.language.name.lower() == JAVASCRIPT:
                 return JavaScriptPreparator(pending_task)
+            elif pending_task.language.name.lower() == PYTHON:
+                return PythonPreparator(pending_task)
             return UnittestPreparator(pending_task)
 
         if test_type == OUTPUT_CHECKING:
@@ -219,6 +221,18 @@ class JavaScriptPreparator(UnittestPreparator):
         }
 
         self.test_environment.create_new_file('package.json', json.dumps(project_json_data))
+
+        return run_data
+
+
+class PythonPreparator(UnittestPreparator):
+
+    def prepare(self):
+        run_data = super().prepare()
+
+        flake8_configuration = "[flake8]\nignore = W292\nmax-line-length = 120\ndisable-noqa = True"
+
+        self.test_environment.create_new_file('.flake8', flake8_configuration)
 
         return run_data
 
