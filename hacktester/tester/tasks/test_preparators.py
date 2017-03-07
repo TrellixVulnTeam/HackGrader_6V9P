@@ -7,7 +7,7 @@ import logging
 
 from django.conf import settings
 
-from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA, JAVASCRIPT, PYTHON
+from hacktester.runner.settings import OUTPUT_CHECKING, UNITTEST, JAVA, JAVASCRIPT, PYTHON, RUBY
 from .common_utils import ArchiveFileHandler
 from ..models import Language
 from ..exceptions import IncorrectTestFileInputError, FolderAlreadyExistsError
@@ -103,6 +103,8 @@ class PreparatorFactory:
                 return JavaScriptPreparator(pending_task)
             elif pending_task.language.name.lower() == PYTHON:
                 return PythonPreparator(pending_task)
+            elif pending_task.language.name.lower() == RUBY:
+                return RubyPreparator(pending_task)
             return UnittestPreparator(pending_task)
 
         if test_type == OUTPUT_CHECKING:
@@ -233,6 +235,26 @@ class PythonPreparator(UnittestPreparator):
         flake8_configuration = "[flake8]\nignore = W292\nmax-line-length = 120\ndisable-noqa = True"
 
         self.test_environment.create_new_file('.flake8', flake8_configuration)
+
+        return run_data
+
+
+class RubyPreparator(UnittestPreparator):
+
+    def prepare(self):
+        run_data = super().prepare()
+
+        rubocop_configuration = '''
+            AllCops:
+              Exclude:
+                - '**/test.rb'
+            Metrics/LineLength:
+              Enabled: false
+            Style/TrailingBlankLines:
+              Enabled: false
+        '''
+
+        self.test_environment.create_new_file('.rubocop.yml', rubocop_configuration)
 
         return run_data
 

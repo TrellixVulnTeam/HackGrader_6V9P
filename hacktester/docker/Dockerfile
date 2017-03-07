@@ -33,6 +33,9 @@ RUN npm install -g mocha chai sinon
 RUN apt-get update && apt-get install -y python-pip python-dev
 RUN easy_install -U pip && pip install flake8
 
+#install rubocop
+RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && gem install rubocop"
+
 RUN apt-get clean
 
 RUN useradd -m -p grader grader && chsh -s /bin/bash grader | adduser grader sudo

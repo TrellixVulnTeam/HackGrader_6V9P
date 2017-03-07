@@ -74,6 +74,17 @@ def get_plain_ruby_problem():
     return data
 
 
+def get_plain_ruby_problem_with_rubocop_error():
+    data = {"test_type": "unittest",
+            "language": "ruby",
+            "file_type": 'plain',
+            "code": read_file('fixtures/plain/solution_rubocop_error.rb'),
+            "test": read_file('fixtures/plain/tests.rb'),
+            }
+
+    return data
+
+
 def get_plain_nodejs_problem():
     data = {"test_type": "unittest",
             "language": "javascript/nodejs",
@@ -197,6 +208,7 @@ def make_request(problem):
 
 def main():
     make_request(get_plain_ruby_problem())
+    make_request(get_plain_ruby_problem_with_rubocop_error())
     make_request(get_plain_nodejs_problem())
     make_request(get_plain_python_problem())
     make_request(get_plain_python_problem_with_flake8_error())
