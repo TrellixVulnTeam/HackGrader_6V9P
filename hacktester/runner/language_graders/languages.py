@@ -25,6 +25,11 @@ class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
     COMMAND = 'ruby'
     LANGUAGE_NAME = RUBY
 
+    def lint(self):
+        returncode, output = run_cmd("rubocop", timeout=TIMELIMIT)
+        if returncode != 0:
+            raise LintException("rubocop: {}".format(output))
+
 
 class JavaRunner(OutputCheckingMixin, BaseGrader):
     COMMAND = 'java'

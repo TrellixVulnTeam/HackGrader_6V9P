@@ -31,13 +31,15 @@ DJANGO_APPS = (
     'django.contrib.staticfiles',
 )
 THIRD_PARTY_APPS = (
-    'djcelery',
+    'django_celery_results',
+    'django_celery_beat',
 )
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'hacktester.tester',
     'hacktester.api_auth',
+    'hacktester.celery.CeleryConfig',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -191,9 +193,9 @@ AUTHENTICATION_BACKENDS = (
 ADMIN_URL = r'^admin/'
 
 # Celery settings
-BROKER_URL = env('BROKER_URL', default='amqp://guest:guest@localhost//')
+CELERY_BROKER_URL = env('BROKER_URL', default='amqp://guest:guest@localhost//')
 # Configure celery to use the django-celery backend
-CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
+CELERY_RESULT_BACKEND = 'django-db'
 
 # Configure celery to use json instead of pickle
 CELERY_ACCEPT_CONTENT = ['json']
