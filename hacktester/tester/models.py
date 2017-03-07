@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.cache import cache
 from model_utils.fields import StatusField
 from model_utils import Choices
 from jsonfield import JSONField
@@ -83,6 +84,9 @@ class TestRun(models.Model):
         return "[{}:{}] for {} at {}]"\
                 .format(self.id, self.status,
                         self.language, self.created_at)
+
+    def save(self, *args, **kwargs):
+        cache.clear()
 
 
 class TestWithPlainText(TestRun):

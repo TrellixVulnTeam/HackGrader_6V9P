@@ -79,5 +79,14 @@ LOGGING = {
     }
 }
 
+REDIS_LOCATION = env('REDIS_LOCATION', default='redis://127.0.0.1:6379/0')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': REDIS_LOCATION
+    }
+}
+
 # Custom Admin URL, use {% url 'admin:index' %}
 ADMIN_URL = env('DJANGO_ADMIN_URL')
