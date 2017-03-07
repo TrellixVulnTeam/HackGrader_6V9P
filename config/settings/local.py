@@ -23,15 +23,5 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='23g#m5uc&4^!ji!*4z4cnh*56yhwjz*t5
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
-# CACHING
-# ------------------------------------------------------------------------------
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': ''
-    }
-}
-
-
 # For remote debugger for celery
 CELERY_RDBSIG = 1

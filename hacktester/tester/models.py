@@ -85,9 +85,6 @@ class TestRun(models.Model):
                 .format(self.id, self.status,
                         self.language, self.created_at)
 
-    def save(self, *args, **kwargs):
-        cache.clear()
-
 
 class TestWithPlainText(TestRun):
     solution_code = models.TextField()
