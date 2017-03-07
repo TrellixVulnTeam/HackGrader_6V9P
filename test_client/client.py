@@ -103,20 +103,33 @@ def get_plain_python_problem():
             "code": read_file('fixtures/plain/solution.py'),
             "test": read_file('fixtures/plain/tests.py'),
             "extra_options": {
-                "foo": "bar"    # wtf? lol
+                "lint": True
             }}
 
     return data
 
 
-def get_plain_python_problem_with_flake8_error():
+def get_plain_python_problem_with_flake8_error_and_lint_true():
     data = {"test_type": "unittest",
             "language": "python",
             "file_type": 'plain',
             "code": read_file('fixtures/plain/solution_flake8_error.py'),
             "test": read_file('fixtures/plain/tests.py'),
             "extra_options": {
-                "foo": "bar"    # wtf? lol
+                "lint": True
+            }}
+
+    return data
+
+
+def get_plain_python_problem_with_flake8_error_and_lint_false():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "file_type": 'plain',
+            "code": read_file('fixtures/plain/solution_flake8_error.py'),
+            "test": read_file('fixtures/plain/tests.py'),
+            "extra_options": {
+                "lint": False
             }}
 
     return data
@@ -211,7 +224,8 @@ def main():
     make_request(get_plain_ruby_problem_with_rubocop_error())
     make_request(get_plain_nodejs_problem())
     make_request(get_plain_python_problem())
-    make_request(get_plain_python_problem_with_flake8_error())
+    make_request(get_plain_python_problem_with_flake8_error_and_lint_true())
+    make_request(get_plain_python_problem_with_flake8_error_and_lint_false())
     make_request(get_binary_problem())
     make_request(get_output_check_python())
     make_request(get_output_check_ruby())
