@@ -37,7 +37,7 @@ THIRD_PARTY_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
-    'hacktester.tester',
+    'hacktester.tester.apps.TesterConfig',
     'hacktester.api_auth',
     'hacktester.celery.CeleryConfig',
 )
