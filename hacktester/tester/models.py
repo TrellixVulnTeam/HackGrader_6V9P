@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.cache import cache
 from model_utils.fields import StatusField
 from model_utils import Choices
 from jsonfield import JSONField

@@ -228,3 +228,16 @@ DOCKER_USER = 'grader'
 DOCKER_MEMORY_LIMIT = '300M'
 NPROC_SOFT_LIMIT = 49
 NPROC_HARD_LIMIT = 49
+
+
+# CACHING
+# ------------------------------------------------------------------------------
+CACHE_TIMEOUT = 200
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'cache-default',
+        'TIMEOUT': CACHE_TIMEOUT
+    }
+}
