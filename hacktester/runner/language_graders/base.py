@@ -23,6 +23,7 @@ class BaseGrader:
         self.data = data
         self.solution = data['solution']
         self.tests = data['tests']
+        self.run_lint = data.get('lint', True)
 
     def prepare(self):
         """
@@ -88,8 +89,11 @@ class BaseGrader:
 
     def run(self):
         try:
-            self.lint()
+            if self.run_lint:
+                self.lint()
+
             self.compile()
+
             returncode, output = self.execute()
         except LintException as e:
             returncode = return_codes.LINT_ERROR
