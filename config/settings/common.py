@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 from __future__ import absolute_import, unicode_literals
 
-from datetime import timedelta
+import os
 import environ
 
 ROOT_DIR = environ.Path(__file__) - 3  # (hacksoft/config/settings/common.py - 3 = hacksoft/)
@@ -241,3 +241,9 @@ CACHES = {
         'TIMEOUT': CACHE_TIMEOUT
     }
 }
+
+DOCS_DIR = os.path.join(ROOT_DIR.path('mkdocs_build'))
+
+STATICFILES_DIRS = [
+    DOCS_DIR
+]
