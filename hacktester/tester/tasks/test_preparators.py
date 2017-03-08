@@ -248,7 +248,7 @@ class RubyPreparator(UnittestPreparator):
             AllCops:
               Exclude:
                 - '**/test.rb'
-            Metrics/LineLength:
+            Documentation:
               Enabled: false
             Style/TrailingBlankLines:
               Enabled: false
