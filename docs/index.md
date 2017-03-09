@@ -173,6 +173,7 @@ for output_checking:
 
 
 ## How to test with test_client
+0. Read `README.md` in test_client/
 1. Run Celery. `$ celery -A hacktester worker -B -E --loglevel=info`
 2. Run local server in another terminal. `$ python3 manage.py runserver`
 3. In another terminal. `$ cd /test_client && python3 client.py`
