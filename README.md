@@ -9,9 +9,6 @@
 
 #### In case you want to run the documentation locally:
 
-```
-$ cd /hacktester
-```
 
 -   Build the documentation:
 
