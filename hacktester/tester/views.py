@@ -65,6 +65,7 @@ def supported_archive_types(request):
 @require_api_authentication
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
+
     language = Language.objects.filter(name=payload['language']).first()
 
     if language is None:

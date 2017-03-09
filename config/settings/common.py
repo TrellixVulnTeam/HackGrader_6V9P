@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 from __future__ import absolute_import, unicode_literals
 
 import os
+import yaml
 import environ
 
-ROOT_DIR = environ.Path(__file__) - 3  # (hacksoft/config/settings/common.py - 3 = hacksoft/)
+ROOT_DIR = environ.Path(__file__) - 3  # (HackTester/config/settings/common.py - 3 = HackTester/)
 APPS_DIR = ROOT_DIR.path('hacktester')
 
 env = environ.Env()
@@ -242,7 +243,11 @@ CACHES = {
     }
 }
 
-DOCS_DIR = os.path.join(ROOT_DIR.path('mkdocs_build'))
+MKDOCS_CONFIG = os.path.join(str(ROOT_DIR), 'mkdocs.yml')
+DOCS_DIR = ''
+
+with open(MKDOCS_CONFIG, 'r') as f:
+    DOCS_DIR = yaml.load(f, Loader=yaml.Loader)['site_dir']
 
 STATICFILES_DIRS = [
     DOCS_DIR
