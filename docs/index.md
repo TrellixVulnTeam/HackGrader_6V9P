@@ -103,6 +103,7 @@ $ celery -A hacktester purge
     "extra_options": {
         'qualified_class_name': 'com.hackbulgaria.grader.Tests', # for java binary solutions
         'time_limit': number # set time limit for the test suite in seconds
+        'lint': True # In case we want to run rubocop(ruby) or flake8(python).
     }}
 
 #### Format of the **code** and **test** data for `JavaScript`
