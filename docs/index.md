@@ -96,7 +96,7 @@ $ celery -A hacktester purge
 
     {
     "test_type": "unittest",
-    "language": language,   # currently supported {java, python, ruby, javascript}
+    "language": language,   # currently supported {java, python, ruby, javascript/nodejs}
     "file_type": file_type, # plain or binary
     "code": code, # plain text or base_64 format
     "test": test_code, # plain text or base_64 format
@@ -107,7 +107,7 @@ $ celery -A hacktester purge
 
 #### Format of the **code** and **test** data for `JavaScript`
 
-* Functions in `code` must be exported (e.g., module.exports = function() {};)
+* Functions in `code` must be exported (e.g., module.exports = function() { };)
 * Test functions must require the function from `code` in the **solution** file (e.g., var testedFunc = require('solution'))
 * Use `describe` or `it`
 
