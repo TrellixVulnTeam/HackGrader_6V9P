@@ -8,3 +8,4 @@ test_client/nonce.json
 .cache
 .idea
 mkdocs_build/
+node_modules/
