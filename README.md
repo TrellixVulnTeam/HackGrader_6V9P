@@ -5,10 +5,22 @@
 
 [Read the whole documentation here](docs/index.md)
 
-In case you want to read the documentation locally:
+***
+
+#### In case you want to read the documentation locally:
 
 ```
 $ cd /hacktester
-$ mkdocs build
-$ mkdocs serve
 ```
+
+-   Build the documentation:
+
+<!-- -->
+    $ mkdocs build
+
+-   Run your documentation server:
+
+<!-- -->
+    $ mkdocs serve
+
+-   Go to `localhost:8000` and see the documentation.
