@@ -7,7 +7,7 @@
 
 ***
 
-#### In case you want to read the documentation locally:
+#### In case you want to run the documentation locally:
 
 ```
 $ cd /hacktester
@@ -23,4 +23,4 @@ $ cd /hacktester
 <!-- -->
     $ mkdocs serve
 
--   Go to `localhost:8000` and see the documentation.
+-   Go to `localhost:8000` or run the whole hacktester project and go to `/docs/` and see the documentation.
