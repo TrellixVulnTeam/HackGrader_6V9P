@@ -4,7 +4,6 @@ import os
 from os.path import isfile
 import shutil
 import logging
-from celery.contrib import rdb
 
 from django.conf import settings
 
@@ -209,7 +208,7 @@ class UnittestPreparator(TestPreparator):
 
     def save_solution_to_test_environment(self):
         if self.need_solution_dir:
-            pass  # extract .tar.gz in /solution
+            ArchiveFileHandler.extract_tar_gz_from_bytes(self.test_data['code'], self.get_solution())
         else:
             super().save_solution_to_test_environment()
 

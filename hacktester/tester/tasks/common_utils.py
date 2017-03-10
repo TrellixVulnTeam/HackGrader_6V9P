@@ -1,4 +1,5 @@
 import tarfile
+import io
 
 from ..models import TestRun
 from hacktester.tester.models import RunResult
@@ -19,6 +20,12 @@ class ArchiveFileHandler:
     @staticmethod
     def extract_tar_gz(path_to_archive, path_to_extract):
         with tarfile.open(name=path_to_archive, mode="r:gz") as tar:
+            tar.extractall(path=path_to_extract)
+
+    @staticmethod
+    def extract_tar_gz_from_bytes(byte_array, path_to_extract):
+        file_like_object = io.BytesIO(byte_array)
+        with tarfile.open(fileobj=file_like_object, mode="r:gz") as tar:
             tar.extractall(path=path_to_extract)
 
     @classmethod
