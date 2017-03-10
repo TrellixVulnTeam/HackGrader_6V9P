@@ -203,7 +203,7 @@ class UnittestPreparator(TestPreparator):
 
     def get_solution(self):
         if self.need_solution_dir:
-            pass  # create /solution dir
+            return self.test_environment.add_inner_folder(name="solution", destination=FileSystemManager.SANDBOX)
         else:
             super().get_solution()
 
