@@ -4,6 +4,7 @@ import os
 from os.path import isfile
 import shutil
 import logging
+from celery.contrib import rdb
 
 from django.conf import settings
 
@@ -124,7 +125,7 @@ class TestPreparator:
         self.test_environment = FileSystemManager(str(pending_task.id))
         self.extension = FILE_EXTENSIONS[self.language]
 
-    def get_solution_filename(self):
+    def get_solution(self):
         return "solution{}".format(self.extension)
 
     def get_test_filename(self):
@@ -150,15 +151,15 @@ class TestPreparator:
 
     def save_solution_to_test_environment(self):
         if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.get_solution_filename(),
+            self.test_environment.create_new_file(self.get_solution(),
                                                   self.pending_task.testwithplaintext.solution_code)
         if self.pending_task.is_binary():
             self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url,
-                                            self.get_solution_filename())
+                                            self.get_solution())
 
     def update_test_data(self):
         self.test_data['language'] = self.language
-        self.test_data['solution'] = self.get_solution_filename()
+        self.test_data['solution'] = self.get_solution()
         self.test_data['tests'] = self.get_test_filename()
         self.test_data['test_type'] = self.get_test_type()
 
@@ -193,8 +194,24 @@ class TestPreparator:
 class UnittestPreparator(TestPreparator):
     test_type = UNITTEST
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.need_solution_dir = bool(self.test_data['technology'])
+
     def get_test_filename(self):
         return "test{}".format(self.extension)
+
+    def get_solution(self):
+        if self.need_solution_dir:
+            pass  # create /solution dir
+        else:
+            super().get_solution()
+
+    def save_solution_to_test_environment(self):
+        if self.need_solution_dir:
+            pass  # extract .tar.gz in /solution
+        else:
+            super().save_solution_to_test_environment()
 
     def prepare(self):
         run_data = super().prepare()
@@ -315,8 +332,8 @@ class OutputCheckingPreparator(TestPreparator):
         return input_files
 
     def save_solution_to_current_test_dir(self, current_test_dir):
-        self.test_environment.copy_file(name=self.get_solution_filename(),
-                                        destination_file_name=self.get_solution_filename(),
+        self.test_environment.copy_file(name=self.get_solution(),
+                                        destination_file_name=self.get_solution(),
                                         destination_folder=current_test_dir,
                                         source=self.test_environment.get_absolute_path_to())
 
@@ -370,5 +387,5 @@ class OutputCheckingPreparator(TestPreparator):
 
 
 class JavaOutputCheckingPreparator(OutputCheckingPreparator):
-    def get_solution_filename(self):
+    def get_solution(self):
         return "{}{}".format(self.test_data['class_name'], self.extension)
