@@ -4,6 +4,7 @@ import os
 from os.path import isfile
 import shutil
 import logging
+import tarfile
 
 from django.conf import settings
 
@@ -195,7 +196,8 @@ class UnittestPreparator(TestPreparator):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.need_solution_dir = bool(self.test_data['technology'])
+
+        self.need_solution_dir = tarfile.is_tarfile(self.test_data['code'])
 
     def get_test_filename(self):
         return "test{}".format(self.extension)

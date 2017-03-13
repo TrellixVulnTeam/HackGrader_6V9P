@@ -148,6 +148,17 @@ def get_binary_problem():
     return d
 
 
+def get_plain_django_problem():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "file_type": 'plain',
+            "code": read_binary_file('fixtures/plain/django/django_project.tar.gz'),
+            "test": read_file('fixtures/plain/django/tests.py')
+            }
+
+    return data
+
+
 def get_and_update_nonce(resource):
     data = {}
     r = -1
