@@ -58,6 +58,10 @@ class FileSystemManager:
         os.mkdir(folder_abs_path)
         return folder_abs_path
 
+    def check_if_folder_exists(self, folder):
+        print(self.get_absolute_path_to())
+        return os.path.exists(self.get_absolute_path_to() + folder)
+
     def check_if_file_exists(self, file):
         files = [f for f in os.listdir(self._absolute_path) if isfile(self.get_absolute_path_to(file=f))]
         if file in files:
@@ -117,6 +121,7 @@ class PreparatorFactory:
 class TestPreparator:
     test_filename = None
     test_type = None
+    solution_dir = None
 
     def __init__(self, pending_task):
         self.pending_task = pending_task
@@ -124,9 +129,11 @@ class TestPreparator:
         self.language = pending_task.language.name.lower()
         self.test_environment = FileSystemManager(str(pending_task.id))
         self.extension = FILE_EXTENSIONS[self.language]
+        if ArchiveFileHandler.check_if_tarfile(self.pending_task.testwithplaintext.solution_code):
+            self.solution_dir = self.test_environment.add_inner_folder(name="solution")
 
     def get_solution(self):
-        return "solution{}".format(self.extension)
+        return self.solution_dir or "solution{}".format(self.extension)
 
     def get_test_filename(self):
         if self.test_filename is None:
@@ -150,12 +157,16 @@ class TestPreparator:
         return data
 
     def save_solution_to_test_environment(self):
-        if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.get_solution(),
-                                                  self.pending_task.testwithplaintext.solution_code)
-        if self.pending_task.is_binary():
-            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url,
-                                            self.get_solution())
+        if self.solution_dir:
+            ArchiveFileHandler.extract_tar_gz_from_bytes(self.pending_task.testwithplaintext.solution_code,
+                                                         self.get_solution())
+        else:
+            if self.pending_task.is_plain():
+                self.test_environment.create_new_file(self.get_solution(),
+                                                      self.pending_task.testwithplaintext.solution_code)
+            if self.pending_task.is_binary():
+                self.test_environment.copy_file(self.pending_task.testwithbinaryfile.solution.url,
+                                                self.get_solution())
 
     def update_test_data(self):
         self.test_data['language'] = self.language
@@ -194,25 +205,8 @@ class TestPreparator:
 class UnittestPreparator(TestPreparator):
     test_type = UNITTEST
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.need_solution_dir = tarfile.is_tarfile(self.test_data['code'])
-
     def get_test_filename(self):
         return "test{}".format(self.extension)
-
-    def get_solution(self):
-        if self.need_solution_dir:
-            return self.test_environment.add_inner_folder(name="solution", destination=FileSystemManager.SANDBOX)
-        else:
-            super().get_solution()
-
-    def save_solution_to_test_environment(self):
-        if self.need_solution_dir:
-            ArchiveFileHandler.extract_tar_gz_from_bytes(self.test_data['code'], self.get_solution())
-        else:
-            super().save_solution_to_test_environment()
 
     def prepare(self):
         run_data = super().prepare()
