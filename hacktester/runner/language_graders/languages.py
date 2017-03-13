@@ -1,9 +1,10 @@
 from .base import (BaseGrader, OutputCheckingMixin,
                    DynamicLanguageUnittestMixin,
-                   CompileException, LintException)
+                   CompileException, LintException, RequirementsFailedInstalling)
 
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
-                      PYTHON, RUBY, JAVA, JAVASCRIPT)
+                      PYTHON, RUBY, JAVA, JAVASCRIPT,
+                      DJANGO_DEPENDENCIES_FILENAME, DEPENDENCIES_TIMELIMIT)
 
 import return_codes
 
@@ -19,6 +20,12 @@ class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader
         returncode, output = run_cmd('flake8 {}'.format(self.solution), timeout=TIMELIMIT)
         if returncode != 0:
             raise LintException("flake8: {}".format(output))
+
+    def install_dependencies(self):
+        returncode, output = run_cmd('pip install -r {}'.format(DJANGO_DEPENDENCIES_FILENAME),
+                                     timeout=DEPENDENCIES_TIMELIMIT)
+        if returncode != 0:
+            raise RequirementsFailedInstalling(output)
 
 
 class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):

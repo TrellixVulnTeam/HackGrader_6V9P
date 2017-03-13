@@ -18,3 +18,6 @@ JAVA = "java"
 PYTHON = "python"
 RUBY = "ruby"
 JAVASCRIPT = "javascript/nodejs"
+
+DEPENDENCIES_TIMELIMIT = 300
+DJANGO_DEPENDENCIES_FILENAME = "requirements.txt"

@@ -4,7 +4,6 @@ import os
 from os.path import isfile
 import shutil
 import logging
-import tarfile
 
 from django.conf import settings
 
@@ -58,9 +57,11 @@ class FileSystemManager:
         os.mkdir(folder_abs_path)
         return folder_abs_path
 
-    def check_if_folder_exists(self, folder):
-        print(self.get_absolute_path_to())
-        return os.path.exists(self.get_absolute_path_to() + folder)
+    def create_folder(self, folder_name, destination_path=None):
+        if destination_path is None:
+            return self._create_folder(folder_name=folder_name, destination_path=self._absolute_path)
+        else:
+            return self._create_folder(folder_name=folder_name, destination_path=destination_path)
 
     def check_if_file_exists(self, file):
         files = [f for f in os.listdir(self._absolute_path) if isfile(self.get_absolute_path_to(file=f))]
@@ -97,6 +98,9 @@ class FileSystemManager:
         elif file is not None:
             return os.path.join(self._absolute_path, file)
 
+    def get_default_absolute_path(self):
+        return self._absolute_path
+
 
 class PreparatorFactory:
     @staticmethod
@@ -129,11 +133,12 @@ class TestPreparator:
         self.language = pending_task.language.name.lower()
         self.test_environment = FileSystemManager(str(pending_task.id))
         self.extension = FILE_EXTENSIONS[self.language]
-        if ArchiveFileHandler.check_if_tarfile(self.pending_task.testwithplaintext.solution_code):
-            self.solution_dir = self.test_environment.add_inner_folder(name="solution")
+
+        # if ArchiveFileHandler.check_if_tarfile(self.pending_task.testwithplaintext.solution_code):
+        #     self.solution_dir = self.test_environment.add_inner_folder(name="solution")
 
     def get_solution(self):
-        return self.solution_dir or "solution{}".format(self.extension)
+        return "solution{}".format(self.extension)
 
     def get_test_filename(self):
         if self.test_filename is None:
@@ -157,9 +162,9 @@ class TestPreparator:
         return data
 
     def save_solution_to_test_environment(self):
-        if self.solution_dir:
+        if self.test_data.get('archive_output_type', False):
             ArchiveFileHandler.extract_tar_gz_from_bytes(self.pending_task.testwithplaintext.solution_code,
-                                                         self.get_solution())
+                                                         self.test_environment.get_default_absolute_path())
         else:
             if self.pending_task.is_plain():
                 self.test_environment.create_new_file(self.get_solution(),

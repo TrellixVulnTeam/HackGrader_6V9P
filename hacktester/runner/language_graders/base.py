@@ -18,12 +18,17 @@ class RunException(Exception):
     pass
 
 
+class RequirementsFailedInstalling(Exception):
+    pass
+
+
 class BaseGrader:
     def __init__(self, data):
         self.data = data
         self.solution = data['solution']
         self.tests = data['tests']
         self.run_lint = data.get('lint', True)
+        self.dependecies = data.get('archive_output_type', False)
 
     def prepare(self):
         """
@@ -69,6 +74,9 @@ class BaseGrader:
 
         return command
 
+    def install_dependencies(self):
+        pass
+
     def execute_program(self):
         """
         Hook for executing programs for output checking tests
@@ -89,6 +97,9 @@ class BaseGrader:
 
     def run(self):
         try:
+            if self.dependecies:
+                self.install_dependencies()
+
             if self.run_lint:
                 self.lint()
 
@@ -103,6 +114,9 @@ class BaseGrader:
             output = str(e)
         except RunException as e:
             returncode = return_codes.RUN_EXCEPTION
+            output = str(e)
+        except RequirementsFailedInstalling as e:
+            returncode = return_codes.REQUIREMENTS_FAILED
             output = str(e)
         except TimeoutExpired as e:
             returncode = return_codes.TIME_LIMIT_ERROR
