@@ -234,17 +234,17 @@ def make_request(problem):
 
 
 def main():
-    make_request(get_plain_ruby_problem())
-    make_request(get_plain_ruby_problem_with_rubocop_error())
-    make_request(get_plain_nodejs_problem())
-    make_request(get_plain_python_problem())
+    # make_request(get_plain_ruby_problem())
+    # make_request(get_plain_ruby_problem_with_rubocop_error())
+    # make_request(get_plain_nodejs_problem())
+    # make_request(get_plain_python_problem())
     make_request(get_plain_django_problem())
-    make_request(get_plain_python_problem_with_flake8_error_and_lint_true())
-    make_request(get_plain_python_problem_with_flake8_error_and_lint_false())
-    make_request(get_binary_problem())
-    make_request(get_output_check_python())
-    make_request(get_output_check_ruby())
-    make_request(get_output_check_plain_java())
+    # make_request(get_plain_python_problem_with_flake8_error_and_lint_true())
+    # make_request(get_plain_python_problem_with_flake8_error_and_lint_false())
+    # make_request(get_binary_problem())
+    # make_request(get_output_check_python())
+    # make_request(get_output_check_ruby())
+    # make_request(get_output_check_plain_java())
 
 
 if __name__ == '__main__':

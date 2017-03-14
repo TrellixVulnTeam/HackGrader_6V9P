@@ -22,6 +22,10 @@ class RequirementsFailedInstalling(Exception):
     pass
 
 
+class VirtualenvActivationError(Exception):
+    pass
+
+
 class BaseGrader:
     def __init__(self, data):
         self.data = data
@@ -106,6 +110,7 @@ class BaseGrader:
             self.compile()
 
             returncode, output = self.execute()
+
         except LintException as e:
             returncode = return_codes.LINT_ERROR
             output = str(e)
@@ -117,6 +122,9 @@ class BaseGrader:
             output = str(e)
         except RequirementsFailedInstalling as e:
             returncode = return_codes.REQUIREMENTS_FAILED
+            output = str(e)
+        except VirtualenvActivationError as e:
+            returncode = return_codes.VIRTUALENV_FAILED
             output = str(e)
         except TimeoutExpired as e:
             returncode = return_codes.TIME_LIMIT_ERROR

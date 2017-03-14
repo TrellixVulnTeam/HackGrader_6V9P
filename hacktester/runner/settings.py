@@ -10,14 +10,18 @@ HAMCREST = os.path.join(LIBS, 'hamcrest.jar')
 TIMELIMIT = 3
 TIMELIMIT_EXCEEDED_ERROR = 'Time limit exceeded. Maybe infinite loop?'
 
-
+# test types
 OUTPUT_CHECKING = "output_checking"
 UNITTEST = "unittest"
 
+# languages
 JAVA = "java"
 PYTHON = "python"
 RUBY = "ruby"
 JAVASCRIPT = "javascript/nodejs"
 
+# dependencies filenames and timelimits
 DEPENDENCIES_TIMELIMIT = 300
 DJANGO_DEPENDENCIES_FILENAME = "requirements.txt"
+
+PYTHON_VIRTUALENV_ACTIVATION_PATH = "/virtualenvs/current/bin/activate"

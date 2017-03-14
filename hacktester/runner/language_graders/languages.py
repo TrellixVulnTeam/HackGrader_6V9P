@@ -1,10 +1,12 @@
 from .base import (BaseGrader, OutputCheckingMixin,
                    DynamicLanguageUnittestMixin,
-                   CompileException, LintException, RequirementsFailedInstalling)
+                   CompileException, LintException,
+                   RequirementsFailedInstalling, VirtualenvActivationError)
 
 from settings import (TIMELIMIT, JUNIT, HAMCREST,
                       PYTHON, RUBY, JAVA, JAVASCRIPT,
-                      DJANGO_DEPENDENCIES_FILENAME, DEPENDENCIES_TIMELIMIT)
+                      DJANGO_DEPENDENCIES_FILENAME, DEPENDENCIES_TIMELIMIT,
+                      PYTHON_VIRTUALENV_ACTIVATION_PATH)
 
 import return_codes
 
@@ -17,12 +19,20 @@ class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader
     LANGUAGE_NAME = PYTHON
 
     def lint(self):
-        returncode, output = run_cmd('flake8 {}'.format(self.solution), timeout=TIMELIMIT)
+        returncode, output = run_cmd("flake8 {}".format(self.solution), timeout=TIMELIMIT)
         if returncode != 0:
             raise LintException("flake8: {}".format(output))
 
+    def activate_virtualenv(self):
+        returncode, output = run_cmd("/bin/bash -c 'source {}'".format(PYTHON_VIRTUALENV_ACTIVATION_PATH),
+                                     timeout=TIMELIMIT)
+        if returncode != 0:
+            raise VirtualenvActivationError(output)
+
     def install_dependencies(self):
-        returncode, output = run_cmd('pip install -r {}'.format(DJANGO_DEPENDENCIES_FILENAME),
+        self.activate_virtualenv()
+
+        returncode, output = run_cmd("pip3 install -r {} --user".format(DJANGO_DEPENDENCIES_FILENAME),
                                      timeout=DEPENDENCIES_TIMELIMIT)
         if returncode != 0:
             raise RequirementsFailedInstalling(output)

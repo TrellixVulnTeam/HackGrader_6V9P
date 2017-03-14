@@ -9,6 +9,7 @@ UNKNOWN_EXCEPTION = 7
 CALLED_PROCESS_ERROR = 8
 UNSUPPORTED_TEST_TYPE = 9
 REQUIREMENTS_FAILED = 10
+VIRTUALENV_FAILED = 11
 
 
 RETURN_CODE_OUTPUT = {
@@ -22,5 +23,6 @@ RETURN_CODE_OUTPUT = {
     UNKNOWN_EXCEPTION: "test_run_error",
     CALLED_PROCESS_ERROR: "test_failed_to_run",
     UNSUPPORTED_TEST_TYPE: "test_type_unsupported",
-    REQUIREMENTS_FAILED: "requirements_failed_to_install"
+    REQUIREMENTS_FAILED: "requirements_failed_to_install",
+    VIRTUALENV_FAILED: "virtualenv_failed_to_activate"
 }
