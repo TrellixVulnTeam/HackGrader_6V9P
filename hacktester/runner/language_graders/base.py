@@ -3,9 +3,9 @@ from subprocess import CalledProcessError, TimeoutExpired
 from settings import (TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
                       OUTPUT_CHECKING, UNITTEST)
 
-from hacktester.runner import return_codes
-from hacktester.runner.exceptions import (LintException, CompileException, RunException,
-                                          RequirementsFailedInstalling)
+import return_codes
+from exceptions import (LintException, CompileException, RunException,
+                        RequirementsFailedInstalling)
 
 from .proc import run_cmd, killall
 

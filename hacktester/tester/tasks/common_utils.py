@@ -6,6 +6,7 @@ import os
 
 from ..models import TestRun
 from hacktester.tester.models import RunResult
+from hacktester.runner.exceptions import RequirementsFailedInstalling
 
 
 def get_result_status(returncode):
@@ -44,10 +45,14 @@ class ArchiveFileHandler:
                             os.path.join(path_to_extract, test_file_name))
 
             # Get data from test requirements.txt file (the one from temp_dir)
-            with open(os.path.join(temp_dir, "requirements.txt"), "r") as test_req_file:
-                data = test_req_file.read()
+            if os.path.exists(os.path.join(temp_dir, "requirements.txt")):
+                with open(os.path.join(temp_dir, "requirements.txt"), "r") as test_req_file:
+                    data = test_req_file.read()
 
-            data = "\n" + data
+                data = "\n" + data
+
+            else:
+                raise RequirementsFailedInstalling("Requirements for test.py not provided")
 
             # Append data from test requirements.txt to requirements.txt in path_to_extract
             with open(os.path.join(path_to_extract, "requirements.txt"), "a") as solution_req_file:
