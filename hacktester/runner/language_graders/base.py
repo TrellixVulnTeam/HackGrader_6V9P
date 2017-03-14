@@ -1,29 +1,13 @@
 from subprocess import CalledProcessError, TimeoutExpired
+
 from settings import (TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
                       OUTPUT_CHECKING, UNITTEST)
-import return_codes
+
+from hacktester.runner import return_codes
+from hacktester.runner.exceptions import (LintException, CompileException, RunException,
+                                          RequirementsFailedInstalling)
 
 from .proc import run_cmd, killall
-
-
-class LintException(Exception):
-    pass
-
-
-class CompileException(Exception):
-    pass
-
-
-class RunException(Exception):
-    pass
-
-
-class RequirementsFailedInstalling(Exception):
-    pass
-
-
-class VirtualenvActivationError(Exception):
-    pass
 
 
 class BaseGrader:
