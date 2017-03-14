@@ -30,11 +30,15 @@ RUN node -v && npm -v
 RUN npm install -g mocha chai sinon
 
 #install flake8
-RUN apt-get update && apt-get install -y python-pip python-dev
-RUN easy_install -U pip && pip install flake8
+RUN apt-get update && apt-get install -y python3-pip python-dev && pip3 install flake8
 
 #install rubocop
 RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && gem install rubocop"
+
+#virtualenvs
+RUN pip3 install virtualenv
+RUN mkdir -p /virtualenvs
+RUN virtualenv /virtualenvs/current
 
 RUN apt-get clean
 
