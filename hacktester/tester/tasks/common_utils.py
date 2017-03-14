@@ -39,6 +39,7 @@ class ArchiveFileHandler:
             cls.extract_tar_gz_from_bytes(byte_string, path_to_extract=temp_dir)
 
             # Copy test file from temp_dir in test file in path_to_extract
+            # If path_to_extract directory already contains test_file_name is is overriden.
             shutil.copyfile(os.path.join(temp_dir, test_file_name),
                             os.path.join(path_to_extract, test_file_name))
 
