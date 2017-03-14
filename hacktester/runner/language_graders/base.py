@@ -27,13 +27,13 @@ class BaseGrader:
     def lint(self):
         """
         Hook for running a linter.
-        If linter fails, raise LintException with the error as message
+        If linter fails, raise LintException with the error as message.
         """
 
     def compile(self):
         """
-        Hook for compiling the code
-        If compiling fails, raise CompileException with the error as message
+        Hook for compiling the code.
+        If compiling fails, raise CompileException with the error as message.
         """
 
     def get_command_for_unittest(self):
@@ -48,9 +48,9 @@ class BaseGrader:
 
     def execute_unittest(self):
         """
-        Hook for executing unittests
+        Hook for executing unittests.
         Should return tuple containing returncode and output as result.
-        Raise RunException if something fails
+        Raise RunException if something fails.
         """
 
     def get_command_for_output_checking(self):
@@ -63,13 +63,16 @@ class BaseGrader:
         return command
 
     def install_dependencies(self):
-        pass
+        """
+        Hook for installing dependencies of a project.
+        If installing fails, raise RequirementsFailedInstalling with the error as message.
+        """
 
     def execute_program(self):
         """
-        Hook for executing programs for output checking tests
+        Hook for executing programs for output checking tests.
         Should return tuple containing returncode and output as result.
-        Raise RunException if something fails
+        Raise RunException if something fails.
         """
 
     def execute(self):
