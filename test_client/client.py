@@ -153,7 +153,7 @@ def get_plain_django_problem():
             "language": "python",
             "file_type": 'plain',
             "code": read_binary_file('fixtures/plain/django/django_project.tar.gz'),
-            "test": read_file('fixtures/plain/django/tests.py'),
+            "test": read_binary_file('fixtures/plain/django/tests.tar.gz'),
             "extra_options": {
                 'archive_output_type': True,
                 'lint': False

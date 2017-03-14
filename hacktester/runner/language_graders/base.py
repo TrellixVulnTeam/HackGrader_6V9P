@@ -123,9 +123,6 @@ class BaseGrader:
         except RequirementsFailedInstalling as e:
             returncode = return_codes.REQUIREMENTS_FAILED
             output = str(e)
-        except VirtualenvActivationError as e:
-            returncode = return_codes.VIRTUALENV_FAILED
-            output = str(e)
         except TimeoutExpired as e:
             returncode = return_codes.TIME_LIMIT_ERROR
             output = TIMELIMIT_EXCEEDED_ERROR

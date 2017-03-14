@@ -38,7 +38,8 @@ RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && gem install rubocop"
 #virtualenvs
 RUN pip3 install virtualenv
 RUN mkdir -p /virtualenvs
-RUN virtualenv /virtualenvs/current
+RUN virtualenv --python=python3.5 /virtualenvs/current
+RUN /bin/bash -c "source /virtualenvs/current/bin/activate"
 
 RUN apt-get clean
 

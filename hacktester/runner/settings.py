@@ -23,5 +23,3 @@ JAVASCRIPT = "javascript/nodejs"
 # dependencies filenames and timelimits
 DEPENDENCIES_TIMELIMIT = 300
 DJANGO_DEPENDENCIES_FILENAME = "requirements.txt"
-
-PYTHON_VIRTUALENV_ACTIVATION_PATH = "/virtualenvs/current/bin/activate"

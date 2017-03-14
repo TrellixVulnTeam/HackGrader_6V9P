@@ -1,6 +1,8 @@
 import tarfile
 import tempfile
 import base64
+import shutil
+import os
 
 from ..models import TestRun
 from hacktester.tester.models import RunResult
@@ -29,8 +31,26 @@ class ArchiveFileHandler:
         with tempfile.NamedTemporaryFile() as temp:
             temp.write(base64_archive_string)
             temp.seek(0)
-            print(temp.read())
             cls.extract_tar_gz(temp.name, path_to_extract)
+
+    @classmethod
+    def extract_test_tar_gz_form_bytes(cls, byte_string, path_to_extract, test_file_name):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            cls.extract_tar_gz_from_bytes(byte_string, path_to_extract=temp_dir)
+
+            # Copy test file from temp_dir in test file in path_to_extract
+            shutil.copyfile(os.path.join(temp_dir, test_file_name),
+                            os.path.join(path_to_extract, test_file_name))
+
+            # Get data from test requirements.txt file (the one from temp_dir)
+            with open(os.path.join(temp_dir, "requirements.txt"), "r") as test_req_file:
+                data = test_req_file.read()
+
+            data = "\n" + data
+
+            # Append data from test requirements.txt to requirements.txt in path_to_extract
+            with open(os.path.join(path_to_extract, "requirements.txt"), "a") as solution_req_file:
+                solution_req_file.write(data)
 
     @classmethod
     def extract(cls, archive_type, path_to_archive, path_to_extract="."):

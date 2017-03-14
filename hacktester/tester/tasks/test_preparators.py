@@ -125,7 +125,6 @@ class PreparatorFactory:
 class TestPreparator:
     test_filename = None
     test_type = None
-    solution_dir = None
 
     def __init__(self, pending_task):
         self.pending_task = pending_task
@@ -133,9 +132,6 @@ class TestPreparator:
         self.language = pending_task.language.name.lower()
         self.test_environment = FileSystemManager(str(pending_task.id))
         self.extension = FILE_EXTENSIONS[self.language]
-
-        # if ArchiveFileHandler.check_if_tarfile(self.pending_task.testwithplaintext.solution_code):
-        #     self.solution_dir = self.test_environment.add_inner_folder(name="solution")
 
     def get_solution(self):
         return "solution{}".format(self.extension)
@@ -216,13 +212,18 @@ class UnittestPreparator(TestPreparator):
     def prepare(self):
         run_data = super().prepare()
 
-        if self.pending_task.is_plain():
-            self.test_environment.create_new_file(self.get_test_filename(),
-                                                  self.pending_task.testwithplaintext.test_code)
+        if self.test_data.get('archive_output_type', False):
+            ArchiveFileHandler.extract_test_tar_gz_form_bytes(self.pending_task.testwithplaintext.test_code,
+                                                              self.test_environment.get_default_absolute_path(),
+                                                              self.get_test_filename())
+        else:
+            if self.pending_task.is_plain():
+                self.test_environment.create_new_file(self.get_test_filename(),
+                                                      self.pending_task.testwithplaintext.test_code)
 
-        if self.pending_task.is_binary():
-            self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url,
-                                            self.get_test_filename())
+            if self.pending_task.is_binary():
+                self.test_environment.copy_file(self.pending_task.testwithbinaryfile.test.url,
+                                                self.get_test_filename())
 
         self.test_environment.create_new_file('data.json', json.dumps(self.test_data))
 
