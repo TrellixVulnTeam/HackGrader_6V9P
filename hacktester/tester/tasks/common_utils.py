@@ -4,7 +4,7 @@ import base64
 import shutil
 import os
 
-from django.conf import settings
+from hacktester.runner.settings import DJANGO_DEPENDENCIES_FILENAME
 
 from ..models import TestRun
 from hacktester.tester.models import RunResult
@@ -46,8 +46,8 @@ class ArchiveFileHandler:
             shutil.copyfile(os.path.join(temp_dir, test_file_name),
                             os.path.join(path_to_extract, test_file_name))
 
-            test_requirements_file = os.path.join(temp_dir, settings.DJANGO_DEPENDENCIES_FILENAME)
-            solution_requirements_file = os.path.join(path_to_extract, settings.DJANGO_DEPENDENCIES_FILENAME)
+            test_requirements_file = os.path.join(temp_dir, DJANGO_DEPENDENCIES_FILENAME)
+            solution_requirements_file = os.path.join(path_to_extract, DJANGO_DEPENDENCIES_FILENAME)
             """
             Get data from test requirements.txt file (the one from temp_dir)
             if that file exists.
@@ -59,7 +59,7 @@ class ArchiveFileHandler:
             Get data from solution requirements.txt file (the one from path_to_extract)
             if that file exists.
             """
-            if os.pat.exists(solution_requirements_file):
+            if os.path.exists(solution_requirements_file):
                 with open(solution_requirements_file, "r") as f:
                     solution_req_data = f.read()
 
