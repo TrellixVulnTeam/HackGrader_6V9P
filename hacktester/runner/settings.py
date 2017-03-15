@@ -21,5 +21,5 @@ RUBY = "ruby"
 JAVASCRIPT = "javascript/nodejs"
 
 # dependencies filenames and timelimits
-DEPENDENCIES_TIMELIMIT = 300
+DEPENDENCIES_TIMELIMIT = 60
 DJANGO_DEPENDENCIES_FILENAME = "requirements.txt"

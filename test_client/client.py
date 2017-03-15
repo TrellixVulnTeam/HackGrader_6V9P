@@ -156,7 +156,8 @@ def get_plain_django_problem():
             "test": read_binary_file('fixtures/plain/django/tests.tar.gz'),
             "extra_options": {
                 'archive_output_type': True,
-                'lint': False
+                'lint': False,
+                'time_limit': 20,
             }}
 
     return data
