@@ -15,8 +15,7 @@ class BaseGrader:
         self.data = data
         self.solution = data['solution']
         self.tests = data['tests']
-        self.run_lint = data.get('lint', True)
-        self.dependecies = data.get('archive_output_type', False)
+        self.options = data['extra_options']
 
     def prepare(self):
         """
@@ -88,10 +87,10 @@ class BaseGrader:
 
     def run(self):
         try:
-            if self.dependecies:
+            if self.options.get('archive_output_type', False):
                 self.install_dependencies()
 
-            if self.run_lint:
+            if self.options.get('lint', False):
                 self.lint()
 
             self.compile()
@@ -149,7 +148,7 @@ class OutputCheckingMixin:
         command = self.get_command_for_output_checking()
         input_string = self.get_input()
 
-        time_limit = self.data.get('time_limit') or TIMELIMIT
+        time_limit = self.options.get('time_limit') or TIMELIMIT
 
         try:
             returncode, output = run_cmd(command, time_limit, input_string=input_string)
@@ -180,7 +179,7 @@ class DynamicLanguageUnittestMixin:
 
     def execute_unittest(self):
         command = self.get_command_for_unittest()
-        time_limit = self.data.get('time_limit') or TIMELIMIT
+        time_limit = self.options.get('time_limit') or TIMELIMIT
 
         try:
             returncode, output = run_cmd(command, time_limit)
