@@ -92,7 +92,7 @@ $ celery -A hacktester purge
 
 ### Format of the data sent to /grade
 
-##### for unittest:
+#### for unittest:
 
     {
     "test_type": "unittest",
@@ -105,7 +105,7 @@ $ celery -A hacktester purge
         'time_limit': number # set time limit for the test suite in seconds
     }}
 
-#### Format of the **code** and **test** data for `JavaScript`
+##### Format of the **code** and **test** data for `JavaScript`
 
 * Functions in `code` must be exported (e.g., module.exports = function() {};)
 * Test functions must require the function from `code` in the **solution** file (e.g., var testedFunc = require('solution'))
@@ -113,7 +113,7 @@ $ celery -A hacktester purge
 
 
 
-##### for output_checking:
+#### for output_checking:
 
     {
     "test_type": "output_checking",
