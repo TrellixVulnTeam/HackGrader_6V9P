@@ -11,6 +11,7 @@ RUN sudo apt-get update
 
 RUN sudo apt-get install -y openjdk-8-jdk
 RUN sudo apt-get install -y python3.5
+RUN sudo apt-get install wget
 
 ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 RUN export JAVA_HOME
