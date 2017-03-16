@@ -149,8 +149,7 @@ $ celery -A hacktester purge
 
 ### Archive
 
-sample code for creating a .tar.gz archive with all the files in the current directory:
-
+##### Sample code for creating a .tar.gz archive with all the files in the current directory:
 
     def create_tar_gz_archive():
         test_files = os.listdir()
