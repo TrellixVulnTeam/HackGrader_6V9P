@@ -48,6 +48,8 @@ class ArchiveFileHandler:
 
             test_requirements_file = os.path.join(temp_dir, DJANGO_DEPENDENCIES_FILENAME)
             solution_requirements_file = os.path.join(path_to_extract, DJANGO_DEPENDENCIES_FILENAME)
+            test_req_data = ''
+            solution_req_data = ''
             """
             Get data from test requirements.txt file (the one from temp_dir)
             if that file exists.
