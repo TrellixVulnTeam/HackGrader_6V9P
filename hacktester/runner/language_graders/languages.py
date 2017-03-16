@@ -48,13 +48,13 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
 
     def execute_program(self):
 
-        time_limit = self.data.get('time_limit') or TIMELIMIT
+        time_limit = self.options.get('time_limit') or TIMELIMIT
         returncode, output = run_cmd("javac {}".format(self.solution), time_limit)
 
         if returncode != 0:
             raise CompileException(output)
 
-        self.solution = self.data["class_name"]
+        self.solution = self.options.get("class_name")
         return super().execute_program()
 
     def execute_unittest(self):
@@ -66,10 +66,10 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             "hamcrest": HAMCREST,
             "tests": self.tests,
             "solution": self.solution,
-            "qualified_class_name": self.data['qualified_class_name']
+            "qualified_class_name": self.options.get('qualified_class_name')
         }
 
-        time_limit = self.data.get('time_limit') or TIMELIMIT
+        time_limit = self.options.get('time_limit') or TIMELIMIT
 
         command = command.format(**keys)
 

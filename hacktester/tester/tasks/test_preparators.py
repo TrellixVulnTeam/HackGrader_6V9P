@@ -128,7 +128,8 @@ class TestPreparator:
 
     def __init__(self, pending_task):
         self.pending_task = pending_task
-        self.test_data = self.get_data(pending_task)
+        self.test_data = {}
+        self.test_data['extra_options'] = self.pending_task.extra_options or {}
         self.language = pending_task.language.name.lower()
         self.test_environment = FileSystemManager(str(pending_task.id))
         self.extension = FILE_EXTENSIONS[self.language]
@@ -148,17 +149,8 @@ class TestPreparator:
 
         return self.test_type
 
-    def get_data(self, pending_task):
-        data = {}
-
-        if pending_task.extra_options is not None:
-            for key, value in pending_task.extra_options.items():
-                data[key] = value
-
-        return data
-
     def save_solution_to_test_environment(self):
-        if self.test_data.get('archive_output_type', False):
+        if self.test_data['extra_options'].get('archive_output_type', False):
             ArchiveFileHandler.extract_tar_gz_from_bytes(self.pending_task.testwithplaintext.solution_code,
                                                          self.test_environment.get_default_absolute_path())
         else:
@@ -212,7 +204,7 @@ class UnittestPreparator(TestPreparator):
     def prepare(self):
         run_data = super().prepare()
 
-        if self.test_data.get('archive_output_type', False):
+        if self.test_data['extra_options'].get('archive_output_type', False):
             ArchiveFileHandler.extract_test_tar_gz_form_bytes(self.pending_task.testwithplaintext.test_code,
                                                               self.test_environment.get_default_absolute_path(),
                                                               self.get_test_filename())
@@ -389,4 +381,4 @@ class OutputCheckingPreparator(TestPreparator):
 
 class JavaOutputCheckingPreparator(OutputCheckingPreparator):
     def get_solution(self):
-        return "{}{}".format(self.test_data['class_name'], self.extension)
+        return "{}{}".format(self.test_data['extra_options'].get("class_name"), self.extension)
