@@ -90,20 +90,23 @@ $ celery -A hacktester purge
 
 ## Communication data formats
 
-### Format of the data sent to /grade
+###  Plain
 
-#### for unittest:
+#### Format of the data sent to `/grade`
+
+##### `for unittest`:
 
     {
-    "test_type": "unittest",
-    "language": language,   # currently supported {java, python, ruby, javascript}
-    "file_type": file_type, # plain or binary
-    "code": code, # plain text or base_64 format
-    "test": test_code, # plain text or base_64 format
-    "extra_options": {
-        'qualified_class_name': 'com.hackbulgaria.grader.Tests', # for java binary solutions
-        'time_limit': number # set time limit for the test suite in seconds
-    }}
+        "test_type": "unittest",
+        "language": language,   # currently supported {java, python, ruby, javascript}
+        "file_type": file_type, # plain or binary
+        "code": code, # plain text or base_64 format
+        "test": test_code, # plain text or base_64 format
+        "extra_options": {
+            'qualified_class_name': 'com.hackbulgaria.grader.Tests', # for java binary solutions
+            'time_limit': number # set specific time limit for the tests execution in seconds
+        }
+    }
 
 ##### Format of the **code** and **test** data for `JavaScript`
 
@@ -112,20 +115,37 @@ $ celery -A hacktester purge
 * Use `describe` or `it`
 
 
-
-#### for output_checking:
+##### Example data for testing `Django`
 
     {
-    "test_type": "output_checking",
-    "language": language,   # currently supported {java, python, ruby}
-    "file_type": "plain",   # only plain are supported
-    "code": code, # plain text or base_64 format
-    "test": archive, # base_64 format
-    "extra_options": {
-        "archive_type": "tar_gz",
-        "class_name": class_name # name of the class containing the main method for java
-        "time_limit": number # set time limit for the test suite in seconds
-    }}
+        "test_type": "unittest",
+        "language": "python,
+        "file_type": "plain,
+        "code": code, # base_64 formated django project, containing main apps, `manage.py`, `requirements.txt`
+        "test": test_code, # base_64 formated tests(named `test.py`) and needed requiremets(named 'requiremets.txt')
+        "extra_options": {
+            'time_limit': number # set specific time limit for the tests execution in seconds
+            'archive_output_type': True, # indicator for installing dependencies(if existing)
+            'lint': False/True # option for linting the django project with pep8    
+        }
+    }
+
+
+##### `for output_checking`:
+
+    {
+        "test_type": "output_checking",
+        "language": language,   # currently supported {java, python, ruby}
+        "file_type": "plain",   # only plain are supported
+        "code": code, # plain text or base_64 format
+        "test": archive, # base_64 format
+        "extra_options": {
+            "archive_type": "tar_gz",
+            "class_name": class_name # name of the class containing the main method for java
+            "time_limit": number # set time limit for the test suite in seconds
+        }
+    }
+
 
 ### Archive
 
@@ -152,20 +172,22 @@ Example:
 for unittests:
 
     {
-    'run_status': run.status,  # the status of the test run
-    'result_status': result.status, # the status of the test result
-    'run_id': run.id,
-    'output': {"test_status": test_status,  # the status of the result ("OK", "compilation_error" etc..)
-               "test_output": result.output} # the output of the result
+        'run_status': run.status,  # the status of the test run
+        'result_status': result.status, # the status of the test result
+        'run_id': run.id,
+        'output': {
+            "test_status": test_status,  # the status of the result ("OK", "compilation_error" etc..)
+           "test_output": result.output # the output of the result
+        }
     }
 
 
 for output_checking:
 
     {
-    'run_status': run.status,  # the status of the test run
-    'result_status': result.status, # the status of the test result
-    'run_id': run.id,
-    'output': [{"test_status": test_status,
-                "test_output": result.output},] # the list contains results for for each .in .out pair of tests
+        'run_status': run.status,  # the status of the test run
+        'result_status': result.status, # the status of the test result
+        'run_id': run.id,
+        'output': [{"test_status": test_status,
+                    "test_output": result.output},] # the list contains results for for each .in .out pair of tests
     }
