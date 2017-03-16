@@ -1,11 +1,18 @@
-from .base import (BaseGrader, OutputCheckingMixin,
-                   DynamicLanguageUnittestMixin,
-                   CompileException, LintException,
-                   RequirementsFailedInstalling)
+from .base import (
+    BaseGrader,
+    LintException,
+    CompileException,
+    OutputCheckingMixin,
+    DynamicLanguageUnittestMixin,
+    RequirementsFailedInstalling
+)
 
-from settings import (TIMELIMIT, JUNIT, HAMCREST,
-                      PYTHON, RUBY, JAVA, JAVASCRIPT,
-                      DJANGO_DEPENDENCIES_FILENAME, DEPENDENCIES_TIMELIMIT)
+from settings import (
+    PYTHON, RUBY, JAVA, JAVASCRIPT,
+    TIMELIMIT, JUNIT, HAMCREST,
+    DEPENDENCIES_TIMELIMIT,
+    DJANGO_DEPENDENCIES_FILENAME
+)
 
 import return_codes
 
