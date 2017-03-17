@@ -8,8 +8,13 @@ from .base import (
 )
 
 from settings import (
-    PYTHON, RUBY, JAVA, JAVASCRIPT,
-    TIMELIMIT, JUNIT, HAMCREST,
+    RUBY,
+    JAVA,
+    JUNIT,
+    PYTHON,
+    HAMCREST,
+    TIMELIMIT,
+    JAVASCRIPT,
     DEPENDENCIES_TIMELIMIT,
     DJANGO_DEPENDENCIES_FILENAME
 )
