@@ -4,7 +4,7 @@ from .base import (
     CompileException,
     OutputCheckingMixin,
     DynamicLanguageUnittestMixin,
-    RequirementsFailedInstalling
+    DependenciesFailedInstalling
 )
 
 from settings import (
@@ -38,7 +38,7 @@ class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader
         returncode, output = run_cmd("pip3 install -r {} --user".format(DJANGO_DEPENDENCIES_FILENAME),
                                      timeout=DEPENDENCIES_TIMELIMIT)
         if returncode != 0:
-            raise RequirementsFailedInstalling(output)
+            raise DependenciesFailedInstalling(output)
 
 
 class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):

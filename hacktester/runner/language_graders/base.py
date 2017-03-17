@@ -2,12 +2,16 @@ from subprocess import CalledProcessError, TimeoutExpired
 
 import return_codes
 from settings import (
-    TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
-    OUTPUT_CHECKING, UNITTEST
+    UNITTEST,
+    TIMELIMIT,
+    OUTPUT_CHECKING,
+    TIMELIMIT_EXCEEDED_ERROR
 )
 from exceptions import (
-    LintException, CompileException, RunException,
-    RequirementsFailedInstalling
+    RunException,
+    LintException,
+    CompileException,
+    DependenciesFailedInstalling
 )
 from .proc import run_cmd, killall
 
@@ -66,7 +70,7 @@ class BaseGrader:
     def install_dependencies(self):
         """
         Hook for installing dependencies of a project.
-        If installing fails, raise RequirementsFailedInstalling with the error as message.
+        If installing fails, raise DependenciesFailedInstalling with the error as message.
         """
 
     def execute_program(self):
@@ -108,7 +112,7 @@ class BaseGrader:
         except RunException as e:
             returncode = return_codes.RUN_EXCEPTION
             output = str(e)
-        except RequirementsFailedInstalling as e:
+        except DependenciesFailedInstalling as e:
             returncode = return_codes.REQUIREMENTS_FAILED
             output = str(e)
         except TimeoutExpired as e:

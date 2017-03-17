@@ -10,5 +10,5 @@ class RunException(Exception):
     pass
 
 
-class RequirementsFailedInstalling(Exception):
+class DependenciesFailedInstalling(Exception):
     pass
