@@ -68,8 +68,8 @@ class FileSystemManager:
     def create_folder(self, folder_name, destination_path=None):
         if destination_path is None:
             return self._create_folder(folder_name=folder_name, destination_path=self._absolute_path)
-        else:
-            return self._create_folder(folder_name=folder_name, destination_path=destination_path)
+
+        return self._create_folder(folder_name=folder_name, destination_path=destination_path)
 
     def check_if_file_exists(self, file):
         files = [f for f in os.listdir(self._absolute_path) if isfile(self.get_absolute_path_to(file=f))]
