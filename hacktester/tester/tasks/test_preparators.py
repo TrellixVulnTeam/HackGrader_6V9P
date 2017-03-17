@@ -252,6 +252,8 @@ class RubyPreparator(UnittestPreparator):
               Enabled: false
             Style/TrailingBlankLines:
               Enabled: false
+            EndOfLine:
+              Enabled: false
         '''
 
         self.test_environment.create_new_file('.rubocop.yml', rubocop_configuration)
