@@ -22,6 +22,7 @@ class BaseGrader:
         self.solution = data['solution']
         self.tests = data['tests']
         self.options = data['extra_options']
+        self.dependencies = data['dependencies']
 
     def prepare(self):
         """
@@ -93,8 +94,7 @@ class BaseGrader:
 
     def run(self):
         try:
-            if self.options.get('archive_output_type', False):
-                self.install_dependencies()
+            self.install_dependencies()
 
             if self.options.get('lint', False):
                 self.lint()
@@ -186,9 +186,9 @@ class DynamicLanguageUnittestMixin:
     def execute_unittest(self):
         command = self.get_command_for_unittest()
         time_limit = self.options.get('time_limit') or TIMELIMIT
-
         try:
             returncode, output = run_cmd(command, time_limit)
+
         except CalledProcessError as e:
             output = e.output
             returncode = return_codes.CALLED_PROCESS_ERROR

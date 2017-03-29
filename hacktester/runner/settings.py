@@ -14,12 +14,15 @@ TIMELIMIT_EXCEEDED_ERROR = 'Time limit exceeded. Maybe infinite loop?'
 OUTPUT_CHECKING = "output_checking"
 UNITTEST = "unittest"
 
+# solution and test file/dir name
+SOLUTION_NAME = "solution"
+TEST_NAME = "test"
+
 # languages
 JAVA = "java"
 PYTHON = "python"
 RUBY = "ruby"
 JAVASCRIPT = "javascript/nodejs"
 
-# dependencies filenames and timelimits
+# dependencies timelimit
 DEPENDENCIES_TIMELIMIT = 60
-DJANGO_DEPENDENCIES_FILENAME = "requirements.txt"

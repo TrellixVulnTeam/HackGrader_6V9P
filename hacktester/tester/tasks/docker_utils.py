@@ -15,7 +15,7 @@ DOCKER_COMMAND = """docker run -d \
         -m {docker_memory_limit} --memory-swap {docker_memory_limit} \
         -v {runner}:/runner -v {input}:/runner/input \
         {docker_image} \
-        /bin/bash --login -c 'python3 runner/start.py {runner_args}'"""
+        /bin/bash --login -c 'python3.5 runner/start.py {runner_args}'"""
 
 DOCKER_INSPECT_COMMAND = "docker inspect -f '{state}' {container_id}"
 DOCKER_LOG_COMMAND = "docker logs {container_id}"

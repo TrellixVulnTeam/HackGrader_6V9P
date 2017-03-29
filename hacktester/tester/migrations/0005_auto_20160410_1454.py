@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='testwithbinaryfile',
             name='solution',
-            field=models.FileField(default='', upload_to=hacktester.tester.models.solution_upload_path),
+            field=models.FileField(default='', upload_to=hacktester.tester.models.solutions_upload_path),
             preserve_default=False,
         ),
         migrations.AddField(

@@ -15,8 +15,7 @@ from settings import (
     HAMCREST,
     TIMELIMIT,
     JAVASCRIPT,
-    DEPENDENCIES_TIMELIMIT,
-    DJANGO_DEPENDENCIES_FILENAME
+    DEPENDENCIES_TIMELIMIT
 )
 
 import return_codes
@@ -35,10 +34,12 @@ class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader
             raise LintException("flake8: {}".format(output))
 
     def install_dependencies(self):
-        returncode, output = run_cmd("pip3 install -r {} --user".format(DJANGO_DEPENDENCIES_FILENAME),
-                                     timeout=DEPENDENCIES_TIMELIMIT)
-        if returncode != 0:
-            raise DependenciesFailedInstalling(output)
+        if self.dependencies:
+            returncode, output = run_cmd("pip install -r {} --user".format(self.dependencies),
+                                         timeout=DEPENDENCIES_TIMELIMIT)
+
+            if returncode != 0:
+                raise DependenciesFailedInstalling(output)
 
 
 class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):

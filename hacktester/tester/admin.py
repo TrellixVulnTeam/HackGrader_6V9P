@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Language, TestRun, RunResult, TestType, TestWithPlainText, TestWithBinaryFile, ArchiveType
+from .models import Language, TestRun, RunResult, TestType
 
 
 @admin.register(Language)
@@ -14,24 +14,9 @@ class TestTypeAdmin(admin.ModelAdmin):
 
 @admin.register(TestRun)
 class TestRunAdmin(admin.ModelAdmin):
-    list_display = ('id', 'language', 'test_type', 'status', 'is_plain', 'is_binary')
-
-
-@admin.register(TestWithPlainText)
-class TestWithPlainTextAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(TestWithBinaryFile)
-class TestWithBinaryFileAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'language', 'test_type', 'status')
 
 
 @admin.register(RunResult)
 class RunResultAdmin(admin.ModelAdmin):
     list_display = ('run', 'status', 'output')
-
-
-@admin.register(ArchiveType)
-class ArchiveTypeAdmin(admin.ModelAdmin):
-    pass
