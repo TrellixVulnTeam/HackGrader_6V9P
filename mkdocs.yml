@@ -7,5 +7,6 @@ pages:
   - Home: index.md
   - Management commands: management_commands.md
   - API: api.md
+  - Test Client : test_client.md
 
 theme: readthedocs
