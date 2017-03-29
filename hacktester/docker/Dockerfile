@@ -17,28 +17,18 @@ RUN export JAVA_HOME
 
 RUN java -version
 
-#install rvm and ruby2.3.1
-RUN  curl -#LO https://rvm.io/mpapis.asc
-RUN  gpg --import mpapis.asc
-RUN \curl -sSL https://get.rvm.io | bash -s stable
-RUN echo "source /etc/profile.d/rvm.sh" >> /etc/bash.bashrc
-RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && rvm install ruby 2.3.1"
+#install ruby2.3-dev and rubocop
+RUN apt-add-repository ppa:brightbox/ruby-ng && apt-get update && apt-get install -y ruby2.3 ruby2.3-dev && gem install rake && gem install minitest && gem install rubocop
 
+#install nodejs and mocha,chai and sinon test tools
 RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
-RUN sudo apt-get install -y nodejs
-RUN node -v && npm -v
-RUN npm install -g mocha chai sinon
+RUN sudo apt-get install -y nodejs && npm install -g mocha chai sinon
 
-#install flake8
-RUN apt-get update && apt-get install -y python-pip python-dev
-RUN easy_install -U pip && pip install flake8
-
-#install rubocop
-RUN /bin/bash -c  "source /etc/profile.d/rvm.sh && gem install rubocop"
+#install pip and flake8
+RUN curl -O https://bootstrap.pypa.io/get-pip.py && python3.5 get-pip.py && pip -V && pip install flake8
 
 RUN apt-get clean
 
 RUN useradd -m -p grader grader && chsh -s /bin/bash grader | adduser grader sudo
-RUN usermod -a -G rvm grader
 
 USER grader

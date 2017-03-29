@@ -10,11 +10,19 @@ HAMCREST = os.path.join(LIBS, 'hamcrest.jar')
 TIMELIMIT = 3
 TIMELIMIT_EXCEEDED_ERROR = 'Time limit exceeded. Maybe infinite loop?'
 
-
+# test types
 OUTPUT_CHECKING = "output_checking"
 UNITTEST = "unittest"
 
+# solution and test file/dir name
+SOLUTION_NAME = "solution"
+TEST_NAME = "test"
+
+# languages
 JAVA = "java"
 PYTHON = "python"
 RUBY = "ruby"
 JAVASCRIPT = "javascript/nodejs"
+
+# dependencies timelimit
+DEPENDENCIES_TIMELIMIT = 60

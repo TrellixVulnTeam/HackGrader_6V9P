@@ -1,7 +1,7 @@
 from __future__ import absolute_import
+import os
 import shutil
 from subprocess import CalledProcessError, TimeoutExpired
-import os
 
 from celery import shared_task, chain
 from celery.utils.log import get_task_logger
@@ -10,13 +10,20 @@ from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 
 from hacktester.runner import return_codes
-from ..models import RunResult
-
-from .test_preparators import PreparatorFactory, FileSystemManager
 
 from .common_utils import get_result_status, get_pending_task
-from .docker_utils import (run_code_in_docker, wait_while_docker_finishes, get_output,
-                           get_docker_logs, docker_cleanup)
+from .docker_utils import (
+    get_output,
+    docker_cleanup,
+    get_docker_logs,
+    run_code_in_docker,
+    wait_while_docker_finishes,
+)
+
+from ..models import RunResult
+from ..preparators.factory import PreparatorFactory
+from ..preparators.filesystem_manager import FileSystemManager
+
 
 logger = get_task_logger(__name__)
 
@@ -90,6 +97,10 @@ def prepare_for_grading(self, run_id):
 
     preparator = PreparatorFactory.get(pending_task)
     test_runs = preparator.prepare()
+
+    pending_task.status = 'running'
+    pending_task.number_of_results = len(test_runs)
+    pending_task.save()
 
     for data in test_runs:
         grade = grade_pending_run.s(**data).set(countdown=1)

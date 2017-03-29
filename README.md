@@ -19,5 +19,3 @@
 
 <!-- -->
     $ mkdocs serve
-
--   Go to `localhost:8000` or run the whole hacktester project and go to `/docs/` and see the documentation.

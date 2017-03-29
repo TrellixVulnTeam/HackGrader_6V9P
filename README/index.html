@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Home - HackTester</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+  <link href="../extra.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Home";
+    var mkdocs_page_input_path = "../README.md";
+    var mkdocs_page_url = "/../README/";
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js"></script>
+  <script src="../js/modernizr-2.8.3.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href="./" class="icon icon-home"> HackTester</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+          
+            <li>
+    <li class="toctree-l1 current">
+        <a class="current" href="./">Home</a>
+        
+            <ul>
+            
+                <li class="toctree-l3"><a href="#code-tester-with-django-celery">Code Tester with Django &amp; Celery</a></li>
+                
+                    <li><a class="toctree-l4" href="#requirements">Requirements</a></li>
+                
+                    <li><a class="toctree-l4" href="#how-to-run">How to run</a></li>
+                
+                    <li><a class="toctree-l4" href="#management-commands">Management commands</a></li>
+                
+                    <li><a class="toctree-l4" href="#communication-data-formats">Communication data formats</a></li>
+                
+            
+            </ul>
+        
+    </li>
+<li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="./">HackTester</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="./">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Home</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="code-tester-with-django-celery">Code Tester with Django &amp; Celery</h1>
+<p>hahah</p>
+<h2 id="requirements">Requirements</h2>
+<p>This project uses the following technologies:</p>
+<ul>
+<li><a href="https://www.rabbitmq.com/install-debian.html">RabbitMQ</a></li>
+<li><a href="http://www.celeryproject.org/">Celery</a></li>
+<li><a href="https://www.docker.com/">Docker</a></li>
+<li><a href="https://www.djangoproject.com/">Django</a></li>
+</ul>
+<p>The grader uses HMAC based API Authentication. This means, you are going to need API keys to make requests.</p>
+<h2 id="how-to-run">How to run</h2>
+<ol>
+<li>Install the needed requirements - RabbitMQ, Celery, Docker.</li>
+<li>Install all pip requiremetns: <code>$ pip install -r requirements.txt</code></li>
+<li>Build Docker image:</li>
+</ol>
+<pre><code>$ cd docker
+$ docker build -t grader .
+</code></pre>
+
+<p>Sanity check versions of Python, Ruby and Java:</p>
+<p><strong>Python should be 3.5</strong></p>
+<pre><code>$ docker run grader /bin/bash --login -c &quot;python3.5 --version&quot;
+</code></pre>
+
+<p><strong>Ruby should be 2.3</strong></p>
+<pre><code>$ docker run grader /bin/bash --login -c &quot;ruby --version&quot;
+</code></pre>
+
+<p><strong>Java should be 1.8</strong></p>
+<pre><code>$ docker run grader /bin/bash --login -c &quot;java -version&quot;
+</code></pre>
+
+<p><strong>After this:</strong></p>
+<ol>
+<li>Run Django migrations.</li>
+<li>Create superuser for admin.</li>
+<li>Create API User from command: <code>$ python manage.py create_api_user education.hackbulgaria.com</code> - here, the URL should be the website that is going to make requests to the grader.</li>
+<li>Take API key and API secret and give them to the client.</li>
+<li>Add the initial data needed to run the grader to the database: <code>$ python manage.py provision_initial_data</code></li>
+<li>Run Django.</li>
+<li>Run Celery: <code>$ celery -A hacktester worker -B -E --loglevel=info</code> .</li>
+</ol>
+<h2 id="management-commands">Management commands</h2>
+<h3 id="docker">Docker</h3>
+<p>Check if there are any running docker containers:</p>
+<pre><code>$ docker ps
+</code></pre>
+
+<p>Check all docker containers:</p>
+<pre><code>$ docker ps -a
+</code></pre>
+
+<p>To kill all docker containers:</p>
+<pre><code>$ docker rm $(docker ps -aq)
+</code></pre>
+
+<h3 id="celery">Celery</h3>
+<p>Check for currently running tasks:</p>
+<pre><code>$ celery -A hacktester inspect active
+</code></pre>
+
+<p>Terminate running tasks:</p>
+<pre><code>$ celery -A hacktester purge
+</code></pre>
+
+<h2 id="communication-data-formats">Communication data formats</h2>
+<h3 id="format-of-the-data-sent-to-grade">Format of the data sent to /grade</h3>
+<h5 id="for-unittest">for unittest:</h5>
+<pre><code>{
+"test_type": "unittest",
+"language": language,   # currently supported {java, python, ruby, javascript}
+"file_type": file_type, # plain or binary
+"code": code, # plain text or base_64 format
+"test": test_code, # plain text or base_64 format
+"extra_options": {
+    'qualified_class_name': 'com.hackbulgaria.grader.Tests', # for java binary solutions
+    'time_limit': number # set time limit for the test suite in seconds
+}}
+</code></pre>
+<h4 id="format-of-the-code-and-test-data-for-javascript">Format of the <strong>code</strong> and <strong>test</strong> data for <code>JavaScript</code></h4>
+<ul>
+<li>Functions in <code>code</code> must be exported (e.g., module.exports = function() {};)</li>
+<li>Test functions must require the function from <code>code</code> in the <strong>solution</strong> file (e.g., var testedFunc = require('solution'))</li>
+<li>Use <code>describe</code> or <code>it</code></li>
+</ul>
+<h5 id="for-output_checking">for output_checking:</h5>
+<pre><code>{
+"test_type": "output_checking",
+"language": language,   # currently supported {java, python, ruby}
+"file_type": "plain",   # only plain are supported
+"code": code, # plain text or base_64 format
+"test": archive, # base_64 format
+"extra_options": {
+    "archive_type": "tar_gz",
+    "class_name": class_name # name of the class containing the main method for java
+    "time_limit": number # set time limit for the test suite in seconds
+}}
+</code></pre>
+<h3 id="archive">Archive</h3>
+<p>sample code for creating a .tar.gz archive with all the files in the current directory:</p>
+<pre><code>def create_tar_gz_archive():
+    test_files = os.listdir()
+    with tarfile.open(name="archive.tar.gz", mode="w:gz") as tar:
+        for file in test_files:
+            tar.add(file)
+    return tar.name
+</code></pre>
+<p>The test file names should be in format test_number.in, test_number.out
+Example:</p>
+<p>1.in the first input file that should be given to the program</p>
+<p>1.out the expected output after running solution with the given input(1.in)</p>
+<h3 id="format-of-the-data-returned-by-check_result">Format of the data returned by /check_result</h3>
+<p>for unittests:</p>
+<pre><code>{
+'run_status': run.status,  # the status of the test run
+'result_status': result.status, # the status of the test result
+'run_id': run.id,
+'output': {"test_status": test_status,  # the status of the result ("OK", "compilation_error" etc..)
+           "test_output": result.output} # the output of the result
+}
+</code></pre>
+<p>for output_checking:</p>
+<pre><code>{
+'run_status': run.status,  # the status of the test run
+'result_status': result.status, # the status of the test result
+'run_id': run.id,
+'output': [{"test_status": test_status,
+            "test_output": result.output},] # the list contains results for for each .in .out pair of tests
+}
+</code></pre>
+              
+            </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+    
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+      
+      
+    </span>
+</div>
+    <script src="../js/theme.js"></script>
+
+</body>
+</html>

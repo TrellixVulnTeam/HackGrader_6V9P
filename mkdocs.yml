@@ -1,9 +1,11 @@
 site_name: HackTester
 
-docs_dir: 'docs'
-site_dir: 'mkdocs_build'
+docs_dir: 'mkdocs'
+site_dir: 'docs/static/mkdocs_build'
 
 pages:
   - Home: index.md
+  - Management commands: management_commands.md
+  - API: api.md
 
 theme: readthedocs

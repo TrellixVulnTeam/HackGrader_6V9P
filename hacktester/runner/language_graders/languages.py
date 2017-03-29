@@ -1,9 +1,22 @@
-from .base import (BaseGrader, OutputCheckingMixin,
-                   DynamicLanguageUnittestMixin,
-                   CompileException, LintException)
+from .base import (
+    BaseGrader,
+    LintException,
+    CompileException,
+    OutputCheckingMixin,
+    DynamicLanguageUnittestMixin,
+    DependenciesFailedInstalling
+)
 
-from settings import (TIMELIMIT, JUNIT, HAMCREST,
-                      PYTHON, RUBY, JAVA, JAVASCRIPT)
+from settings import (
+    RUBY,
+    JAVA,
+    JUNIT,
+    PYTHON,
+    HAMCREST,
+    TIMELIMIT,
+    JAVASCRIPT,
+    DEPENDENCIES_TIMELIMIT
+)
 
 import return_codes
 
@@ -16,9 +29,17 @@ class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader
     LANGUAGE_NAME = PYTHON
 
     def lint(self):
-        returncode, output = run_cmd('flake8 {}'.format(self.solution), timeout=TIMELIMIT)
+        returncode, output = run_cmd("flake8 {}".format(self.solution), timeout=TIMELIMIT)
         if returncode != 0:
             raise LintException("flake8: {}".format(output))
+
+    def install_dependencies(self):
+        if self.dependencies:
+            returncode, output = run_cmd("pip install -r {} --user".format(self.dependencies),
+                                         timeout=DEPENDENCIES_TIMELIMIT)
+
+            if returncode != 0:
+                raise DependenciesFailedInstalling(output)
 
 
 class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
@@ -26,7 +47,7 @@ class RubyRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
     LANGUAGE_NAME = RUBY
 
     def lint(self):
-        returncode, output = run_cmd("rubocop", timeout=TIMELIMIT)
+        returncode, output = run_cmd("rubocop -D", timeout=TIMELIMIT)
         if returncode != 0:
             raise LintException("rubocop: {}".format(output))
 
@@ -37,13 +58,13 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
 
     def execute_program(self):
 
-        time_limit = self.data.get('time_limit') or TIMELIMIT
+        time_limit = self.options.get('time_limit') or TIMELIMIT
         returncode, output = run_cmd("javac {}".format(self.solution), time_limit)
 
         if returncode != 0:
             raise CompileException(output)
 
-        self.solution = self.data["class_name"]
+        self.solution = self.options.get("class_name")
         return super().execute_program()
 
     def execute_unittest(self):
@@ -55,10 +76,10 @@ class JavaRunner(OutputCheckingMixin, BaseGrader):
             "hamcrest": HAMCREST,
             "tests": self.tests,
             "solution": self.solution,
-            "qualified_class_name": self.data['qualified_class_name']
+            "qualified_class_name": self.options.get('qualified_class_name')
         }
 
-        time_limit = self.data.get('time_limit') or TIMELIMIT
+        time_limit = self.options.get('time_limit') or TIMELIMIT
 
         command = command.format(**keys)
 

@@ -2,16 +2,15 @@ import json
 
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound,\
-        HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from hacktester.api_auth.decorators import require_api_authentication
 
-from .models import TestRun, RunResult, Language, TestType, ArchiveType
+from .models import TestRun, RunResult, Language, TestType
 from .tasks import prepare_for_grading
 from .utils import get_base_url, get_run_results
-from .factories import TestRunFactory, ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError
+from .factories import TestRunFactory
 
 
 def index(request):
@@ -53,7 +52,7 @@ def supported_test_types(request):
 
 
 def supported_archive_types(request):
-    types = [archive.value for archive in ArchiveType.objects.all()]
+    types = "tar.gz"
     return JsonResponse(types, safe=False)
 
 
@@ -83,20 +82,14 @@ def grade(request):
     payload['language'] = language
     payload['test_type'] = test_type
 
-    try:
-        run = TestRunFactory.create_run(data=payload)
-    except (ArchiveTypeNotSuppliedError, ArchiveTypeNotSupportedError) as e:
-        msg = repr(e)
-        return HttpResponseBadRequest(msg)
+    run = TestRunFactory.create_run(data=payload)
 
     run.save()
     prepare_for_grading.apply_async((run.id,), countdown=1)
 
     result = {"run_id": run.id}
-    result_location = "{}{}"
-    result_location = result_location.format(
-            get_base_url(request.build_absolute_uri()),
-            reverse('tester:check_result', args=(run.id, )))
+    result_location = "{}{}".format(get_base_url(request.build_absolute_uri()),
+                                    reverse('tester:check_result', args=(run.id, )))
 
     response = JsonResponse(result, status=202)
     response['Location'] = result_location
