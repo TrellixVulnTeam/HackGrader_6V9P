@@ -1,21 +1,19 @@
 from subprocess import CalledProcessError, TimeoutExpired
-from settings import (TIMELIMIT, TIMELIMIT_EXCEEDED_ERROR,
-                      OUTPUT_CHECKING, UNITTEST)
+
 import return_codes
-
+from settings import (
+    UNITTEST,
+    TIMELIMIT,
+    OUTPUT_CHECKING,
+    TIMELIMIT_EXCEEDED_ERROR
+)
+from exceptions import (
+    RunException,
+    LintException,
+    CompileException,
+    DependenciesFailedInstalling
+)
 from .proc import run_cmd, killall
-
-
-class LintException(Exception):
-    pass
-
-
-class CompileException(Exception):
-    pass
-
-
-class RunException(Exception):
-    pass
 
 
 class BaseGrader:
@@ -23,7 +21,8 @@ class BaseGrader:
         self.data = data
         self.solution = data['solution']
         self.tests = data['tests']
-        self.run_lint = data.get('lint', True)
+        self.options = data['extra_options']
+        self.dependencies = data['dependencies']
 
     def prepare(self):
         """
@@ -34,13 +33,13 @@ class BaseGrader:
     def lint(self):
         """
         Hook for running a linter.
-        If linter fails, raise LintException with the error as message
+        If linter fails, raise LintException with the error as message.
         """
 
     def compile(self):
         """
-        Hook for compiling the code
-        If compiling fails, raise CompileException with the error as message
+        Hook for compiling the code.
+        If compiling fails, raise CompileException with the error as message.
         """
 
     def get_command_for_unittest(self):
@@ -55,9 +54,9 @@ class BaseGrader:
 
     def execute_unittest(self):
         """
-        Hook for executing unittests
+        Hook for executing unittests.
         Should return tuple containing returncode and output as result.
-        Raise RunException if something fails
+        Raise RunException if something fails.
         """
 
     def get_command_for_output_checking(self):
@@ -69,11 +68,17 @@ class BaseGrader:
 
         return command
 
+    def install_dependencies(self):
+        """
+        Hook for installing dependencies of a project.
+        If installing fails, raise DependenciesFailedInstalling with the error as message.
+        """
+
     def execute_program(self):
         """
-        Hook for executing programs for output checking tests
+        Hook for executing programs for output checking tests.
         Should return tuple containing returncode and output as result.
-        Raise RunException if something fails
+        Raise RunException if something fails.
         """
 
     def execute(self):
@@ -89,12 +94,15 @@ class BaseGrader:
 
     def run(self):
         try:
-            if self.run_lint:
+            self.install_dependencies()
+
+            if self.options.get('lint', False):
                 self.lint()
 
             self.compile()
 
             returncode, output = self.execute()
+
         except LintException as e:
             returncode = return_codes.LINT_ERROR
             output = str(e)
@@ -103,6 +111,9 @@ class BaseGrader:
             output = str(e)
         except RunException as e:
             returncode = return_codes.RUN_EXCEPTION
+            output = str(e)
+        except DependenciesFailedInstalling as e:
+            returncode = return_codes.REQUIREMENTS_FAILED
             output = str(e)
         except TimeoutExpired as e:
             returncode = return_codes.TIME_LIMIT_ERROR
@@ -143,7 +154,7 @@ class OutputCheckingMixin:
         command = self.get_command_for_output_checking()
         input_string = self.get_input()
 
-        time_limit = self.data.get('time_limit') or TIMELIMIT
+        time_limit = self.options.get('time_limit') or TIMELIMIT
 
         try:
             returncode, output = run_cmd(command, time_limit, input_string=input_string)
@@ -174,10 +185,10 @@ class DynamicLanguageUnittestMixin:
 
     def execute_unittest(self):
         command = self.get_command_for_unittest()
-        time_limit = self.data.get('time_limit') or TIMELIMIT
-
+        time_limit = self.options.get('time_limit') or TIMELIMIT
         try:
             returncode, output = run_cmd(command, time_limit)
+
         except CalledProcessError as e:
             output = e.output
             returncode = return_codes.CALLED_PROCESS_ERROR

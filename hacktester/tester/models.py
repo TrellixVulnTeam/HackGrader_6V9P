@@ -1,10 +1,15 @@
 from django.db import models
-from django.core.cache import cache
 from model_utils.fields import StatusField
 from model_utils import Choices
 from jsonfield import JSONField
 
-from hacktester.runner.settings import UNITTEST, OUTPUT_CHECKING
+
+def tests_upload_path(instance, filename):
+    return "tests/test_{}".format(filename)
+
+
+def solutions_upload_path(instance, filename):
+    return "solutions/solution_{}".format(filename)
 
 
 class Language(models.Model):
@@ -22,45 +27,20 @@ class TestType(models.Model):
         return self.value
 
 
-class ArchiveType(models.Model):
-    value = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.value
-
-
 class Test(models.Model):
+    file = models.FileField(upload_to=tests_upload_path, null=True, blank=True)
+    is_archive = models.BooleanField(default=False)
+
     def __str__(self):
         return "{} {}".format(self.id, self.__class__.__name__)
 
 
-def tests_upload_path(instance, filename):
-    return "tests_{}_{}_{}".format(instance.__class__.__name__, instance.id, filename)
+class Solution(models.Model):
+    file = models.FileField(upload_to=solutions_upload_path)
+    is_archive = models.BooleanField(default=False)
 
-
-class BinaryUnittest(Test):
-    """
-    Unittest received in binary format
-    example: jar files for Java
-    """
-    tests = models.FileField(upload_to=tests_upload_path)
-
-
-class PlainUnittest(Test):
-    """
-    Unittest received in plain text format
-    example: .py, .rb files
-    """
-    tests = models.TextField()
-
-
-class ArchiveTest(Test):
-    """
-    Test received as archive file
-    For output checking
-    """
-    tests = models.FileField(upload_to=tests_upload_path)
-    archive_type = models.ForeignKey(ArchiveType)
+    def __str__(self):
+        return "{} {}".format(self.id, self.__class__.__name__)
 
 
 class TestRun(models.Model):
@@ -72,46 +52,32 @@ class TestRun(models.Model):
     status = StatusField(db_index=True)
     extra_options = JSONField(null=True, blank=True)
     number_of_results = models.IntegerField(default=1)
-    tests = models.OneToOneField(Test, null=True, blank=True, related_name="test_run")
 
-    def is_plain(self):
-        return hasattr(self, "testwithplaintext")
+    test = models.OneToOneField(Test, null=True, blank=True, related_name="test_run")
 
-    def is_binary(self):
-        return hasattr(self, "testwithbinaryfile")
+    solution = models.OneToOneField(Solution, null=True, blank=True, related_name="run")
+
+    @property
+    def test_file(self):
+        return self.test.file
+
+    def test_is_archive(self):
+        self.test.is_archive = True
+        self.test.save()
+
+    @property
+    def solution_file(self):
+        return self.solution.file
+
+    def solution_is_archive(self):
+        self.solution.is_archive = True
+        self.solution.save()
 
     def __str__(self):
-        return "[{}:{}] for {} at {}]"\
-                .format(self.id, self.status,
-                        self.language, self.created_at)
-
-
-class TestWithPlainText(TestRun):
-    solution_code = models.TextField()
-
-    @property
-    def test_code(self):
-        if self.test_type.value == UNITTEST:
-            return self.tests.plainunittest.tests
-        if self.test_type.value == OUTPUT_CHECKING:
-            return self.tests.archivetest.tests
-
-
-def solution_upload_path(instance, filename):
-    return "solution_{}/{}_{}".format(instance.language.name,
-                                      instance.id,
-                                      filename)
-
-
-class TestWithBinaryFile(TestRun):
-    solution = models.FileField(upload_to=solution_upload_path)
-
-    @property
-    def test(self):
-        if self.test_type.value == UNITTEST:
-            return self.tests.binaryunittest.tests
-        if self.test_type.value == OUTPUT_CHECKING:
-            return self.tests.archivetest.tests
+        return "[{}:{}] for {} at {}]".format(self.id,
+                                              self.status,
+                                              self.language,
+                                              self.created_at)
 
 
 class RunResult(models.Model):

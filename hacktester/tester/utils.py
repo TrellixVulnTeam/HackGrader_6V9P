@@ -12,9 +12,11 @@ def get_run_results(run, run_results):
             'run_status': run.status,
             'result_status': result.status,
             'run_id': run.id,
-            'output': {"test_status": test_status,
-                       "test_output": result.output}
+            'output': {
+                "test_status": test_status,
+                "test_output": result.output
             }
+        }
 
     elif run.test_type.value == OUTPUT_CHECKING:
         output = []

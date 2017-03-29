@@ -7,7 +7,7 @@ import json
 from urllib.parse import urlparse
 
 from settings import API_KEY, API_SECRET, APIS, DEFAULT_API
-from helpers import read_file, read_binary_file, output_checking_test_binary
+from helpers import read_binary_file, output_checking_test_binary
 
 API_URL = APIS[DEFAULT_API]
 
@@ -24,11 +24,10 @@ def get_output_check_python():
     tests = output_checking_test_binary("python")
     data = {"test_type": "output_checking",
             "language": "python",
-            "file_type": "plain",
-            "code": read_file('fixtures/output_check/python/solution.py'),
+            "solution": read_binary_file('fixtures/output_check/python/solution.py'),
             "test": tests,
             "extra_options": {
-                "archive_type": "tar_gz"
+                'archive_test_type': True
             }}
 
     return data
@@ -38,70 +37,66 @@ def get_output_check_ruby():
     tests = output_checking_test_binary("ruby")
     data = {"test_type": "output_checking",
             "language": "ruby",
-            "file_type": "plain",
-            "code": read_file('fixtures/output_check/ruby/solution.rb'),
+            "solution": read_binary_file('fixtures/output_check/ruby/solution.rb'),
             "test": tests,
             "extra_options": {
-                "archive_type": "tar_gz"
+                'archive_test_type': True
             }}
 
     return data
 
 
-def get_output_check_plain_java():
+def get_output_check_binary_java():
     tests = output_checking_test_binary("ruby")
     data = {"test_type": "output_checking",
             "language": "java",
-            "file_type": 'plain',
-            "code": read_file('fixtures/output_check/java/solution.java'),
+            "solution": read_binary_file('fixtures/output_check/java/solution.java'),
             "test": tests,
             "extra_options": {
-                "archive_type": "tar_gz",
+                'archive_test_type': True,
                 "class_name": "Factorial"
             }}
 
     return data
 
 
-def get_plain_ruby_problem():
+def get_binary_unittest_ruby_problem():
     data = {"test_type": "unittest",
             "language": "ruby",
-            "file_type": 'plain',
-            "code": read_file('fixtures/plain/solution.rb'),
-            "test": read_file('fixtures/plain/tests.rb'),
+            "solution": read_binary_file('fixtures/binary/solution.rb'),
+            "test": read_binary_file('fixtures/binary/tests.rb'),
             }
 
     return data
 
 
-def get_plain_ruby_problem_with_rubocop_error():
+def get_binary_unittest_ruby_problem_with_rubocop_error():
     data = {"test_type": "unittest",
             "language": "ruby",
-            "file_type": 'plain',
-            "code": read_file('fixtures/plain/solution_rubocop_error.rb'),
-            "test": read_file('fixtures/plain/tests.rb'),
-            }
+            "solution": read_binary_file('fixtures/binary/solution_rubocop_error.rb'),
+            "test": read_binary_file('fixtures/binary/tests.rb'),
+            'extra_options': {
+                'lint': True
+            }}
 
     return data
 
 
-def get_plain_nodejs_problem():
+def get_binary_unittest_nodejs_problem():
     data = {"test_type": "unittest",
             "language": "javascript/nodejs",
-            "file_type": 'plain',
-            "code": read_file('fixtures/plain/solution.js'),
-            "test": read_file('fixtures/plain/tests.js'),
+            "solution": read_binary_file('fixtures/binary/solution.js'),
+            "test": read_binary_file('fixtures/binary/tests.js'),
             }
 
     return data
 
 
-def get_plain_python_problem():
+def get_binary_unittest_python_problem():
     data = {"test_type": "unittest",
             "language": "python",
-            "file_type": 'plain',
-            "code": read_file('fixtures/plain/solution.py'),
-            "test": read_file('fixtures/plain/tests.py'),
+            "solution": read_binary_file('fixtures/binary/solution.py'),
+            "test": read_binary_file('fixtures/binary/tests.py'),
             "extra_options": {
                 "lint": True
             }}
@@ -109,12 +104,11 @@ def get_plain_python_problem():
     return data
 
 
-def get_plain_python_problem_with_flake8_error_and_lint_true():
+def get_binary_unittest_python_problem_with_flake8_error_and_lint_true():
     data = {"test_type": "unittest",
             "language": "python",
-            "file_type": 'plain',
-            "code": read_file('fixtures/plain/solution_flake8_error.py'),
-            "test": read_file('fixtures/plain/tests.py'),
+            "solution": read_binary_file('fixtures/binary/solution_flake8_error.py'),
+            "test": read_binary_file('fixtures/binary/tests.py'),
             "extra_options": {
                 "lint": True
             }}
@@ -122,12 +116,11 @@ def get_plain_python_problem_with_flake8_error_and_lint_true():
     return data
 
 
-def get_plain_python_problem_with_flake8_error_and_lint_false():
+def get_binary_unittest_python_problem_with_flake8_error_and_lint_false():
     data = {"test_type": "unittest",
             "language": "python",
-            "file_type": 'plain',
-            "code": read_file('fixtures/plain/solution_flake8_error.py'),
-            "test": read_file('fixtures/plain/tests.py'),
+            "solution": read_binary_file('fixtures/binary/solution_flake8_error.py'),
+            "test": read_binary_file('fixtures/binary/tests.py'),
             "extra_options": {
                 "lint": False
             }}
@@ -138,14 +131,86 @@ def get_plain_python_problem_with_flake8_error_and_lint_false():
 def get_binary_problem():
     d = {'test_type': 'unittest',
          'language': 'java',
-         'file_type': 'binary',
-         'code': read_binary_file('fixtures/binary/solution.jar'),
+         'solution': read_binary_file('fixtures/binary/solution.jar'),
          'test': read_binary_file('fixtures/binary/tests.jar'),
          'extra_options': {
              'qualified_class_name': 'com.hackbulgaria.grader.Tests'
          }}
 
     return d
+
+
+def get_binary_unittest_django_problem():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": read_binary_file('fixtures/binary/django/1/django_project.tar.gz'),
+            "test": read_binary_file('fixtures/binary/django/1/tests.tar.gz'),
+            "extra_options": {
+                'archive_test_type': True,
+                'archive_solution_type': True,
+                'lint': False,
+                'time_limit': 20
+            }}
+
+    return data
+
+
+def get_binary_unittest_django_problem_without_project_requirements():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": read_binary_file('fixtures/binary/django/2/django_project.tar.gz'),
+            "test": read_binary_file('fixtures/binary/django/2/tests.tar.gz'),
+            "extra_options": {
+                'archive_test_type': True,
+                'archive_solution_type': True,
+                'lint': False,
+                'time_limit': 20
+            }}
+
+    return data
+
+
+def get_binary_unittest_django_problem_with_binary_tests_and_archived_solution():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": read_binary_file('fixtures/binary/django/3/django_project.tar.gz'),
+            "test": read_binary_file('fixtures/binary/django/3/test.py'),
+            "extra_options": {
+                'archive_solution_type': True,
+                'lint': False,
+                'time_limit': 20
+            }}
+
+    return data
+
+
+def get_binary_unittest_python_problem_with_archived_tests_and_binary_solution():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": read_binary_file('fixtures/binary/django/4/solution.py'),
+            "test": read_binary_file('fixtures/binary/django/4/tests.tar.gz'),
+            "extra_options": {
+                'archive_test_type': True,
+                'lint': False,
+                'time_limit': 20
+            }}
+
+    return data
+
+
+def get_binary_unittest_django_problem_with_requiremets_the_same_as_test_requirements():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": read_binary_file('fixtures/binary/django/5/django_project.tar.gz'),
+            "test": read_binary_file('fixtures/binary/django/5/tests.tar.gz'),
+            "extra_options": {
+                'archive_solution_type': True,
+                'archive_test_type': True,
+                'lint': False,
+                'time_limit': 20
+            }}
+
+    return data
 
 
 def get_and_update_nonce(resource):
@@ -220,16 +285,26 @@ def make_request(problem):
 
 
 def main():
-    make_request(get_plain_ruby_problem())
-    make_request(get_plain_ruby_problem_with_rubocop_error())
-    make_request(get_plain_nodejs_problem())
-    make_request(get_plain_python_problem())
-    make_request(get_plain_python_problem_with_flake8_error_and_lint_true())
-    make_request(get_plain_python_problem_with_flake8_error_and_lint_false())
+    make_request(get_binary_unittest_ruby_problem())
+    make_request(get_binary_unittest_ruby_problem_with_rubocop_error())
+
+    make_request(get_binary_unittest_nodejs_problem())
+
+    make_request(get_binary_unittest_python_problem())
+    make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_true())
+    make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_false())
+    make_request(get_binary_unittest_python_problem_with_archived_tests_and_binary_solution())
+
+    make_request(get_binary_unittest_django_problem())
+    make_request(get_binary_unittest_django_problem_without_project_requirements())
+    make_request(get_binary_unittest_django_problem_with_binary_tests_and_archived_solution())
+    make_request(get_binary_unittest_django_problem_with_requiremets_the_same_as_test_requirements())
+
     make_request(get_binary_problem())
+
     make_request(get_output_check_python())
     make_request(get_output_check_ruby())
-    make_request(get_output_check_plain_java())
+    make_request(get_output_check_binary_java())
 
 
 if __name__ == '__main__':
