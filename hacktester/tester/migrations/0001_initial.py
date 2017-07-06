@@ -38,9 +38,9 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(primary_key=True, verbose_name='ID', serialize=False, auto_created=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('status', model_utils.fields.StatusField(db_index=True, default='pending', max_length=100, no_check_for_status=True)),
-                ('extra_options', jsonfield.fields.JSONField(blank=True, null=True)),
-                ('number_of_results', models.IntegerField(default=1)),
                 ('language', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tester.Language')),
+                ('code', models.TextField()),
+                ('test', models.TextField()),
             ],
         ),
         migrations.CreateModel(

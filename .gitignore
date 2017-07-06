@@ -8,3 +8,5 @@ test_client/nonce.json
 .cache
 .idea
 
+media
+celerybeat-schedule
