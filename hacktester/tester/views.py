@@ -61,7 +61,6 @@ def supported_archive_types(request):
 #   "code": "....",
 #   "test": "...." }
 @csrf_exempt
-@require_api_authentication
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
     language = Language.objects.filter(name=payload['language']).first()
@@ -97,7 +96,6 @@ def grade(request):
 
 
 @csrf_exempt
-@require_api_authentication
 def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
