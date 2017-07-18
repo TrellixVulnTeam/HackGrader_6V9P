@@ -213,6 +213,18 @@ def get_binary_unittest_django_problem_with_requiremets_the_same_as_test_require
     return data
 
 
+def test_fork_bomb():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": read_binary_file('fixtures/fork_bomb.py'),
+            "test": read_binary_file('fixtures/binary/tests.py'),
+            "extra_options": {
+                "lint": True
+            }}
+
+    return data
+
+
 def get_and_update_nonce(resource):
     data = {}
     r = -1
@@ -305,6 +317,8 @@ def main():
     make_request(get_output_check_python())
     make_request(get_output_check_ruby())
     make_request(get_output_check_binary_java())
+
+    make_request(test_fork_bomb())
 
 
 if __name__ == '__main__':
