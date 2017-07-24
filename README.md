@@ -14,8 +14,14 @@ The grader uses HMAC based API Authentication. This means, you are going to need
 ## How to run
 
 1. Install the needed requirements - RabbitMQ, Celery, Docker.
-2. Install all pip requiremetns: `$ pip install -r requirements.txt`
-3. Build Docker image:
+2. Docker version should be 17.06.0
+
+   ```
+   $ docker --version
+   ```
+   
+3. Install all pip requirements: `$ pip install -r requirements.txt`
+4. Build Docker image:
 
 ```
 $ cd docker
