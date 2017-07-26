@@ -7,6 +7,10 @@ class ApiUserAdmin(admin.ModelAdmin):
     list_display = ('host', 'key')
     readonly_fields = ('secret', 'key')
 
+    def save_model(self, request, obj, form, change):
+        obj = ApiUser.create_api_user(form.cleaned_data.get('host'))
+        obj.save()
+
 
 @admin.register(ApiRequest)
 class ApiRequestAdmin(admin.ModelAdmin):
