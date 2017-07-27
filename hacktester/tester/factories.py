@@ -1,6 +1,7 @@
 import uuid
 import base64
 from django.core.files.base import ContentFile
+from django.core.exceptions import ValidationError
 
 from .models import TestRun, Test, Solution
 
@@ -23,7 +24,7 @@ class TestFactory:
         solution_file = ContentFile(content=solution_file, name=str(uuid.uuid4()))
         solution = Solution(file=solution_file)
 
-        if data.get("extra_options", {}).get("archive_solution_type"):
+        if data.get("extra_options", {}).get("archive_test_type"):
             solution.is_archive = True
 
         return solution
@@ -34,7 +35,9 @@ class TestRunFactory:
     def create_run(data, files=None):
         language = data['language']
         test_type = data['test_type']
-        extra_options = data.get('extra_options', None)
+        extra_options = data.get('extra_options', {})
+        if type(extra_options) is not dict:
+            raise ValidationError("Extra options must be Dict!")
 
         tests = TestFactory.create_test(data)
         tests.save()
