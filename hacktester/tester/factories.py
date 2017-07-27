@@ -24,7 +24,7 @@ class TestFactory:
         solution_file = ContentFile(content=solution_file, name=str(uuid.uuid4()))
         solution = Solution(file=solution_file)
 
-        if data.get("extra_options", {}).get("archive_test_type"):
+        if data.get("extra_options", {}).get("archive_solution_type"):
             solution.is_archive = True
 
         return solution
