@@ -9,7 +9,7 @@ class ApiUserAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         obj = ApiUser.create_api_user(form.cleaned_data.get('host'))
-        obj.save()
+        return obj
 
 
 @admin.register(ApiRequest)

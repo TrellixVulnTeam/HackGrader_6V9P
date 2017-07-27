@@ -15,7 +15,7 @@ class ApiUser(models.Model):
         key = generate_random_key(host)
         secret = generate_random_key(host)
 
-        return ApiUser(host=host, key=key, secret=secret)
+        return ApiUser.objects.create(host=host, key=key, secret=secret)
 
 
 class ApiRequest(models.Model):
