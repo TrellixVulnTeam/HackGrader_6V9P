@@ -12,6 +12,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         host = options['host']
         user = ApiUser.create_api_user(host=host)
-        user.save()
         self.stdout.write("Key: {}".format(user.key))
         self.stdout.write("Secret: {}".format(user.secret))

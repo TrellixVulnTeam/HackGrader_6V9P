@@ -5,7 +5,11 @@ from .models import ApiUser, ApiRequest
 @admin.register(ApiUser)
 class ApiUserAdmin(admin.ModelAdmin):
     list_display = ('host', 'key')
-    readonly_fields = ('secret', 'key')
+    readonly_fields = ('key', 'secret')
+
+    def save_model(self, request, obj, form, change):
+        obj = ApiUser.create_api_user(form.cleaned_data.get('host'))
+        return obj
 
 
 @admin.register(ApiRequest)
