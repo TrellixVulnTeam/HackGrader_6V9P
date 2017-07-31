@@ -2,7 +2,6 @@ import uuid
 import base64
 
 from django.core.files.base import ContentFile
-from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
 from .models import TestRun, Test, Solution, Language, TestType
