@@ -5,12 +5,15 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from rest_framework.decorators import api_view
+
 from hacktester.api_auth.decorators import require_api_authentication
 
 from .models import TestRun, RunResult, Language, TestType
 from .tasks import prepare_for_grading
 from .utils import get_base_url, get_run_results
 from .factories import TestRunFactory
+from .serializers import TestRunSerializer
 
 
 def index(request):
@@ -58,31 +61,25 @@ def supported_archive_types(request):
 
 # { "language": "Python",
 #   "test_type":     "unittest",
-#   "code": "....",
+#   "solution": "....",
 #   "test": "...." }
 @csrf_exempt
+@api_view(['POST'])
 @require_api_authentication
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
-    language = Language.objects.filter(name=payload['language']).first()
+    serializer = TestRunSerializer(data=payload)
+    if serializer.is_valid():
+        run = TestRunFactory.create_run(data=dict(serializer.data))
+    else:
+        error_messages = []
+        for _, error in serializer.errors.items():
+            error_messages.append(error)
 
-    if language is None:
-        msg = "Language {} not supported. Please check GET /supported_languages"
-        msg = msg.format(payload['language'])
-        return HttpResponseBadRequest(msg)
+        for error_idx in range(len(error_messages)):
+            error_messages[error_idx] = ", ".join(error_messages[error_idx])
 
-    test_type = TestType.objects.filter(value=payload['test_type']).first()
-
-    if test_type is None:
-        msg = "Test type {} not supported. Please check GET /supported_test_types"
-        msg = msg.format(payload['test_type'])
-        return HttpResponseBadRequest(msg)
-
-    payload['language'] = language
-    payload['test_type'] = test_type
-
-    run = TestRunFactory.create_run(data=payload)
-
+        return HttpResponseBadRequest(", ".join(error_messages))
     run.save()
     prepare_for_grading.apply_async((run.id,), countdown=1)
 
