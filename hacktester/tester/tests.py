@@ -107,6 +107,7 @@ class GradeViewTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
 
+@override_settings(REQUIRES_API_AUTHENTICATION=False)
 class CheckResultViewTest(TestCase):
     def test_check_result_with_nonexistent_run_id(self):
         response = self.client.get(reverse('tester:check_result', args=(1,)))
