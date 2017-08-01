@@ -66,7 +66,7 @@ def supported_archive_types(request):
 #   "test": "...." }
 @csrf_exempt
 @api_view(['POST'])
-@require_api_authentication(settings.REQUIRES_API_AUTHENTICATION)
+@require_api_authentication
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
     serializer = TestRunSerializer(data=payload)
@@ -95,7 +95,7 @@ def grade(request):
 
 
 @csrf_exempt
-@require_api_authentication(settings.REQUIRES_API_AUTHENTICATION)
+@require_api_authentication
 def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
