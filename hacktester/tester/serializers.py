@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import TestRun, Language, TestType
+from .models import TestRun
 from .validators import validate_language, validate_test_type
 
 
