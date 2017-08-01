@@ -1,4 +1,6 @@
 import json
+import base64
+
 from faker import Factory
 
 from django.test import override_settings, TestCase
@@ -66,6 +68,8 @@ class GradeViewTest(TestCase):
         create_test_types()
         create_languages()
         payload = get_problem()
+        payload['solution'] = base64.b64encode(payload['solution'].encode('utf-8')).decode('ascii')
+        payload['test'] = base64.b64encode(payload['test'].encode('utf-8')).decode('ascii')
         d = json.dumps(payload)
         response = self.client.post(reverse('tester:grade'), content_type=JSON, data=d)
         content = json.loads(response.content.decode('utf-8'))
