@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from rest_framework.decorators import api_view
 
@@ -65,7 +66,7 @@ def supported_archive_types(request):
 #   "test": "...." }
 @csrf_exempt
 @api_view(['POST'])
-@require_api_authentication
+@require_api_authentication(settings.REQUIRES_API_AUTHENTICATION)
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
     serializer = TestRunSerializer(data=payload)
@@ -94,7 +95,7 @@ def grade(request):
 
 
 @csrf_exempt
-@require_api_authentication
+@require_api_authentication(settings.REQUIRES_API_AUTHENTICATION)
 def check_result(request, run_id):
     try:
         run = TestRun.objects.get(pk=run_id)
