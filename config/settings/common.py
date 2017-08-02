@@ -31,6 +31,7 @@ DJANGO_APPS = (
     'django.contrib.staticfiles',
 )
 THIRD_PARTY_APPS = (
+    'rest_framework',
     'django_celery_results',
     'django_celery_beat',
 )
@@ -234,3 +235,5 @@ CACHES = {
         'TIMEOUT': CACHE_TIMEOUT
     }
 }
+
+REQUIRES_API_AUTHENTICATION = True

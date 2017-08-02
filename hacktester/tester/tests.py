@@ -1,8 +1,14 @@
-from django.test import TestCase
-from django.core.urlresolvers import reverse
 import json
+import base64
+
+from faker import Factory
+
+from django.test import override_settings, TestCase
+from django.core.urlresolvers import reverse
 
 from .models import Language, TestType
+
+faker = Factory.create()
 
 
 def create_languages():
@@ -48,7 +54,7 @@ if __name__ == '__main__':
     unittest.main()
 """
 
-    d['code'] = code
+    d['solution'] = code
     d['test'] = test
 
     return d
@@ -56,11 +62,14 @@ if __name__ == '__main__':
 JSON = 'application/json'
 
 
+@override_settings(REQUIRES_API_AUTHENTICATION=False)
 class GradeViewTest(TestCase):
     def test_grade_view_with_proper_json(self):
         create_test_types()
         create_languages()
         payload = get_problem()
+        payload['solution'] = base64.b64encode(payload['solution'].encode('utf-8')).decode('ascii')
+        payload['test'] = base64.b64encode(payload['test'].encode('utf-8')).decode('ascii')
         d = json.dumps(payload)
         response = self.client.post(reverse('tester:grade'), content_type=JSON, data=d)
         content = json.loads(response.content.decode('utf-8'))
@@ -85,7 +94,20 @@ class GradeViewTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
+    def test_grade_does_not_accept_extra_options_different_than_dict(self):
+        create_languages()
+        create_test_types()
+        data = {
+            "language": "ruby",
+            "test_type": "unittest",
+            "extra_options": faker.word()
+        }
+        d = json.dumps(data)
+        response = self.client.post(reverse("tester:grade"), data=d, content_type=JSON)
+        self.assertEqual(response.status_code, 400)
 
+
+@override_settings(REQUIRES_API_AUTHENTICATION=False)
 class CheckResultViewTest(TestCase):
     def test_check_result_with_nonexistent_run_id(self):
         response = self.client.get(reverse('tester:check_result', args=(1,)))

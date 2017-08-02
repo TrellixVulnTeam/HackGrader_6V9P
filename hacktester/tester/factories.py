@@ -1,8 +1,10 @@
 import uuid
 import base64
-from django.core.files.base import ContentFile
 
-from .models import TestRun, Test, Solution
+from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
+
+from .models import TestRun, Test, Solution, Language, TestType
 
 
 class TestFactory:
@@ -32,9 +34,9 @@ class TestFactory:
 class TestRunFactory:
     @staticmethod
     def create_run(data, files=None):
-        language = data['language']
-        test_type = data['test_type']
-        extra_options = data.get('extra_options', None)
+        language = get_object_or_404(Language, name=data['language'])
+        test_type = get_object_or_404(TestType, value=data['test_type'])
+        extra_options = data.get('extra_options', {})
 
         tests = TestFactory.create_test(data)
         tests.save()

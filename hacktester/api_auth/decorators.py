@@ -1,8 +1,9 @@
-from django.http import HttpResponseForbidden,\
-        HttpResponseBadRequest
 from functools import wraps
 import hashlib
 import hmac
+
+from django.http import HttpResponseForbidden, HttpResponseBadRequest
+from django.conf import settings
 
 from .models import ApiUser, ApiRequest
 from .utils import keys_not_present
@@ -27,6 +28,8 @@ def build_request_info(request):
 def require_api_authentication(func):
     @wraps(func)
     def _wrapped_view(request, *args, **kwargs):
+        if not settings.REQUIRES_API_AUTHENTICATION:
+            return func(request, *args, **kwargs)
         missing_headers = keys_not_present(KEYS, request.META)
 
         if len(missing_headers) > 0:
@@ -75,5 +78,4 @@ def require_api_authentication(func):
         api_request.save()
 
         return func(request, *args, **kwargs)
-
     return _wrapped_view
