@@ -84,7 +84,7 @@ MANAGERS = ADMINS
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-    'default': env.db('DATABASE_URL', default='postgres:///hacktester'),
+    'default': env.db('DATABASE_URL', default='postgres:///hackgrader'),
 }
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 
