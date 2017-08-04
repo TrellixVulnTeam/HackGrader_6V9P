@@ -19,7 +19,6 @@ from .docker_utils import (
     docker_cleanup,
     get_docker_logs,
     run_code_in_docker,
-    wait_while_docker_finishes,
     DOCKER_INSPECT_COMMAND,
 )
 
@@ -39,23 +38,63 @@ def has_docker_finished(self, run_id, container_id):
             "state": "{{.State.Running}}"}
     command = DOCKER_INSPECT_COMMAND.format(**keys)
 
-    result = check_output(['/bin/bash', '-c', command],
-                          stderr=STDOUT).decode('utf-8').strip()
+    try:
+        result = check_output(['/bin/bash', '-c', command],
+                              stderr=STDOUT).decode('utf-8').strip()
+    except CalledProcessError as e:
+        returncode = return_codes.CALLED_PROCESS_ERROR
+        output = repr(e)
+    except TimeoutExpired as e:
+        returncode = return_codes.TIME_LIMIT_ERROR
+        output = repr(e)
+    except SoftTimeLimitExceeded as exc:
+        logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
+        self.retry(exc=exc)
+    except Exception as e:
+        returncode = return_codes.UNKNOWN_EXCEPTION
+        output = repr(e)
 
     logger.info("Checking if {} has finished: {}".format(container_id, result))
     while True:
         if result == 'true':
             time.sleep(1)
-            result = check_output(['/bin/bash', '-c', command],
-                                  stderr=STDOUT).decode('utf-8').strip()
-            logger.info("Checking if {} has finished: {}".format(container_id, result))
+            try:
+                result = check_output(['/bin/bash', '-c', command],
+                                      stderr=STDOUT).decode('utf-8').strip()
+                logger.info("Checking if {} has finished: {}".format(container_id, result))
+            except CalledProcessError as e:
+                returncode = return_codes.CALLED_PROCESS_ERROR
+                output = repr(e)
+            except TimeoutExpired as e:
+                returncode = return_codes.TIME_LIMIT_ERROR
+                output = repr(e)
+            except SoftTimeLimitExceeded as exc:
+                logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
+                self.retry(exc=exc)
+            except Exception as e:
+                returncode = return_codes.UNKNOWN_EXCEPTION
+                output = repr(e)
         else:
-            break
-    logs = get_docker_logs(container_id)
-    logger.info(logs)
-    returncode, output = get_output(logs)
-    if container_id:
-        docker_cleanup(container_id)
+            try:
+                logs = get_docker_logs(container_id)
+                logger.info(logs)
+                returncode, output = get_output(logs)
+            except CalledProcessError as e:
+                returncode = return_codes.CALLED_PROCESS_ERROR
+                output = repr(e)
+            except TimeoutExpired as e:
+                returncode = return_codes.TIME_LIMIT_ERROR
+                output = repr(e)
+            except SoftTimeLimitExceeded as exc:
+                logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
+                self.retry(exc=exc)
+            except Exception as e:
+                returncode = return_codes.UNKNOWN_EXCEPTION
+                output = repr(e)
+            finally:
+                if container_id:
+                    docker_cleanup(container_id)
+                break
 
     pending_task = get_object_or_404(TestRun, id=run_id)
     run_result = RunResult()
@@ -89,33 +128,30 @@ def has_docker_finished(self, run_id, container_id):
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=40)
 def grade_pending_run(self, run_id, input_folder):
-    pending_task = get_pending_task(run_id)
-
     container_id = None
-
-    container_id = run_code_in_docker(input_folder=input_folder)
-    sig = has_docker_finished.s(run_id, container_id)
-    finished = sig.delay()
-    while True:
-        if finished.result:
-            result = finished.result
-            break
-        else:
-            sig.set(countdown=1)
-    return result
-
-    # except CalledProcessError as e:
-    #     returncode = return_codes.CALLED_PROCESS_ERROR
-    #     output = repr(e)
-    # except TimeoutExpired as e:
-    #     returncode = return_codes.TIME_LIMIT_ERROR
-    #     output = repr(e)
-    # except SoftTimeLimitExceeded as exc:
-    #     logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
-    #     self.retry(exc=exc)
-    # except Exception as e:
-    #     returncode = return_codes.UNKNOWN_EXCEPTION
-    #     output = repr(e)
+    try:
+        container_id = run_code_in_docker(input_folder=input_folder)
+        sig = has_docker_finished.s(run_id, container_id)
+        finished = sig.delay()
+        while True:
+            if finished.result:
+                result = finished.result
+                break
+            else:
+                sig.set(countdown=1)
+        return result
+    except CalledProcessError as e:
+        returncode = return_codes.CALLED_PROCESS_ERROR
+        output = repr(e)
+    except TimeoutExpired as e:
+        returncode = return_codes.TIME_LIMIT_ERROR
+        output = repr(e)
+    except SoftTimeLimitExceeded as exc:
+        logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
+        self.retry(exc=exc)
+    except Exception as e:
+        returncode = return_codes.UNKNOWN_EXCEPTION  # noqa
+        output = repr(e)  # noqa
 
 
 @shared_task
