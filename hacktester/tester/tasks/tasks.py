@@ -101,10 +101,6 @@ def grade_pending_run(self, run_id, input_folder):
         returncode = return_codes.UNKNOWN_EXCEPTION  # noqa
         output = repr(e)  # noqa
 
-    pending_task = get_object_or_404(TestRun, id=run_id)
-    pending_task.container_id = container_id
-    pending_task.save()
-
     sig = has_docker_finished.s(run_id, container_id)
     finished = sig.delay()
 
