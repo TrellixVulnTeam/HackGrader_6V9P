@@ -38,6 +38,7 @@ def has_docker_finished(self, run_id, container_id):
             "state": "{{.State.Running}}"}
     command = DOCKER_INSPECT_COMMAND.format(**keys)
 
+    result = None
     try:
         result = check_output(['/bin/bash', '-c', command],
                               stderr=STDOUT).decode('utf-8').strip()
@@ -55,6 +56,7 @@ def has_docker_finished(self, run_id, container_id):
         output = repr(e)
 
     logger.info("Checking if {} has finished: {}".format(container_id, result))
+
     while True:
         if result == 'true':
             time.sleep(1)
@@ -112,34 +114,12 @@ def has_docker_finished(self, run_id, container_id):
 
     return run_result.id
 
-#     except CalledProcessError as e:
-#         returncode = return_codes.CALLED_PROCESS_ERROR
-#         output = repr(e)
-#     except TimeoutExpired as e:
-#         returncode = return_codes.TIME_LIMIT_ERROR
-#         output = repr(e)
-#     except SoftTimeLimitExceeded as exc:
-#         logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
-#         self.retry(exc=exc)
-#     except Exception as e:
-#         returncode = return_codes.UNKNOWN_EXCEPTION
-#         output = repr(e)
-
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=40)
 def grade_pending_run(self, run_id, input_folder):
     container_id = None
     try:
         container_id = run_code_in_docker(input_folder=input_folder)
-        sig = has_docker_finished.s(run_id, container_id)
-        finished = sig.delay()
-        while True:
-            if finished.result:
-                result = finished.result
-                break
-            else:
-                sig.set(countdown=1)
-        return result
     except CalledProcessError as e:
         returncode = return_codes.CALLED_PROCESS_ERROR
         output = repr(e)
@@ -152,6 +132,17 @@ def grade_pending_run(self, run_id, input_folder):
     except Exception as e:
         returncode = return_codes.UNKNOWN_EXCEPTION  # noqa
         output = repr(e)  # noqa
+
+    sig = has_docker_finished.s(run_id, container_id)
+    finished = sig.delay()
+    result = None
+    while True:
+        if finished.result:
+            result = finished.result
+            break
+        else:
+            sig.set(countdown=1)
+    return result
 
 
 @shared_task
