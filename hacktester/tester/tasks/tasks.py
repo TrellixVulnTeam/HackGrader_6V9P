@@ -10,6 +10,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+
 from hacktester.runner import return_codes
 
 from .common_utils import get_result_status, get_pending_task
@@ -20,6 +21,7 @@ from .docker_utils import (
     run_code_in_docker,
     DOCKER_INSPECT_COMMAND,
 )
+from ..exceptions import PollingError
 
 from ..models import RunResult, TestRun
 from ..preparators.factory import PreparatorFactory
@@ -31,7 +33,7 @@ logger = get_task_logger(__name__)
 CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing run_id:{run_id}"""
 
 
-@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=60)
+@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
 def has_docker_finished(self, run_id, container_id):
     keys = {"container_id": container_id,
             "state": "{{.State.Running}}"}
@@ -39,17 +41,20 @@ def has_docker_finished(self, run_id, container_id):
     pending_task = get_object_or_404(TestRun, id=run_id)
 
     try:
-        while True:
-            result = check_output(['/bin/bash', '-c', command],
-                                  stderr=STDOUT).decode('utf-8').strip()
-            logger.info("Checking if {} has finished: {}".format(container_id, result))
-            if result == 'true':
-                time.sleep(1)
-            else:
-                logs = get_docker_logs(container_id)
-                logger.info(logs)
-                returncode, output = get_output(logs)
-                break
+        result = check_output(['/bin/bash', '-c', command],
+                              stderr=STDOUT).decode('utf-8').strip()
+        logger.info("Checking if {} has finished: {}".format(container_id, result))
+        if result == 'true':
+            time.sleep(1)
+            raise PollingError
+        else:
+            logs = get_docker_logs(container_id)
+            logger.info(logs)
+            returncode, output = get_output(logs)
+            if container_id:
+                docker_cleanup(container_id)
+    except PollingError as exc:
+        self.retry(exc=exc, countdown=3)
     except CalledProcessError as e:
         returncode = return_codes.CALLED_PROCESS_ERROR
         output = repr(e)
@@ -62,9 +67,6 @@ def has_docker_finished(self, run_id, container_id):
     except Exception as e:
         returncode = return_codes.UNKNOWN_EXCEPTION
         output = repr(e)
-    finally:
-        if container_id:
-            docker_cleanup(container_id)
 
     run_result = RunResult()
     run_result.run = pending_task
@@ -79,10 +81,13 @@ def has_docker_finished(self, run_id, container_id):
         pending_task.status = "done"
         pending_task.save()
 
+    clean = clean_up_after_run.s(run_result.id).set(countdown=1)
+    clean.delay()
+
     return run_result.id
 
 
-@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=60)
+@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
 def grade_pending_run(self, run_id, input_folder):
     container_id = None
     try:
@@ -107,16 +112,9 @@ def grade_pending_run(self, run_id, input_folder):
     sig = has_docker_finished.s(run_id, container_id)
     finished = sig.delay()
 
-    result = None
-
-    while True:
-        if finished.result:
-            result = finished.result
-            break
-        else:
-            sig.set(countdown=1)
-
-    return result
+    if finished.result:
+        result = finished.result
+        return result
 
 
 @shared_task
@@ -148,7 +146,4 @@ def prepare_for_grading(self, run_id):
 
     for data in test_runs:
         grade = grade_pending_run.s(**data).set(countdown=1)
-        clean = clean_up_after_run.s()
-
-        tasks = chain(grade, clean)
-        tasks()
+        grade.delay()

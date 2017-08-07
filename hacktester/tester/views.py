@@ -75,7 +75,8 @@ def grade(request):
 
         return HttpResponseBadRequest(json.dumps(error_messages))
     run.save()
-    prepare_for_grading.apply_async((run.id, ), countdown=1)
+    prepared_run = prepare_for_grading.s(run_id=run.id).set(countdown=1)
+    prepared_run.delay()
 
     result = {"run_id": run.id}
     result_location = "{}{}".format(get_base_url(request.build_absolute_uri()),

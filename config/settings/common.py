@@ -203,7 +203,7 @@ CELERY_TASK_SERIALIZER = 'json'
 """
 CELERYD_TASK_SOFT_TIME_LIMIT = env('CELERYD_TASK_SOFT_TIME_LIMIT', default=60)
 CELERYD_TASK_TIME_LIMIT = env('CELERYD_TASK_TIME_LIMIT', default=60 + 60)
-CELERY_TASK_MAX_RETRIES = env('CELERY_TASK_MAX_RETRIES', default=3)
+CELERY_TASK_MAX_RETRIES = env('CELERY_TASK_MAX_RETRIES', default=30)
 
 
 # Your production stuff: Below this line define 3rd party library settings
