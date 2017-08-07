@@ -4,7 +4,6 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
 
 from rest_framework.decorators import api_view
 
@@ -60,10 +59,6 @@ def supported_archive_types(request):
     return JsonResponse(types, safe=False)
 
 
-# { "language": "Python",
-#   "test_type":     "unittest",
-#   "solution": "....",
-#   "test": "...." }
 @csrf_exempt
 @api_view(['POST'])
 @require_api_authentication
@@ -73,14 +68,11 @@ def grade(request):
     if serializer.is_valid():
         run = TestRunFactory.create_run(data=dict(serializer.data))
     else:
-        error_messages = []
-        for _, error in serializer.errors.items():
-            error_messages.append(error)
+        error_messages = {}
+        for error_type, error in serializer.errors.items():
+            error_messages[error_type] = error
 
-        for error_idx in range(len(error_messages)):
-            error_messages[error_idx] = ", ".join(error_messages[error_idx])
-
-        return HttpResponseBadRequest(", ".join(error_messages))
+        return HttpResponseBadRequest(json.dumps(error_messages))
     run.save()
     prepare_for_grading.apply_async((run.id, ), countdown=1)
 
