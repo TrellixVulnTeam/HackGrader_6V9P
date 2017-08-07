@@ -30,6 +30,7 @@ def require_api_authentication(func):
     def _wrapped_view(request, *args, **kwargs):
         if not settings.REQUIRES_API_AUTHENTICATION:
             return func(request, *args, **kwargs)
+
         missing_headers = keys_not_present(KEYS, request.META)
 
         if len(missing_headers) > 0:

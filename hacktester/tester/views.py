@@ -65,6 +65,7 @@ def supported_archive_types(request):
 def grade(request):
     payload = json.loads(request.body.decode('utf-8'))
     serializer = TestRunSerializer(data=payload)
+
     if serializer.is_valid():
         run = TestRunFactory.create_run(data=dict(serializer.data))
     else:
