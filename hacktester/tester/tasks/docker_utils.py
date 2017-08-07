@@ -1,5 +1,4 @@
 import os
-import time
 import logging
 import json
 from subprocess import check_output, STDOUT
@@ -67,22 +66,6 @@ def get_output(logs):
     output = decoded_output["output"]
 
     return returncode, output
-
-
-def wait_while_docker_finishes(container_id):
-    keys = {"container_id": container_id,
-            "state": "{{.State.Running}}"}
-    command = DOCKER_INSPECT_COMMAND.format(**keys)
-
-    while True:
-        result = check_output(['/bin/bash', '-c', command],
-                              stderr=STDOUT).decode('utf-8').strip()
-
-        logger.info("Checking if {} has finished: {}".format(container_id, result))
-        if result == 'false':
-            break
-
-        time.sleep(1)
 
 
 def run_code_in_docker(time_limit=None, **kwargs):
