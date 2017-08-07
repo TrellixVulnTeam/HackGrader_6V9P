@@ -52,6 +52,7 @@ class TestRun(models.Model):
     status = StatusField(db_index=True)
     extra_options = JSONField(null=True, blank=True)
     number_of_results = models.IntegerField(default=1)
+    container_id = models.CharField(max_length=255, null=True, blank=True)
 
     test = models.OneToOneField(Test, null=True, blank=True, related_name="test_run")
 

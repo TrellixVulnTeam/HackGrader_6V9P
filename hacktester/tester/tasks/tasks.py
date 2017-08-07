@@ -10,7 +10,6 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-
 from hacktester.runner import return_codes
 
 from .common_utils import get_result_status, get_pending_task
