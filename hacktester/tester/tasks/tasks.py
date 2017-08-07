@@ -31,7 +31,7 @@ logger = get_task_logger(__name__)
 CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing run_id:{run_id}"""
 
 
-@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=40)
+@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=60)
 def has_docker_finished(self, run_id, container_id):
     keys = {"container_id": container_id,
             "state": "{{.State.Running}}"}
@@ -82,7 +82,7 @@ def has_docker_finished(self, run_id, container_id):
     return run_result.id
 
 
-@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=40)
+@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES, time_limit=60)
 def grade_pending_run(self, run_id, input_folder):
     container_id = None
     try:
