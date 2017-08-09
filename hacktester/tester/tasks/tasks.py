@@ -32,41 +32,9 @@ logger = get_task_logger(__name__)
 CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing run_id:{run_id}"""
 
 
-@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_POLLING_RETRIES)
-def poll_docker(self, run_id, container_id, returncode=None, output=None):
-    keys = {"container_id": container_id,
-            "state": "{{.State.Running}}"}
-    command = DOCKER_INSPECT_COMMAND.format(**keys)
-    pending_task = get_object_or_404(TestRun, id=run_id)
-
-    if not returncode and not output:
-        try:
-            result = check_output(['/bin/bash', '-c', command],
-                                  stderr=STDOUT).decode('utf-8').strip()
-            logger.info("Checking if {} has finished: {}".format(container_id, result))
-            if result == 'true':
-                raise PollingError
-            else:
-                logs = get_docker_logs(container_id)
-                logger.info(logs)
-                returncode, output = get_output(logs)
-                if container_id:
-                    docker_cleanup(container_id)
-        except PollingError as exc:
-            self.retry(exc=exc, countdown=1)
-        except CalledProcessError as e:
-            returncode = return_codes.CALLED_PROCESS_ERROR
-            output = repr(e)
-        except TimeoutExpired as e:
-            returncode = return_codes.TIME_LIMIT_ERROR
-            output = repr(e)
-        except SoftTimeLimitExceeded as exc:
-            logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
-            self.retry(exc=exc)
-        except Exception as e:
-            returncode = return_codes.UNKNOWN_EXCEPTION
-            output = repr(e)
-
+@shared_task(bind=True)
+def finish_run(self, pending_task_id, returncode, output):
+    pending_task = get_object_or_404(TestRun, id=pending_task_id)
     run_result = RunResult()
     run_result.run = pending_task
     run_result.returncode = returncode
@@ -84,6 +52,44 @@ def poll_docker(self, run_id, container_id, returncode=None, output=None):
     clean.delay()
 
     return run_result.id
+
+
+@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_POLLING_RETRIES)
+def poll_docker(self, run_id, container_id):
+    keys = {"container_id": container_id,
+            "state": "{{.State.Running}}"}
+    command = DOCKER_INSPECT_COMMAND.format(**keys)
+    pending_task = get_object_or_404(TestRun, id=run_id)
+
+    try:
+        result = check_output(['/bin/bash', '-c', command],
+                              stderr=STDOUT).decode('utf-8').strip()
+        logger.info("Checking if {} has finished: {}".format(container_id, result))
+        if result == 'true':
+            raise PollingError
+        else:
+            logs = get_docker_logs(container_id)
+            logger.info(logs)
+            returncode, output = get_output(logs)
+            if container_id:
+                docker_cleanup(container_id)
+    except PollingError as exc:
+        self.retry(exc=exc, countdown=1)
+    except CalledProcessError as e:
+        returncode = return_codes.CALLED_PROCESS_ERROR
+        output = repr(e)
+    except TimeoutExpired as e:
+        returncode = return_codes.TIME_LIMIT_ERROR
+        output = repr(e)
+    except SoftTimeLimitExceeded as exc:
+        logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
+        self.retry(exc=exc)
+    except Exception as e:
+        returncode = return_codes.UNKNOWN_EXCEPTION
+        output = repr(e)
+
+    finish = finish_run.s(pending_task.id, returncode, output)
+    return finish.delay()
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
@@ -109,7 +115,11 @@ def grade_pending_run(self, run_id, input_folder):
     pending_task.container_id = container_id
     pending_task.save()
 
-    sig = poll_docker.s(run_id, container_id, returncode=returncode, output=output)
+    if returncode and output:
+        finish = finish_run.s(pending_task.id, returncode, output)
+        return finish.delay()
+
+    sig = poll_docker.s(run_id, container_id)
     return sig.delay()
 
 
