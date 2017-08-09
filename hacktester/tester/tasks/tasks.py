@@ -1,10 +1,9 @@
 from __future__ import absolute_import
 import os
-import time
 import shutil
 from subprocess import CalledProcessError, TimeoutExpired, check_output, STDOUT
 
-from celery import shared_task, chain
+from celery import shared_task
 from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
 
@@ -33,40 +32,40 @@ logger = get_task_logger(__name__)
 CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing run_id:{run_id}"""
 
 
-@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
-def has_docker_finished(self, run_id, container_id):
+@shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_POLLING_RETRIES)
+def poll_docker(self, run_id, container_id, returncode=None, output=None):
     keys = {"container_id": container_id,
             "state": "{{.State.Running}}"}
     command = DOCKER_INSPECT_COMMAND.format(**keys)
     pending_task = get_object_or_404(TestRun, id=run_id)
 
-    try:
-        result = check_output(['/bin/bash', '-c', command],
-                              stderr=STDOUT).decode('utf-8').strip()
-        logger.info("Checking if {} has finished: {}".format(container_id, result))
-        if result == 'true':
-            time.sleep(1)
-            raise PollingError
-        else:
-            logs = get_docker_logs(container_id)
-            logger.info(logs)
-            returncode, output = get_output(logs)
-            if container_id:
-                docker_cleanup(container_id)
-    except PollingError as exc:
-        self.retry(exc=exc, countdown=3)
-    except CalledProcessError as e:
-        returncode = return_codes.CALLED_PROCESS_ERROR
-        output = repr(e)
-    except TimeoutExpired as e:
-        returncode = return_codes.TIME_LIMIT_ERROR
-        output = repr(e)
-    except SoftTimeLimitExceeded as exc:
-        logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
-        self.retry(exc=exc)
-    except Exception as e:
-        returncode = return_codes.UNKNOWN_EXCEPTION
-        output = repr(e)
+    if not returncode and not output:
+        try:
+            result = check_output(['/bin/bash', '-c', command],
+                                  stderr=STDOUT).decode('utf-8').strip()
+            logger.info("Checking if {} has finished: {}".format(container_id, result))
+            if result == 'true':
+                raise PollingError
+            else:
+                logs = get_docker_logs(container_id)
+                logger.info(logs)
+                returncode, output = get_output(logs)
+                if container_id:
+                    docker_cleanup(container_id)
+        except PollingError as exc:
+            self.retry(exc=exc, countdown=1)
+        except CalledProcessError as e:
+            returncode = return_codes.CALLED_PROCESS_ERROR
+            output = repr(e)
+        except TimeoutExpired as e:
+            returncode = return_codes.TIME_LIMIT_ERROR
+            output = repr(e)
+        except SoftTimeLimitExceeded as exc:
+            logger.exception(CELERY_TIME_LIMIT_REACHED.format(run_id))
+            self.retry(exc=exc)
+        except Exception as e:
+            returncode = return_codes.UNKNOWN_EXCEPTION
+            output = repr(e)
 
     run_result = RunResult()
     run_result.run = pending_task
@@ -90,6 +89,7 @@ def has_docker_finished(self, run_id, container_id):
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
 def grade_pending_run(self, run_id, input_folder):
     container_id = None
+    returncode = output = None
     try:
         container_id = run_code_in_docker(input_folder=input_folder)
     except CalledProcessError as e:
@@ -109,12 +109,8 @@ def grade_pending_run(self, run_id, input_folder):
     pending_task.container_id = container_id
     pending_task.save()
 
-    sig = has_docker_finished.s(run_id, container_id)
-    finished = sig.delay()
-
-    if finished.result:
-        result = finished.result
-        return result
+    sig = poll_docker.s(run_id, container_id, returncode=returncode, output=output)
+    return sig.delay()
 
 
 @shared_task
