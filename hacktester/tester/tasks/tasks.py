@@ -47,8 +47,7 @@ def finish_run(self, pending_task_id, returncode, output):
         pending_task.status = "done"
         pending_task.save()
 
-    clean = clean_up_after_run.s(run_result.id).set(countdown=1)
-    clean.delay()
+    clean_up_after_run.s(run_result.id).set(countdown=1).delay()
 
     return run_result.id
 
@@ -82,8 +81,7 @@ def poll_docker(self, run_id, container_id):
         returncode = return_codes.UNKNOWN_EXCEPTION
         output = repr(e)
 
-    finish = finish_run.s(pending_task.id, returncode, output)
-    return finish.delay()
+    return finish_run.s(pending_task.id, returncode, output).delay()
 
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
@@ -143,5 +141,4 @@ def prepare_for_grading(self, run_id):
     pending_task.save()
 
     for data in test_runs:
-        grade = grade_pending_run.s(**data).set(countdown=1)
-        grade.delay()
+        grade_pending_run.s(**data).set(countdown=1).delay()
