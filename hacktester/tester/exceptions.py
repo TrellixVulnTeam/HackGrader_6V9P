@@ -4,3 +4,9 @@ class IncorrectTestFileInputError(Exception):
 
 class FolderAlreadyExistsError(Exception):
     pass
+
+
+class PollingError(Exception):
+    """
+    Exception raised when polling towards the Grader has failed
+    """

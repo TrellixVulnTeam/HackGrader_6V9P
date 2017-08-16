@@ -69,16 +69,14 @@ def grade(request):
     if serializer.is_valid():
         run = TestRunFactory.create_run(data=dict(serializer.data))
     else:
-        error_messages = []
-        for _, error in serializer.errors.items():
-            error_messages.append(error)
+        error_messages = {}
+        for error_type, error in serializer.errors.items():
+            error_messages[error_type] = error
 
-        for error_idx in range(len(error_messages)):
-            error_messages[error_idx] = ", ".join(error_messages[error_idx])
-
-        return HttpResponseBadRequest(", ".join(error_messages))
+        return HttpResponseBadRequest(json.dumps(error_messages))
     run.save()
-    prepare_for_grading.apply_async((run.id,), countdown=1)
+    prepared_run = prepare_for_grading.s(run_id=run.id).set(countdown=1)
+    prepared_run.delay()
 
     result = {"run_id": run.id}
     result_location = "{}{}".format(get_base_url(request.build_absolute_uri()),
