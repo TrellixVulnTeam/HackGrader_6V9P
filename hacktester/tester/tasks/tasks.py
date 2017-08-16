@@ -1,14 +1,13 @@
 from __future__ import absolute_import
 import os
 import shutil
-from subprocess import CalledProcessError, TimeoutExpired, check_output, STDOUT
+from subprocess import CalledProcessError, TimeoutExpired
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
-from django.shortcuts import get_object_or_404
 
 from hacktester.runner import return_codes
 
@@ -18,7 +17,7 @@ from .docker_utils import (
     docker_cleanup,
     get_docker_logs,
     run_code_in_docker,
-    DOCKER_INSPECT_COMMAND,
+    get_and_call_poll_command,
 )
 from ..exceptions import PollingError
 
@@ -34,13 +33,13 @@ CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing run_id:{r
 
 @shared_task(bind=True)
 def finish_run(self, pending_task_id, returncode, output):
-    pending_task = get_object_or_404(TestRun, id=pending_task_id)
-    run_result = RunResult()
-    run_result.run = pending_task
-    run_result.returncode = returncode
-    run_result.status = get_result_status(returncode)
-    run_result.output = output
-    run_result.save()
+    pending_task = TestRun.objects.get(id=pending_task_id)
+    run_result = RunResult.objects.create(
+        run=pending_task,
+        returncode=returncode,
+        status=get_result_status(returncode),
+        output=output
+    )
 
     results = RunResult.objects.filter(run=pending_task)
 
@@ -56,23 +55,18 @@ def finish_run(self, pending_task_id, returncode, output):
 
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_POLLING_RETRIES)
 def poll_docker(self, run_id, container_id):
-    keys = {"container_id": container_id,
-            "state": "{{.State.Running}}"}
-    command = DOCKER_INSPECT_COMMAND.format(**keys)
-    pending_task = get_object_or_404(TestRun, id=run_id)
+    pending_task = TestRun.objects.get(id=run_id)
 
     try:
-        result = check_output(['/bin/bash', '-c', command],
-                              stderr=STDOUT).decode('utf-8').strip()
+        result = get_and_call_poll_command(container_id)
         logger.info("Checking if {} has finished: {}".format(container_id, result))
         if result == 'true':
             raise PollingError
-        else:
-            logs = get_docker_logs(container_id)
-            logger.info(logs)
-            returncode, output = get_output(logs)
-            if container_id:
-                docker_cleanup(container_id)
+        logs = get_docker_logs(container_id)
+        logger.info(logs)
+        returncode, output = get_output(logs)
+        if container_id:
+            docker_cleanup(container_id)
     except PollingError as exc:
         self.retry(exc=exc, countdown=1)
     except CalledProcessError as e:
@@ -111,16 +105,14 @@ def grade_pending_run(self, run_id, input_folder):
         returncode = return_codes.UNKNOWN_EXCEPTION  # noqa
         output = repr(e)  # noqa
 
-    pending_task = get_object_or_404(TestRun, id=run_id)
+    pending_task = TestRun.objects.get(id=run_id)
     pending_task.container_id = container_id
     pending_task.save()
 
-    if returncode and output:
-        finish = finish_run.s(pending_task.id, returncode, output)
-        return finish.delay()
+    if returncode is not None and output is not None:
+        return finish_run.s(pending_task.id, returncode, output).delay()
 
-    sig = poll_docker.s(run_id, container_id)
-    return sig.delay()
+    return poll_docker.s(run_id, container_id).delay()
 
 
 @shared_task
