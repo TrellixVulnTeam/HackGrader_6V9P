@@ -217,7 +217,7 @@ CELERY_TASK_MAX_POLLING_RETRIES = env('CELERY_TASK_MAX_POLLING_RETRIES', default
 # Grader & Docker settings
 
 # In seconds - how long should be wait, before killing docker.
-DOCKER_TIME_LIMIT = 5
+DOCKER_TIME_LIMIT = 20
 DOCKER_IMAGE = 'grader'
 DOCKER_USER = 'grader'
 DOCKER_MEMORY_LIMIT = '300M'
