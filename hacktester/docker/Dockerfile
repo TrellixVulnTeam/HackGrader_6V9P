@@ -30,5 +30,6 @@ RUN curl -O https://bootstrap.pypa.io/get-pip.py && python3.5 get-pip.py && pip 
 RUN apt-get clean
 
 RUN useradd -m -p grader grader && chsh -s /bin/bash grader | adduser grader sudo
+RUN usermod -u 1002 grader
 
 USER grader
