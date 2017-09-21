@@ -55,7 +55,6 @@ def finish_run(self, pending_task_id, returncode, output):
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_POLLING_RETRIES)
 def poll_docker(self, run_id, container_id):
     pending_task = TestRun.objects.get(id=run_id)
-
     try:
         result = get_and_call_poll_command(container_id)
         logger.info("Checking if {} has finished: {}".format(container_id, result))
@@ -87,9 +86,13 @@ def poll_docker(self, run_id, container_id):
 @shared_task(bind=True, max_retries=settings.CELERY_TASK_MAX_RETRIES)
 def grade_pending_run(self, run_id, input_folder):
     container_id = None
-    returncode = output = None
+    returncode = output = time_limit = None
+    pending_task = TestRun.objects.get(id=run_id)
+    extra_options = pending_task.extra_options
+    if extra_options:
+        time_limit = extra_options.get('time_limit')
     try:
-        container_id = run_code_in_docker(input_folder=input_folder)
+        container_id = run_code_in_docker(time_limit=time_limit, input_folder=input_folder)
     except CalledProcessError as e:
         returncode = return_codes.CALLED_PROCESS_ERROR
         output = repr(e)

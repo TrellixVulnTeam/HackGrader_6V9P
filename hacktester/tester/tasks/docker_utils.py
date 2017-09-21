@@ -77,8 +77,9 @@ def get_and_call_poll_command(container_id):
                         stderr=STDOUT).decode('utf-8').strip()
 
 
-def run_code_in_docker(time_limit=None, **kwargs):
-    time_limit = time_limit or settings.DOCKER_TIME_LIMIT
+def run_code_in_docker(time_limit, **kwargs):
+    if not time_limit:
+        time_limit = settings.DOCKER_TIME_LIMIT
     docker_command = prepare_docker_command(**kwargs)
     return check_output(['/bin/bash', '-c', docker_command],
                         stderr=STDOUT,
