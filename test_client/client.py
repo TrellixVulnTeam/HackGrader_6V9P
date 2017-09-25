@@ -225,6 +225,19 @@ def test_fork_bomb():
     return data
 
 
+def get_binary_unittest_python_problem_with_too_small_time_limit():
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": read_binary_file('fixtures/binary/solution.py'),
+            "test": read_binary_file('fixtures/binary/tests.py'),
+            "extra_options": {
+                "lint": True,
+                "time_limit": 1,
+            }}
+
+    return data
+
+
 def get_and_update_nonce(resource):
     data = {}
     r = -1
@@ -319,7 +332,7 @@ def main():
     make_request(get_output_check_binary_java())
 
     make_request(test_fork_bomb())
-
+    make_request(get_binary_unittest_python_problem_with_too_small_time_limit())
 
 if __name__ == '__main__':
     main()
