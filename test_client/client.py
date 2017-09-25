@@ -319,6 +319,7 @@ def main():
     make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_true())
     make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_false())
     make_request(get_binary_unittest_python_problem_with_archived_tests_and_binary_solution())
+    make_request(get_binary_unittest_python_problem_with_too_small_time_limit())
 
     make_request(get_binary_unittest_django_problem())
     make_request(get_binary_unittest_django_problem_without_project_requirements())
@@ -332,7 +333,6 @@ def main():
     make_request(get_output_check_binary_java())
 
     make_request(test_fork_bomb())
-    make_request(get_binary_unittest_python_problem_with_too_small_time_limit())
 
 if __name__ == '__main__':
     main()
