@@ -22,7 +22,7 @@ TEST_NAME = "test"
 JAVA = "java"
 PYTHON = "python"
 RUBY = "ruby"
-JAVASCRIPT = "javascript/nodejs"
+JAVASCRIPT = "javascript"
 
 # dependencies timelimit
 DEPENDENCIES_TIMELIMIT = 60

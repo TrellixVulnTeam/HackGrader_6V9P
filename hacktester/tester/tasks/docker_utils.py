@@ -28,12 +28,12 @@ CELERY_TIME_LIMIT_REACHED = """Soft time limit reached while executing \
 
 def prepare_docker_command(*,
                            input_folder,
+                           docker_image,
                            runner=os.path.join(str(settings.APPS_DIR), "runner"),
                            docker_user=settings.DOCKER_USER,
                            nproc_soft_limit=settings.NPROC_SOFT_LIMIT,
                            nproc_hard_limit=settings.NPROC_HARD_LIMIT,
                            docker_memory_limit=settings.DOCKER_MEMORY_LIMIT,
-                           docker_image=settings.DOCKER_IMAGE,
                            command_line_args=None):
     """
     :param input_folder: The folder containing the tests, solution, and meta data
@@ -56,7 +56,7 @@ def prepare_docker_command(*,
            "nproc_soft_limit": nproc_soft_limit,
            "nproc_hard_limit": nproc_hard_limit,
            "docker_memory_limit": docker_memory_limit,
-           "docker_image": docker_image,
+           "docker_image": settings.DOCKER_IMAGES.get(docker_image),
            "runner_args": command_line_args})
 
 
@@ -80,6 +80,7 @@ def get_and_call_poll_command(container_id):
 def run_code_in_docker(time_limit=None, **kwargs):
     time_limit = time_limit or settings.DOCKER_TIME_LIMIT
     docker_command = prepare_docker_command(**kwargs)
+    print(f'DOCKER COMMAND IS {docker_command}')
     return check_output(['/bin/bash', '-c', docker_command],
                         stderr=STDOUT,
                         timeout=time_limit).decode('utf-8')

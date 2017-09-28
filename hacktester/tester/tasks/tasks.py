@@ -8,7 +8,6 @@ from celery.utils.log import get_task_logger
 from celery.exceptions import SoftTimeLimitExceeded
 
 from django.conf import settings
-
 from hacktester.runner import return_codes
 
 from .common_utils import get_result_status, get_pending_task
@@ -88,8 +87,10 @@ def poll_docker(self, run_id, container_id):
 def grade_pending_run(self, run_id, input_folder):
     container_id = None
     returncode = output = None
+    pending_task = TestRun.objects.get(id=run_id)
+    print(f"DOCKER IMAGE IS {settings.DOCKER_IMAGES.get(pending_task.language.name)}")
     try:
-        container_id = run_code_in_docker(input_folder=input_folder)
+        container_id = run_code_in_docker(input_folder=input_folder, docker_image=pending_task.language.name)
     except CalledProcessError as e:
         returncode = return_codes.CALLED_PROCESS_ERROR
         output = repr(e)
@@ -103,7 +104,6 @@ def grade_pending_run(self, run_id, input_folder):
         returncode = return_codes.UNKNOWN_EXCEPTION  # noqa
         output = repr(e)  # noqa
 
-    pending_task = TestRun.objects.get(id=run_id)
     pending_task.container_id = container_id
     pending_task.save()
 

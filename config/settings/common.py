@@ -218,7 +218,12 @@ CELERY_TASK_MAX_POLLING_RETRIES = env('CELERY_TASK_MAX_POLLING_RETRIES', default
 
 # In seconds - how long should be wait, before killing docker.
 DOCKER_TIME_LIMIT = 20
-DOCKER_IMAGE = 'grader'
+DOCKER_IMAGES = {
+    'python': 'python',
+    'ruby': 'ruby',
+    'javascript': 'javascript',
+    'java': 'java'
+}
 DOCKER_USER = 'grader'
 DOCKER_MEMORY_LIMIT = '300M'
 NPROC_SOFT_LIMIT = 550
@@ -238,3 +243,5 @@ CACHES = {
 }
 
 REQUIRES_API_AUTHENTICATION = True
+
+ALLOWED_HOSTS = ["*"]
