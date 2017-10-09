@@ -297,28 +297,28 @@ def make_request(problem):
 
 
 def main():
-    # make_request(get_binary_unittest_ruby_problem())
-    # make_request(get_binary_unittest_ruby_problem_with_rubocop_error())
+    make_request(get_binary_unittest_ruby_problem())
+    make_request(get_binary_unittest_ruby_problem_with_rubocop_error())
 
     make_request(get_binary_unittest_nodejs_problem())
 
-    # make_request(get_binary_unittest_python_problem())
-    # make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_true())
-    # make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_false())
-    # make_request(get_binary_unittest_python_problem_with_archived_tests_and_binary_solution())
+    make_request(get_binary_unittest_python_problem())
+    make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_true())
+    make_request(get_binary_unittest_python_problem_with_flake8_error_and_lint_false())
+    make_request(get_binary_unittest_python_problem_with_archived_tests_and_binary_solution())
 
-    # make_request(get_binary_unittest_django_problem())
-    # make_request(get_binary_unittest_django_problem_without_project_requirements())
-    # make_request(get_binary_unittest_django_problem_with_binary_tests_and_archived_solution())
-    # make_request(get_binary_unittest_django_problem_with_requiremets_the_same_as_test_requirements())
+    make_request(get_binary_unittest_django_problem())
+    make_request(get_binary_unittest_django_problem_without_project_requirements())
+    make_request(get_binary_unittest_django_problem_with_binary_tests_and_archived_solution())
+    make_request(get_binary_unittest_django_problem_with_requiremets_the_same_as_test_requirements())
 
-    # make_request(get_binary_problem())
+    make_request(get_binary_problem())
 
-    # make_request(get_output_check_python())
-    # make_request(get_output_check_ruby())
-    # make_request(get_output_check_binary_java())
+    make_request(get_output_check_python())
+    make_request(get_output_check_ruby())
+    make_request(get_output_check_binary_java())
 
-    # make_request(test_fork_bomb())
+    make_request(test_fork_bomb())
 
 
 if __name__ == '__main__':

@@ -80,7 +80,6 @@ def get_and_call_poll_command(container_id):
 def run_code_in_docker(time_limit=None, **kwargs):
     time_limit = time_limit or settings.DOCKER_TIME_LIMIT
     docker_command = prepare_docker_command(**kwargs)
-    print(f'DOCKER COMMAND IS {docker_command}')
     return check_output(['/bin/bash', '-c', docker_command],
                         stderr=STDOUT,
                         timeout=time_limit).decode('utf-8')

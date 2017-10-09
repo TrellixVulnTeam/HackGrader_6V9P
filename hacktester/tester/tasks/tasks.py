@@ -88,7 +88,6 @@ def grade_pending_run(self, run_id, input_folder):
     container_id = None
     returncode = output = None
     pending_task = TestRun.objects.get(id=run_id)
-    print(f"DOCKER IMAGE IS {settings.DOCKER_IMAGES.get(pending_task.language.name)}")
     try:
         container_id = run_code_in_docker(input_folder=input_folder, docker_image=pending_task.language.name)
     except CalledProcessError as e:
