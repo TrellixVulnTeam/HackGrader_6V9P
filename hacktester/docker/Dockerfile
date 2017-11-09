@@ -18,7 +18,7 @@ RUN export JAVA_HOME
 RUN java -version
 
 #install ruby2.3-dev and rubocop
-RUN apt-add-repository ppa:brightbox/ruby-ng && apt-get update && apt-get install -y ruby2.3 ruby2.3-dev && gem install rake && gem install minitest && gem install rubocop
+RUN apt-add-repository ppa:brightbox/ruby-ng && apt-get update && apt-get install -y ruby2.4 ruby2.4-dev && gem install rake && gem install minitest && gem install rubocop
 
 #install nodejs and mocha,chai and sinon test tools
 RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -

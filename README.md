@@ -36,7 +36,7 @@ Sanity check versions of Python, Ruby and Java:
 $ docker run grader /bin/bash --login -c "python3.5 --version"
 ```
 
-**Ruby should be 2.3**
+**Ruby should be 2.4**
 
 ```
 $ docker run grader /bin/bash --login -c "ruby --version"
