@@ -30,10 +30,10 @@ $ docker build -t grader .
 
 Sanity check versions of Python, Ruby and Java:
 
-**Python should be 3.5**
+**Python should be 3.6**
 
 ```
-$ docker run grader /bin/bash --login -c "python3.5 --version"
+$ docker run grader /bin/bash --login -c "python3.6 --version"
 ```
 
 **Ruby should be 2.4**
