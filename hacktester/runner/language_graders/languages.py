@@ -25,7 +25,7 @@ from .proc import run_cmd
 
 
 class PythonRunner(OutputCheckingMixin, DynamicLanguageUnittestMixin, BaseGrader):
-    COMMAND = 'python3.5'
+    COMMAND = 'python3.6'
     LANGUAGE_NAME = PYTHON
 
     def lint(self):

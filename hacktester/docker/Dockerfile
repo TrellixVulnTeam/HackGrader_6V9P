@@ -19,6 +19,7 @@ RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 
 
 #Installing python3.6
+#IF later on we change to python3.7 we should change it at /home/mitaka/code/HackGrader/hacktester/tester/tasks/docker_utils.py
 RUN sudo apt-get install -y python3.6
 
 #Installing Java stuff
@@ -39,12 +40,15 @@ RUN sudo apt-get install -y nodejs && npm install -g mocha chai sinon
 #Install pip and flake8
 RUN curl -O https://bootstrap.pypa.io/get-pip.py && python3.6 get-pip.py && pip -V && pip install flake8
 
+#Installing bash-completion htop and mtr just in case
+RUN apt-get install bash-completion htop mtr
 
 #Cleaning downloaded packages
 RUN apt-get clean
 
 #Creating new user
-RUN useradd -m -p grader grader && chsh -s /bin/bash grader | adduser grader sudo
+RUN useradd -m -p grader -s /bin/bash grader -G sudo
+RUN echo 'grader:grader' | chpasswd
 RUN usermod -u 1002 grader
 
 USER grader

@@ -31,6 +31,11 @@ $ docker build -t grader .
 Sanity check versions of Python, Ruby and Java:
 
 **Python should be 3.6**
+If we upgrade to python3.7 later on we should change it at 
+../hacktester/tester/tasks/docker_utils.py
+.../hacktester/runner/language_graders/languages.py
+and all 
+../fixtures/binary/django/*..
 
 ```
 $ docker run grader /bin/bash --login -c "python3.6 --version"
