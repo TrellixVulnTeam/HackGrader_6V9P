@@ -157,9 +157,9 @@ class KeyValueStoreTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    call(shlex.split('python3 manage.py migrate'))
+    call(shlex.split('python3.6 manage.py migrate'))
 
-    runserver = shlex.split('python3 manage.py runserver')
+    runserver = shlex.split('python3.6 manage.py runserver')
     p = Popen(runserver)
 
     poll_until_localhost_is_established(time_sleep_step=2, max_time=30)
