@@ -1,5 +1,5 @@
 FROM ubuntu:14.04
-MAINTAINER radorado@hackbulgaria.com
+LABEL maintainer=radorado@hackbulgaria.com
 
 
 #Updating APT sources and installing some OS dependencies and tools to add 3rd party repos later on
