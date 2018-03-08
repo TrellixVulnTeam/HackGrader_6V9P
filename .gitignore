@@ -11,3 +11,5 @@ test_client/nonce.json
 media
 celerybeat-schedule
 erl_crash.dump
+.vscode
+celerybeat*
