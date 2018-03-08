@@ -19,7 +19,7 @@ RUN curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
 
 
 #Installing python3.6
-#IF later on we change to python3.7 we should change it at /home/mitaka/code/HackGrader/hacktester/tester/tasks/docker_utils.py
+#IF later on we change to python3.7 we should change it at ../hacktester/tester/tasks/docker_utils.py
 RUN sudo apt-get install -y python3.6
 
 #Installing Java stuff
