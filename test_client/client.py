@@ -4,6 +4,7 @@ import time
 import hmac
 import hashlib
 import json
+import base64
 from urllib.parse import urlparse
 
 from settings import API_KEY, API_SECRET, APIS, DEFAULT_API
@@ -18,6 +19,17 @@ print("Using API_URL: {}".format(API_URL))
 
 GRADE_PATH = '/grade'
 GRADE_URL = API_URL + GRADE_PATH
+
+
+def read_file(path):
+    with open(path, 'r') as f:
+        return f.read()
+
+
+def encode_plain_solution(code):
+    encoded = base64.b64encode(code)
+
+    return encoded.decode('ascii')
 
 
 def get_output_check_python():
@@ -198,13 +210,30 @@ def get_binary_unittest_python_problem_with_archived_tests_and_binary_solution()
     return data
 
 
-def get_binary_unittest_django_problem_with_requiremets_the_same_as_test_requirements():
+def get_binary_unittest_django_problem_with_requirements_the_same_as_test_requirements():
     data = {"test_type": "unittest",
             "language": "python",
             "solution": read_binary_file('fixtures/binary/django/5/django_project.tar.gz'),
             "test": read_binary_file('fixtures/binary/django/5/tests.tar.gz'),
             "extra_options": {
                 'archive_solution_type': True,
+                'archive_test_type': True,
+                'lint': False,
+                'time_limit': 20
+            }}
+
+    return data
+
+
+def get_plain_unittest_python_problem_with_archived_tests_and_requirements():
+    code = read_file('fixtures/binary/django/6/solution.py')
+    solution = encode_plain_solution(code.encode('UTF-8'))
+
+    data = {"test_type": "unittest",
+            "language": "python",
+            "solution": solution,
+            "test": read_binary_file('fixtures/binary/django/6/tests.tar.gz'),
+            "extra_options": {
                 'archive_test_type': True,
                 'lint': False,
                 'time_limit': 20
@@ -310,7 +339,9 @@ def main():
     make_request(get_binary_unittest_django_problem())
     make_request(get_binary_unittest_django_problem_without_project_requirements())
     make_request(get_binary_unittest_django_problem_with_binary_tests_and_archived_solution())
-    make_request(get_binary_unittest_django_problem_with_requiremets_the_same_as_test_requirements())
+    make_request(get_binary_unittest_django_problem_with_requirements_the_same_as_test_requirements())
+
+    make_request(get_plain_unittest_python_problem_with_archived_tests_and_requirements())
 
     make_request(get_binary_problem())
 
@@ -319,7 +350,6 @@ def main():
     make_request(get_output_check_binary_java())
 
     make_request(test_fork_bomb())
-
 
 if __name__ == '__main__':
     main()
